@@ -28,15 +28,15 @@ Frontend asset canister:
 
 Core canister:
 
-`tz2ag-zx777-77776-aaabq-cai`
+`t63gs-up777-77776-aaaba-cai`
 
 Candid UI:
 
-`http://tqzl2-p7777-77776-aaaaa-cai.localhost:8010/?id=tz2ag-zx777-77776-aaabq-cai`
+`http://tqzl2-p7777-77776-aaaaa-cai.localhost:8010/?id=t63gs-up777-77776-aaaba-cai`
 
 Frontend canister:
 
-`t63gs-up777-77776-aaaba-cai`
+`tz2ag-zx777-77776-aaabq-cai`
 
 Local prototype identity:
 
@@ -74,6 +74,8 @@ The local seed is stored only under ignored `.icp/cache/local-secrets/`. Do not 
 - Worker completion records with provider id, result hash, receipt, and output preview.
 - ICP media asset records storing small generated worker outputs as canister blobs.
 - Media manifest records for ICP media assets anchored by content hash.
+- Public live-site media copied into `public/reference-assets/live-site` for the local ICP asset canister build.
+- Gallery and Explore surfaces render copied local media paths instead of production media hotlinks.
 
 ## Off-ICP Boundaries
 
@@ -132,10 +134,22 @@ Latest completed checks:
 
 - `npm run verify` passed: lint, 5 Vitest files / 17 tests, Vite build, and 12 Playwright tests.
 - `wsl ... icp build magickbox_core` passed.
-- `scripts/deploy-local-icp.sh` passed on port `8010`.
+- `scripts/deploy-local-icp.sh` passed on port `8010`; frontend canister `tz2ag-zx777-77776-aaabq-cai`, core canister `t63gs-up777-77776-aaaba-cai`.
 - `scripts/smoke-local-icp.sh` passed.
 - `npm run smoke:icp:advanced` passed.
 - `npm run smoke:services` passed in optional mode with both live services skipped because no isolated service env vars were configured.
+- `npm run audit:media` passed:
+  - 10/10 public live routes crawled read-only;
+  - 96 media URLs discovered;
+  - 95 assets copied into the isolated prototype asset source;
+  - 120,324,692 bytes copied;
+  - only skipped URL was the live site's 404 `/home/favicon.ico`.
+- Local ICP asset media checks passed:
+  - `media-manifest.json` returned HTTP 200 from `frontend.local.localhost:8010`;
+  - copied PNG returned HTTP 200 with `image/png`;
+  - copied GIF returned HTTP 200 with `image/gif`;
+  - Playwright confirmed `/` gallery and `/home/explore?category=latest` media images loaded without production hotlinks or console errors;
+  - screenshots written to `docs/artifacts/prototype/local-icp-copied-media-gallery.png` and `docs/artifacts/prototype/local-icp-copied-media-explore.png`.
 - `python workers\magickai_worker_bridge.py --health` located the read-only MagickAI repo but could not import the SDK because the local Python environment is missing `pymongo`.
 - `http://frontend.local.localhost:8010/` returned HTTP 200.
 - `http://frontend.local.localhost:8010/home/magick-chat` returned HTTP 200.
@@ -163,7 +177,7 @@ Latest completed checks:
 - Latest advanced smoke proved:
   - ICP payment intent `#1` for 100 credits and `100_000` e8s;
   - per-intent subaccount `4d42504159000000000000000000000000000000000000000000000000000001`;
-  - local ledger transfer of `0.001` ICP to core canister `tz2ag-zx777-77776-aaabq-cai` with `--to-subaccount`, claimed at block `30`;
+  - local ledger transfer of `0.001` ICP to core canister `t63gs-up777-77776-aaaba-cai` with `--to-subaccount`, claimed at block `30`;
   - ad verifier grant of 25 credits;
   - separate worker principal `qpkob-dcevx-4dmkl-ie5nc-2hkun-wqaia-vwwcq-n3gfy-rz3xt-djgfe-cae`;
   - local Ollama model `glm4:9b` completed job `#2` with hash `a485b12be57454f7b2507f8b7a8ddfc8bf4c908ef2a741ddf5c39fe85704cc9b`;
@@ -180,6 +194,7 @@ Latest completed checks:
 - Local ICP/ICRC top-up proof now uses per-intent subaccounts. Production should decide whether to add ICRC-2 approve/transfer-from for wallet-mediated subscription or recurring payment flows.
 - MagickAI and FreeLLMAPI adapters are implemented as local worker boundaries; production use still needs real deployed worker services and secrets kept outside canister state.
 - The current media asset implementation is intentionally size-limited for the local proof; larger generated image/video/music assets need dedicated ICP media/chunk canisters with quota, lifecycle, certification, and cycle monitoring.
+- Copied live-site media is static asset-canister content, not a continuous production gallery sync.
 - No isolated mainnet preview canister was created.
 
 ## Recommended Next Build Slice

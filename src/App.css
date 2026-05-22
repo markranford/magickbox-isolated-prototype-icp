@@ -703,13 +703,24 @@ textarea:focus-visible {
 
 .media-swatch,
 .explore-media {
+  display: block;
+  width: 100%;
   min-height: 205px;
   border-radius: 7px;
+  object-fit: cover;
   background:
     linear-gradient(135deg, rgba(255, 255, 255, 0.16), rgba(255, 255, 255, 0.02)),
     radial-gradient(circle at 30% 20%, rgba(255, 209, 102, 0.55), transparent 34%),
     radial-gradient(circle at 70% 70%, rgba(109, 140, 255, 0.6), transparent 36%),
     #202026;
+}
+
+.media-swatch {
+  aspect-ratio: 1 / 1;
+}
+
+.explore-media {
+  aspect-ratio: 1 / 0.92;
 }
 
 .gallery-tile figcaption {

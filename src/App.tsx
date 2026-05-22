@@ -422,9 +422,9 @@ function LandingPage() {
         </div>
         <div className="gallery-rail" aria-label="Example creation gallery" tabIndex={0}>
           {galleryItems.map((item, index) => (
-            <figure className={`gallery-tile tile-${index % 4}`} key={item}>
-              <div className="media-swatch" />
-              <figcaption>{item}</figcaption>
+            <figure className={`gallery-tile tile-${index % 4}`} key={item.title}>
+              <img className="media-swatch" src={item.image} alt="" loading="lazy" />
+              <figcaption>{item.title}</figcaption>
             </figure>
           ))}
         </div>
@@ -581,7 +581,7 @@ function ExplorePage() {
         <div className="explore-grid">
           {exploreItems.map((item) => (
             <article className={`explore-card tone-${item.color}`} key={item.title}>
-              <div className="explore-media" />
+              <img className="explore-media" src={item.image} alt="" loading="lazy" />
               <div>
                 <span>{item.type}</span>
                 <h2>{item.title}</h2>

@@ -1,0 +1,925 @@
+{
+  "generatedAt": "2026-05-22T13:26:03.140Z",
+  "sourceOrigin": "https://magickbox.ai",
+  "routes": [
+    {
+      "route": "https://magickbox.ai/",
+      "status": "ok",
+      "title": "Magick Box"
+    },
+    {
+      "route": "https://magickbox.ai/#features",
+      "status": "ok",
+      "title": "Magick Box"
+    },
+    {
+      "route": "https://magickbox.ai/#gallery",
+      "status": "ok",
+      "title": "Magick Box"
+    },
+    {
+      "route": "https://magickbox.ai/#pricing",
+      "status": "ok",
+      "title": "Magick Box"
+    },
+    {
+      "route": "https://magickbox.ai/#about",
+      "status": "ok",
+      "title": "Magick Box"
+    },
+    {
+      "route": "https://magickbox.ai/#contact",
+      "status": "ok",
+      "title": "Magick Box"
+    },
+    {
+      "route": "https://magickbox.ai/home/explore?category=latest",
+      "status": "ok",
+      "title": "Magick Box"
+    },
+    {
+      "route": "https://magickbox.ai/home/magick-chat",
+      "status": "ok",
+      "title": "Magick Box"
+    },
+    {
+      "route": "https://magickbox.ai/home/subscriptions",
+      "status": "ok",
+      "title": "Magick Box"
+    },
+    {
+      "route": "https://magickbox.ai/signin",
+      "status": "ok",
+      "title": "Magick Box"
+    }
+  ],
+  "discoveredCount": 96,
+  "copiedCount": 95,
+  "totalBytes": 120324692,
+  "assets": [
+    {
+      "sourceUrl": "https://magickbox.ai/apple-icon.png",
+      "status": 200,
+      "contentType": "image/png",
+      "bytes": 26143,
+      "sha256": "4deb86b2992819d4642ad3cb83298b69f1b1effaf1ca949403683ecf62a0afc6",
+      "publicPath": "/reference-assets/live-site/magickbox-site/apple-icon.png",
+      "localPath": "public/reference-assets/live-site/magickbox-site/apple-icon.png"
+    },
+    {
+      "sourceUrl": "https://magickbox.ai/favicon.ico",
+      "status": 200,
+      "contentType": "image/x-icon",
+      "bytes": 15406,
+      "sha256": "93514f0c4447dd465d596f5156e0f3dc331e54081cc7916cd4582be4a8f73d05",
+      "publicPath": "/reference-assets/live-site/magickbox-site/favicon.ico",
+      "localPath": "public/reference-assets/live-site/magickbox-site/favicon.ico"
+    },
+    {
+      "sourceUrl": "https://magickbox.ai/favicon.ico?favicon.0cv5y027.tk_u.ico",
+      "status": 200,
+      "contentType": "image/x-icon",
+      "bytes": 15406,
+      "sha256": "93514f0c4447dd465d596f5156e0f3dc331e54081cc7916cd4582be4a8f73d05",
+      "publicPath": "/reference-assets/live-site/magickbox-site/favicon-b184796c.ico",
+      "localPath": "public/reference-assets/live-site/magickbox-site/favicon-b184796c.ico"
+    },
+    {
+      "sourceUrl": "https://magickbox.ai/home/favicon.ico",
+      "status": 404,
+      "contentType": "text/html; charset=utf-8",
+      "bytes": 0,
+      "sha256": null,
+      "publicPath": null,
+      "localPath": null
+    },
+    {
+      "sourceUrl": "https://magickbox.ai/icon.png",
+      "status": 200,
+      "contentType": "image/png",
+      "bytes": 181064,
+      "sha256": "bfaa276f30ed65fd4c56e4f11a54a6fee2c5f9758f4ad184b47ef1bbe742d82d",
+      "publicPath": "/reference-assets/live-site/magickbox-site/icon.png",
+      "localPath": "public/reference-assets/live-site/magickbox-site/icon.png"
+    },
+    {
+      "sourceUrl": "https://magickbox.ai/images/members/1.jpg",
+      "status": 200,
+      "contentType": "image/jpeg",
+      "bytes": 603062,
+      "sha256": "9ebcb71fe7192d311e1e34d7fef6955fa986d38ec39e449b66e45e2d10659888",
+      "publicPath": "/reference-assets/live-site/magickbox-site/images/members/1.jpg",
+      "localPath": "public/reference-assets/live-site/magickbox-site/images/members/1.jpg"
+    },
+    {
+      "sourceUrl": "https://magickbox.ai/images/members/10.jpg",
+      "status": 200,
+      "contentType": "image/jpeg",
+      "bytes": 686199,
+      "sha256": "2802ef7447787078d709809453c610737afede9a430d625f988b47ea48f8b9a3",
+      "publicPath": "/reference-assets/live-site/magickbox-site/images/members/10.jpg",
+      "localPath": "public/reference-assets/live-site/magickbox-site/images/members/10.jpg"
+    },
+    {
+      "sourceUrl": "https://magickbox.ai/images/members/2.jpg",
+      "status": 200,
+      "contentType": "image/jpeg",
+      "bytes": 847430,
+      "sha256": "02d6c2253f933c913744d797d0ecaddd8fcb8a9a326196016ebc879e8240f02c",
+      "publicPath": "/reference-assets/live-site/magickbox-site/images/members/2.jpg",
+      "localPath": "public/reference-assets/live-site/magickbox-site/images/members/2.jpg"
+    },
+    {
+      "sourceUrl": "https://magickbox.ai/images/members/3.jpg",
+      "status": 200,
+      "contentType": "image/jpeg",
+      "bytes": 726209,
+      "sha256": "f90cab4bf4efb5da73fcd969b49ff73eb15eed81d49073036129a4a000d3876a",
+      "publicPath": "/reference-assets/live-site/magickbox-site/images/members/3.jpg",
+      "localPath": "public/reference-assets/live-site/magickbox-site/images/members/3.jpg"
+    },
+    {
+      "sourceUrl": "https://magickbox.ai/images/members/4.png",
+      "status": 200,
+      "contentType": "image/png",
+      "bytes": 1839387,
+      "sha256": "303348661180f215e0ae0ef8d1cd8cf93d20912c225bfd3304437da778e3646e",
+      "publicPath": "/reference-assets/live-site/magickbox-site/images/members/4.png",
+      "localPath": "public/reference-assets/live-site/magickbox-site/images/members/4.png"
+    },
+    {
+      "sourceUrl": "https://magickbox.ai/images/members/5.png",
+      "status": 200,
+      "contentType": "image/png",
+      "bytes": 1717289,
+      "sha256": "3bafa3b6edb3d836eeed51bae2d7402252dd158a8bd9bb0b1a5a86f5feb545fd",
+      "publicPath": "/reference-assets/live-site/magickbox-site/images/members/5.png",
+      "localPath": "public/reference-assets/live-site/magickbox-site/images/members/5.png"
+    },
+    {
+      "sourceUrl": "https://magickbox.ai/images/members/6.jpg",
+      "status": 200,
+      "contentType": "image/jpeg",
+      "bytes": 639892,
+      "sha256": "fdeb5c4de5b1a333a8ff5bdd2eca6e9196bf78150ac114e346cc4ad7176b5a0e",
+      "publicPath": "/reference-assets/live-site/magickbox-site/images/members/6.jpg",
+      "localPath": "public/reference-assets/live-site/magickbox-site/images/members/6.jpg"
+    },
+    {
+      "sourceUrl": "https://magickbox.ai/images/members/7.jpg",
+      "status": 200,
+      "contentType": "image/jpeg",
+      "bytes": 1025648,
+      "sha256": "6af017a4f3bb630caba19f96a029424a9fd2b1df07ef8789d7b416d672eac36f",
+      "publicPath": "/reference-assets/live-site/magickbox-site/images/members/7.jpg",
+      "localPath": "public/reference-assets/live-site/magickbox-site/images/members/7.jpg"
+    },
+    {
+      "sourceUrl": "https://magickbox.ai/images/members/8.jpg",
+      "status": 200,
+      "contentType": "image/jpeg",
+      "bytes": 822409,
+      "sha256": "46d018d2842ba86f7aaba5c170b4a70bfbdb4eabdec85ea908cfb3e1aa5e9c8c",
+      "publicPath": "/reference-assets/live-site/magickbox-site/images/members/8.jpg",
+      "localPath": "public/reference-assets/live-site/magickbox-site/images/members/8.jpg"
+    },
+    {
+      "sourceUrl": "https://magickbox.ai/images/members/9.jpg",
+      "status": 200,
+      "contentType": "image/jpeg",
+      "bytes": 878305,
+      "sha256": "04ad3a1edcf3e3eafc5e1de84a37ead362043fc0b1118a715b08679928a95cab",
+      "publicPath": "/reference-assets/live-site/magickbox-site/images/members/9.jpg",
+      "localPath": "public/reference-assets/live-site/magickbox-site/images/members/9.jpg"
+    },
+    {
+      "sourceUrl": "https://magickbox.ai/logo/beta-light.svg",
+      "status": 200,
+      "contentType": "image/svg+xml",
+      "bytes": 4969,
+      "sha256": "ffa431ca1d257b66dc804d86fe852f6572751bf5eb1632e5db3739dc7e125e66",
+      "publicPath": "/reference-assets/live-site/magickbox-site/logo/beta-light.svg",
+      "localPath": "public/reference-assets/live-site/magickbox-site/logo/beta-light.svg"
+    },
+    {
+      "sourceUrl": "https://magickbox.ai/logo/body-dark.svg",
+      "status": 200,
+      "contentType": "image/svg+xml",
+      "bytes": 7686,
+      "sha256": "0b107b4bf12b2b808495355a9b4f9557475235a5002396372a3ea75d90253278",
+      "publicPath": "/reference-assets/live-site/magickbox-site/logo/body-dark.svg",
+      "localPath": "public/reference-assets/live-site/magickbox-site/logo/body-dark.svg"
+    },
+    {
+      "sourceUrl": "https://magickbox.ai/logo/body-light.svg",
+      "status": 200,
+      "contentType": "image/svg+xml",
+      "bytes": 7686,
+      "sha256": "94d49e420ea7fa1625299a36f8910640e76812341c3f7db490c7383bd6f9be02",
+      "publicPath": "/reference-assets/live-site/magickbox-site/logo/body-light.svg",
+      "localPath": "public/reference-assets/live-site/magickbox-site/logo/body-light.svg"
+    },
+    {
+      "sourceUrl": "https://magickbox.ai/logo/icon.svg",
+      "status": 200,
+      "contentType": "image/svg+xml",
+      "bytes": 1382,
+      "sha256": "4f240aaf281b0cd8a4882c0fdbed8185dfc2fba25e77d3c4af3ac837131914cb",
+      "publicPath": "/reference-assets/live-site/magickbox-site/logo/icon.svg",
+      "localPath": "public/reference-assets/live-site/magickbox-site/logo/icon.svg"
+    },
+    {
+      "sourceUrl": "https://magickbox.ai/opengraph-image.jpg",
+      "status": 200,
+      "contentType": "image/jpeg",
+      "bytes": 379534,
+      "sha256": "0791415c561e8184f01d88606fdbd5b91ba8bc2c9336becd14ad042e750dd2d2",
+      "publicPath": "/reference-assets/live-site/magickbox-site/opengraph-image.jpg",
+      "localPath": "public/reference-assets/live-site/magickbox-site/opengraph-image.jpg"
+    },
+    {
+      "sourceUrl": "https://prod-gmi-magick-box.s3.amazonaws.com/image_generation_tool_images/%F0%9F%91%BB%20johnny%20%F0%9F%91%BB_20260309_184715.png",
+      "status": 200,
+      "contentType": "image/png",
+      "bytes": 944774,
+      "sha256": "18bbb80e95637276f82158ce5399f89a0f8111575978e2e2b58d266fccead15d",
+      "publicPath": "/reference-assets/live-site/copied-production-media/image_generation_tool_images/johnny_20260309_184715.png",
+      "localPath": "public/reference-assets/live-site/copied-production-media/image_generation_tool_images/johnny_20260309_184715.png"
+    },
+    {
+      "sourceUrl": "https://prod-gmi-magick-box.s3.amazonaws.com/image_generation_tool_images/Albert_20260205_151458.png",
+      "status": 200,
+      "contentType": "image/png",
+      "bytes": 1650368,
+      "sha256": "1d852f7716d06d4e1e24d909c9ac7baaa9ddbeb02ab73231e7d3e15a37b520f4",
+      "publicPath": "/reference-assets/live-site/copied-production-media/image_generation_tool_images/Albert_20260205_151458.png",
+      "localPath": "public/reference-assets/live-site/copied-production-media/image_generation_tool_images/Albert_20260205_151458.png"
+    },
+    {
+      "sourceUrl": "https://prod-gmi-magick-box.s3.amazonaws.com/image_generation_tool_images/Albert_20260205_151853.png",
+      "status": 200,
+      "contentType": "image/png",
+      "bytes": 1474210,
+      "sha256": "a9d6377056400c076847c408f08e47a2b8ed82b7f91566fb10ba499f9a8d50fe",
+      "publicPath": "/reference-assets/live-site/copied-production-media/image_generation_tool_images/Albert_20260205_151853.png",
+      "localPath": "public/reference-assets/live-site/copied-production-media/image_generation_tool_images/Albert_20260205_151853.png"
+    },
+    {
+      "sourceUrl": "https://prod-gmi-magick-box.s3.amazonaws.com/image_generation_tool_images/Albert_20260402_171030.png",
+      "status": 200,
+      "contentType": "image/png",
+      "bytes": 1419812,
+      "sha256": "b024eb58a79e7bf6c95e16ed666ea9013a57ce6db8873a31333390f91f2113ea",
+      "publicPath": "/reference-assets/live-site/copied-production-media/image_generation_tool_images/Albert_20260402_171030.png",
+      "localPath": "public/reference-assets/live-site/copied-production-media/image_generation_tool_images/Albert_20260402_171030.png"
+    },
+    {
+      "sourceUrl": "https://prod-gmi-magick-box.s3.amazonaws.com/image_generation_tool_images/MagickBoxx_20260424_143152.png",
+      "status": 200,
+      "contentType": "image/png",
+      "bytes": 1103235,
+      "sha256": "210de1c478d33a9f49d8e7abbfcd112cce2ef9da226936967d3d5dbff96e23d6",
+      "publicPath": "/reference-assets/live-site/copied-production-media/image_generation_tool_images/MagickBoxx_20260424_143152.png",
+      "localPath": "public/reference-assets/live-site/copied-production-media/image_generation_tool_images/MagickBoxx_20260424_143152.png"
+    },
+    {
+      "sourceUrl": "https://prod-gmi-magick-box.s3.amazonaws.com/image_generation_tool_images/Musashi_20260416_183410.png",
+      "status": 200,
+      "contentType": "image/png",
+      "bytes": 1492946,
+      "sha256": "5bfcc8fdbcee84ae7fe2efc97825e6bc6df7845e459c7c0e2b2af77346c82021",
+      "publicPath": "/reference-assets/live-site/copied-production-media/image_generation_tool_images/Musashi_20260416_183410.png",
+      "localPath": "public/reference-assets/live-site/copied-production-media/image_generation_tool_images/Musashi_20260416_183410.png"
+    },
+    {
+      "sourceUrl": "https://prod-gmi-magick-box.s3.amazonaws.com/image_generation_tool_images/Santuy_20260401_170536.png",
+      "status": 200,
+      "contentType": "image/png",
+      "bytes": 1554367,
+      "sha256": "3096aeeab37dcf0029c8ef9518d1e70fcb6bfceb52be42f888dab81eae627474",
+      "publicPath": "/reference-assets/live-site/copied-production-media/image_generation_tool_images/Santuy_20260401_170536.png",
+      "localPath": "public/reference-assets/live-site/copied-production-media/image_generation_tool_images/Santuy_20260401_170536.png"
+    },
+    {
+      "sourceUrl": "https://prod-gmi-magick-box.s3.amazonaws.com/image_generation_tool_images/Santuy_20260406_060834.png",
+      "status": 200,
+      "contentType": "image/png",
+      "bytes": 1289755,
+      "sha256": "4cef1a2f6cb4a4f981d33804387e9ba40b73cca4642e580a1231c39e6bf10ce2",
+      "publicPath": "/reference-assets/live-site/copied-production-media/image_generation_tool_images/Santuy_20260406_060834.png",
+      "localPath": "public/reference-assets/live-site/copied-production-media/image_generation_tool_images/Santuy_20260406_060834.png"
+    },
+    {
+      "sourceUrl": "https://prod-gmi-magick-box.s3.amazonaws.com/image_generation_tool_images/Sate%20nyit%20pr%20tal%20kwr%20_20260410_134434.png",
+      "status": 200,
+      "contentType": "image/png",
+      "bytes": 1098988,
+      "sha256": "d37f2ae9abd960441e9b622d3cbb50b4808ea0923eef2cfdf4166a83cf03694a",
+      "publicPath": "/reference-assets/live-site/copied-production-media/image_generation_tool_images/Sate_nyit_pr_tal_kwr_20260410_134434.png",
+      "localPath": "public/reference-assets/live-site/copied-production-media/image_generation_tool_images/Sate_nyit_pr_tal_kwr_20260410_134434.png"
+    },
+    {
+      "sourceUrl": "https://prod-gmi-magick-box.s3.amazonaws.com/image_generation_tool_images/Sate%20nyit%20pr%20tal%20kwr%20_20260410_134541.png",
+      "status": 200,
+      "contentType": "image/png",
+      "bytes": 1557887,
+      "sha256": "927a63a3db9b16dbda494e0a98b5229356d7a69f2090fbc2bdaf471d89098a29",
+      "publicPath": "/reference-assets/live-site/copied-production-media/image_generation_tool_images/Sate_nyit_pr_tal_kwr_20260410_134541.png",
+      "localPath": "public/reference-assets/live-site/copied-production-media/image_generation_tool_images/Sate_nyit_pr_tal_kwr_20260410_134541.png"
+    },
+    {
+      "sourceUrl": "https://prod-gmi-magick-box.s3.amazonaws.com/image_generation_tool_images/Sate%20nyit%20pr%20tal%20kwr%20_20260410_134618.png",
+      "status": 200,
+      "contentType": "image/png",
+      "bytes": 1472287,
+      "sha256": "dad83ad1c9af33763baabfdcee453507e81062e23d7c682c4470c2c075590665",
+      "publicPath": "/reference-assets/live-site/copied-production-media/image_generation_tool_images/Sate_nyit_pr_tal_kwr_20260410_134618.png",
+      "localPath": "public/reference-assets/live-site/copied-production-media/image_generation_tool_images/Sate_nyit_pr_tal_kwr_20260410_134618.png"
+    },
+    {
+      "sourceUrl": "https://prod-gmi-magick-box.s3.amazonaws.com/image_generation_tool_images/Sate%20nyit%20pr%20tal%20kwr%20_20260410_134649.png",
+      "status": 200,
+      "contentType": "image/png",
+      "bytes": 1987572,
+      "sha256": "e7d9d99c971f83b41c8f03a5f932dd2cdf0871848be8f3236427c071fdc2f5e6",
+      "publicPath": "/reference-assets/live-site/copied-production-media/image_generation_tool_images/Sate_nyit_pr_tal_kwr_20260410_134649.png",
+      "localPath": "public/reference-assets/live-site/copied-production-media/image_generation_tool_images/Sate_nyit_pr_tal_kwr_20260410_134649.png"
+    },
+    {
+      "sourceUrl": "https://prod-gmi-magick-box.s3.amazonaws.com/image_generation_tool_images/Sate%20nyit%20pr%20tal%20kwr%20_20260410_134721.png",
+      "status": 200,
+      "contentType": "image/png",
+      "bytes": 1459526,
+      "sha256": "5286fc9d0a011bc1dcc505237ea88554bc4d991206bc6f561602b673d0095e02",
+      "publicPath": "/reference-assets/live-site/copied-production-media/image_generation_tool_images/Sate_nyit_pr_tal_kwr_20260410_134721.png",
+      "localPath": "public/reference-assets/live-site/copied-production-media/image_generation_tool_images/Sate_nyit_pr_tal_kwr_20260410_134721.png"
+    },
+    {
+      "sourceUrl": "https://prod-gmi-magick-box.s3.amazonaws.com/image_generation_tool_images/Sate%20nyit%20pr%20tal%20kwr%20_20260410_134751.png",
+      "status": 200,
+      "contentType": "image/png",
+      "bytes": 963248,
+      "sha256": "720f61aa6af7c92d3cdf7ef44fb1da7944c32a09ae28ef3747ad3fdc090c216d",
+      "publicPath": "/reference-assets/live-site/copied-production-media/image_generation_tool_images/Sate_nyit_pr_tal_kwr_20260410_134751.png",
+      "localPath": "public/reference-assets/live-site/copied-production-media/image_generation_tool_images/Sate_nyit_pr_tal_kwr_20260410_134751.png"
+    },
+    {
+      "sourceUrl": "https://prod-gmi-magick-box.s3.amazonaws.com/image_generation_tool_images/Sate%20nyit%20pr%20tal%20kwr%20_20260416_152525.png",
+      "status": 200,
+      "contentType": "image/png",
+      "bytes": 1209187,
+      "sha256": "5427135efe393b995b338e77cd8bcbe99a44c04fb8a53072c090f1cfd121e788",
+      "publicPath": "/reference-assets/live-site/copied-production-media/image_generation_tool_images/Sate_nyit_pr_tal_kwr_20260416_152525.png",
+      "localPath": "public/reference-assets/live-site/copied-production-media/image_generation_tool_images/Sate_nyit_pr_tal_kwr_20260416_152525.png"
+    },
+    {
+      "sourceUrl": "https://prod-gmi-magick-box.s3.amazonaws.com/image_generation_tool_images/Sate%20nyit%20pr%20tal%20kwr%20_20260416_152657.png",
+      "status": 200,
+      "contentType": "image/png",
+      "bytes": 1444954,
+      "sha256": "bc5c046ef81a843f45d25570f286bf7cbfa62029897ed7b946ff0455b17dcee6",
+      "publicPath": "/reference-assets/live-site/copied-production-media/image_generation_tool_images/Sate_nyit_pr_tal_kwr_20260416_152657.png",
+      "localPath": "public/reference-assets/live-site/copied-production-media/image_generation_tool_images/Sate_nyit_pr_tal_kwr_20260416_152657.png"
+    },
+    {
+      "sourceUrl": "https://prod-gmi-magick-box.s3.amazonaws.com/image_generation_tool_images/Sate%20nyit%20pr%20tal%20kwr%20_20260416_152747.png",
+      "status": 200,
+      "contentType": "image/png",
+      "bytes": 787806,
+      "sha256": "7ccb697313465eddf8756d1c5228b9a00a3c6bb747469cd56340669e27dad516",
+      "publicPath": "/reference-assets/live-site/copied-production-media/image_generation_tool_images/Sate_nyit_pr_tal_kwr_20260416_152747.png",
+      "localPath": "public/reference-assets/live-site/copied-production-media/image_generation_tool_images/Sate_nyit_pr_tal_kwr_20260416_152747.png"
+    },
+    {
+      "sourceUrl": "https://prod-gmi-magick-box.s3.amazonaws.com/image_generation_tool_images/Sate%20nyit%20pr%20tal%20kwr%20_20260416_152919.png",
+      "status": 200,
+      "contentType": "image/png",
+      "bytes": 941771,
+      "sha256": "eb024b626222c91ccede2db4483e57b03c78b9ac4158a20025e34fc617ca8e71",
+      "publicPath": "/reference-assets/live-site/copied-production-media/image_generation_tool_images/Sate_nyit_pr_tal_kwr_20260416_152919.png",
+      "localPath": "public/reference-assets/live-site/copied-production-media/image_generation_tool_images/Sate_nyit_pr_tal_kwr_20260416_152919.png"
+    },
+    {
+      "sourceUrl": "https://prod-gmi-magick-box.s3.amazonaws.com/image_generation_tool_images/Sate%20nyit%20pr%20tal%20kwr%20_20260416_152947.png",
+      "status": 200,
+      "contentType": "image/png",
+      "bytes": 1106739,
+      "sha256": "a3e0410b89f956d5bc99a88c91ecc5121013dd2643637dc75de1b4c22e0a22b3",
+      "publicPath": "/reference-assets/live-site/copied-production-media/image_generation_tool_images/Sate_nyit_pr_tal_kwr_20260416_152947.png",
+      "localPath": "public/reference-assets/live-site/copied-production-media/image_generation_tool_images/Sate_nyit_pr_tal_kwr_20260416_152947.png"
+    },
+    {
+      "sourceUrl": "https://prod-gmi-magick-box.s3.amazonaws.com/image_generation_tool_images/Sate%20nyit%20pr%20tal%20kwr%20_20260416_153441.png",
+      "status": 200,
+      "contentType": "image/png",
+      "bytes": 1231341,
+      "sha256": "39bdc31246b3178ea0e77c9ab0950a00443e61d088aa2ffd9d1f4a8247606292",
+      "publicPath": "/reference-assets/live-site/copied-production-media/image_generation_tool_images/Sate_nyit_pr_tal_kwr_20260416_153441.png",
+      "localPath": "public/reference-assets/live-site/copied-production-media/image_generation_tool_images/Sate_nyit_pr_tal_kwr_20260416_153441.png"
+    },
+    {
+      "sourceUrl": "https://prod-gmi-magick-box.s3.amazonaws.com/image_generation_tool_images/Sate%20nyit%20pr%20tal%20kwr%20_20260416_153524.png",
+      "status": 200,
+      "contentType": "image/png",
+      "bytes": 778557,
+      "sha256": "49974a818cdb83ee6c428fc7bc981f89ae628b91cf8152e23bb0c33e340c0d2e",
+      "publicPath": "/reference-assets/live-site/copied-production-media/image_generation_tool_images/Sate_nyit_pr_tal_kwr_20260416_153524.png",
+      "localPath": "public/reference-assets/live-site/copied-production-media/image_generation_tool_images/Sate_nyit_pr_tal_kwr_20260416_153524.png"
+    },
+    {
+      "sourceUrl": "https://prod-gmi-magick-box.s3.amazonaws.com/image_generation_tool_images/Sate%20nyit%20pr%20tal%20kwr%20_20260416_153609.png",
+      "status": 200,
+      "contentType": "image/png",
+      "bytes": 1086617,
+      "sha256": "529df90b1a610cb21c34dd7595b4c6f021e90aa15d8dc8479e864ec75c91c854",
+      "publicPath": "/reference-assets/live-site/copied-production-media/image_generation_tool_images/Sate_nyit_pr_tal_kwr_20260416_153609.png",
+      "localPath": "public/reference-assets/live-site/copied-production-media/image_generation_tool_images/Sate_nyit_pr_tal_kwr_20260416_153609.png"
+    },
+    {
+      "sourceUrl": "https://prod-gmi-magick-box.s3.amazonaws.com/image_generation_tool_images/Sate%20nyit%20pr%20tal%20kwr%20_20260416_153712.png",
+      "status": 200,
+      "contentType": "image/png",
+      "bytes": 1761201,
+      "sha256": "62912d6eebf6ef68fd166f747ff1b61cd3c04c8ae40784a27abc7f9a0858f89e",
+      "publicPath": "/reference-assets/live-site/copied-production-media/image_generation_tool_images/Sate_nyit_pr_tal_kwr_20260416_153712.png",
+      "localPath": "public/reference-assets/live-site/copied-production-media/image_generation_tool_images/Sate_nyit_pr_tal_kwr_20260416_153712.png"
+    },
+    {
+      "sourceUrl": "https://prod-gmi-magick-box.s3.amazonaws.com/image_generation_tool_images/Sate%20nyit%20pr%20tal%20kwr%20_20260416_153757.png",
+      "status": 200,
+      "contentType": "image/png",
+      "bytes": 1888661,
+      "sha256": "c11fdf1f6602d364fb76b4096a44777c18b302b7bd34020109c487560a387461",
+      "publicPath": "/reference-assets/live-site/copied-production-media/image_generation_tool_images/Sate_nyit_pr_tal_kwr_20260416_153757.png",
+      "localPath": "public/reference-assets/live-site/copied-production-media/image_generation_tool_images/Sate_nyit_pr_tal_kwr_20260416_153757.png"
+    },
+    {
+      "sourceUrl": "https://prod-gmi-magick-box.s3.amazonaws.com/image_generation_tool_images/Sate%20nyit%20pr%20tal%20kwr%20_20260421_164048.png",
+      "status": 200,
+      "contentType": "image/png",
+      "bytes": 1940515,
+      "sha256": "cd15803710039ef6aeef44b95981fe4af8895ee4135ea829c9e073c8dc154cf4",
+      "publicPath": "/reference-assets/live-site/copied-production-media/image_generation_tool_images/Sate_nyit_pr_tal_kwr_20260421_164048.png",
+      "localPath": "public/reference-assets/live-site/copied-production-media/image_generation_tool_images/Sate_nyit_pr_tal_kwr_20260421_164048.png"
+    },
+    {
+      "sourceUrl": "https://prod-gmi-magick-box.s3.amazonaws.com/image_generation_tool_images/Sate%20nyit%20pr%20tal%20kwr%20_20260421_164925.png",
+      "status": 200,
+      "contentType": "image/png",
+      "bytes": 1807009,
+      "sha256": "910444f2e41134bc506f5eb57f1742959d7b26e9ffa872391878462d50d902ee",
+      "publicPath": "/reference-assets/live-site/copied-production-media/image_generation_tool_images/Sate_nyit_pr_tal_kwr_20260421_164925.png",
+      "localPath": "public/reference-assets/live-site/copied-production-media/image_generation_tool_images/Sate_nyit_pr_tal_kwr_20260421_164925.png"
+    },
+    {
+      "sourceUrl": "https://prod-gmi-magick-box.s3.amazonaws.com/image_generation_tool_images/Sate%20nyit%20pr%20tal%20kwr%20_20260422_153054.png",
+      "status": 200,
+      "contentType": "image/png",
+      "bytes": 1714013,
+      "sha256": "5774be6f07d4cecbca3bc577f1ce762fb67def79bec7259800fdaafad1dff594",
+      "publicPath": "/reference-assets/live-site/copied-production-media/image_generation_tool_images/Sate_nyit_pr_tal_kwr_20260422_153054.png",
+      "localPath": "public/reference-assets/live-site/copied-production-media/image_generation_tool_images/Sate_nyit_pr_tal_kwr_20260422_153054.png"
+    },
+    {
+      "sourceUrl": "https://prod-gmi-magick-box.s3.amazonaws.com/image_generation_tool_images/Sate%20nyit%20pr%20tal%20kwr%20_20260422_153327.png",
+      "status": 200,
+      "contentType": "image/png",
+      "bytes": 2489676,
+      "sha256": "2a78ec3aef7bcc2bb318df4e231bda4512961d17f3f4d4f2daf25acff4f7bf10",
+      "publicPath": "/reference-assets/live-site/copied-production-media/image_generation_tool_images/Sate_nyit_pr_tal_kwr_20260422_153327.png",
+      "localPath": "public/reference-assets/live-site/copied-production-media/image_generation_tool_images/Sate_nyit_pr_tal_kwr_20260422_153327.png"
+    },
+    {
+      "sourceUrl": "https://prod-gmi-magick-box.s3.amazonaws.com/image_generation_tool_images/Sate%20nyit%20pr%20tal%20kwr%20_20260422_153344.png",
+      "status": 200,
+      "contentType": "image/png",
+      "bytes": 1666474,
+      "sha256": "eff492aef144a2c1b895e799bc2dec1c843a63398a71ff71e1430417202d12d5",
+      "publicPath": "/reference-assets/live-site/copied-production-media/image_generation_tool_images/Sate_nyit_pr_tal_kwr_20260422_153344.png",
+      "localPath": "public/reference-assets/live-site/copied-production-media/image_generation_tool_images/Sate_nyit_pr_tal_kwr_20260422_153344.png"
+    },
+    {
+      "sourceUrl": "https://prod-gmi-magick-box.s3.amazonaws.com/image_generation_tool_images/Sate%20nyit%20pr%20tal%20kwr%20_20260422_153405.png",
+      "status": 200,
+      "contentType": "image/png",
+      "bytes": 1400194,
+      "sha256": "8807dea2e5dbca0ca850d1433f961598f012cc5923f4b6b18ffbb1329ea14d25",
+      "publicPath": "/reference-assets/live-site/copied-production-media/image_generation_tool_images/Sate_nyit_pr_tal_kwr_20260422_153405.png",
+      "localPath": "public/reference-assets/live-site/copied-production-media/image_generation_tool_images/Sate_nyit_pr_tal_kwr_20260422_153405.png"
+    },
+    {
+      "sourceUrl": "https://prod-gmi-magick-box.s3.amazonaws.com/image_generation_tool_images/Sate%20nyit%20pr%20tal%20kwr%20_20260422_154811.png",
+      "status": 200,
+      "contentType": "image/png",
+      "bytes": 1944533,
+      "sha256": "5c2f55c0a7b7adc63e23446d7485056dbedea185f7ff03740b03a5b70b552a4d",
+      "publicPath": "/reference-assets/live-site/copied-production-media/image_generation_tool_images/Sate_nyit_pr_tal_kwr_20260422_154811.png",
+      "localPath": "public/reference-assets/live-site/copied-production-media/image_generation_tool_images/Sate_nyit_pr_tal_kwr_20260422_154811.png"
+    },
+    {
+      "sourceUrl": "https://prod-gmi-magick-box.s3.amazonaws.com/image_generation_tool_images/Sate%20nyit%20pr%20tal%20kwr%20_20260422_154832.png",
+      "status": 200,
+      "contentType": "image/png",
+      "bytes": 1298674,
+      "sha256": "3badf605403eab03df7176be511aa34071265f6e22f9cccda8ca0aa2bccbba09",
+      "publicPath": "/reference-assets/live-site/copied-production-media/image_generation_tool_images/Sate_nyit_pr_tal_kwr_20260422_154832.png",
+      "localPath": "public/reference-assets/live-site/copied-production-media/image_generation_tool_images/Sate_nyit_pr_tal_kwr_20260422_154832.png"
+    },
+    {
+      "sourceUrl": "https://prod-gmi-magick-box.s3.amazonaws.com/image_generation_tool_images/Sate%20nyit%20pr%20tal%20kwr%20_20260422_154854.png",
+      "status": 200,
+      "contentType": "image/png",
+      "bytes": 1889449,
+      "sha256": "ef2f87d893f03621a8f27b10c16a116beaaff905e94d2a60bf453586418f3842",
+      "publicPath": "/reference-assets/live-site/copied-production-media/image_generation_tool_images/Sate_nyit_pr_tal_kwr_20260422_154854.png",
+      "localPath": "public/reference-assets/live-site/copied-production-media/image_generation_tool_images/Sate_nyit_pr_tal_kwr_20260422_154854.png"
+    },
+    {
+      "sourceUrl": "https://prod-gmi-magick-box.s3.amazonaws.com/image_generation_tool_images/Sate%20nyit%20pr%20tal%20kwr%20_20260422_154910.png",
+      "status": 200,
+      "contentType": "image/png",
+      "bytes": 1359287,
+      "sha256": "3b49e0c11390210dbf68b8a35cea4c5fd53f4fc029b7847eda1b44d6ef421769",
+      "publicPath": "/reference-assets/live-site/copied-production-media/image_generation_tool_images/Sate_nyit_pr_tal_kwr_20260422_154910.png",
+      "localPath": "public/reference-assets/live-site/copied-production-media/image_generation_tool_images/Sate_nyit_pr_tal_kwr_20260422_154910.png"
+    },
+    {
+      "sourceUrl": "https://prod-gmi-magick-box.s3.amazonaws.com/image_generation_tool_images/Sate%20nyit%20pr%20tal%20kwr%20_20260422_154926.png",
+      "status": 200,
+      "contentType": "image/png",
+      "bytes": 1417173,
+      "sha256": "00d887cef0a64d0c527b1aa37b820c92e08dc96f02c7edcb2a1982adadc6330b",
+      "publicPath": "/reference-assets/live-site/copied-production-media/image_generation_tool_images/Sate_nyit_pr_tal_kwr_20260422_154926.png",
+      "localPath": "public/reference-assets/live-site/copied-production-media/image_generation_tool_images/Sate_nyit_pr_tal_kwr_20260422_154926.png"
+    },
+    {
+      "sourceUrl": "https://prod-gmi-magick-box.s3.amazonaws.com/image_generation_tool_images/Sate%20nyit%20pr%20tal%20kwr%20_20260422_154945.png",
+      "status": 200,
+      "contentType": "image/png",
+      "bytes": 2001494,
+      "sha256": "6ddb091f35eabeeee0baef6294838d59a18bbc8989d778041e38225f46938fff",
+      "publicPath": "/reference-assets/live-site/copied-production-media/image_generation_tool_images/Sate_nyit_pr_tal_kwr_20260422_154945.png",
+      "localPath": "public/reference-assets/live-site/copied-production-media/image_generation_tool_images/Sate_nyit_pr_tal_kwr_20260422_154945.png"
+    },
+    {
+      "sourceUrl": "https://prod-gmi-magick-box.s3.amazonaws.com/image_generation_tool_images/Sate%20nyit%20pr%20tal%20kwr%20_20260422_155050.png",
+      "status": 200,
+      "contentType": "image/png",
+      "bytes": 1040548,
+      "sha256": "ed4e7b7458dcff56f421a78db720b59004727acef9b6cd828bd8e52f03764c1d",
+      "publicPath": "/reference-assets/live-site/copied-production-media/image_generation_tool_images/Sate_nyit_pr_tal_kwr_20260422_155050.png",
+      "localPath": "public/reference-assets/live-site/copied-production-media/image_generation_tool_images/Sate_nyit_pr_tal_kwr_20260422_155050.png"
+    },
+    {
+      "sourceUrl": "https://prod-gmi-magick-box.s3.amazonaws.com/image_generation_tool_images/Sate%20nyit%20pr%20tal%20kwr%20_20260422_155119.png",
+      "status": 200,
+      "contentType": "image/png",
+      "bytes": 1728044,
+      "sha256": "db0bcbfea4b4d2c439de63384f896131d3743ead1cc29d780340c65436bc4c39",
+      "publicPath": "/reference-assets/live-site/copied-production-media/image_generation_tool_images/Sate_nyit_pr_tal_kwr_20260422_155119.png",
+      "localPath": "public/reference-assets/live-site/copied-production-media/image_generation_tool_images/Sate_nyit_pr_tal_kwr_20260422_155119.png"
+    },
+    {
+      "sourceUrl": "https://prod-gmi-magick-box.s3.amazonaws.com/image_generation_tool_images/Sate%20nyit%20pr%20tal%20kwr%20_20260422_155142.png",
+      "status": 200,
+      "contentType": "image/png",
+      "bytes": 1643753,
+      "sha256": "f2079a786e80cdc29faa87911c7673d77d287dd3931c45cf6fd7c1b3c397288a",
+      "publicPath": "/reference-assets/live-site/copied-production-media/image_generation_tool_images/Sate_nyit_pr_tal_kwr_20260422_155142.png",
+      "localPath": "public/reference-assets/live-site/copied-production-media/image_generation_tool_images/Sate_nyit_pr_tal_kwr_20260422_155142.png"
+    },
+    {
+      "sourceUrl": "https://prod-gmi-magick-box.s3.amazonaws.com/image_generation_tool_images/Sate%20nyit%20pr%20tal%20kwr%20_20260422_155305.png",
+      "status": 200,
+      "contentType": "image/png",
+      "bytes": 1898340,
+      "sha256": "2cae595ac24f47e4461c378a986e8dc317dac9ab765cbc4853f451ecb4778b86",
+      "publicPath": "/reference-assets/live-site/copied-production-media/image_generation_tool_images/Sate_nyit_pr_tal_kwr_20260422_155305.png",
+      "localPath": "public/reference-assets/live-site/copied-production-media/image_generation_tool_images/Sate_nyit_pr_tal_kwr_20260422_155305.png"
+    },
+    {
+      "sourceUrl": "https://prod-gmi-magick-box.s3.amazonaws.com/image_generation_tool_images/Sate%20nyit%20pr%20tal%20kwr%20_20260422_155335.png",
+      "status": 200,
+      "contentType": "image/png",
+      "bytes": 1249262,
+      "sha256": "e62a8335a06b6a89ea16bd6c951af3465f7a31d7c7e546fd8dc2cbbcdb7465bc",
+      "publicPath": "/reference-assets/live-site/copied-production-media/image_generation_tool_images/Sate_nyit_pr_tal_kwr_20260422_155335.png",
+      "localPath": "public/reference-assets/live-site/copied-production-media/image_generation_tool_images/Sate_nyit_pr_tal_kwr_20260422_155335.png"
+    },
+    {
+      "sourceUrl": "https://prod-gmi-magick-box.s3.amazonaws.com/image_generation_tool_images/Sate%20nyit%20pr%20tal%20kwr%20_20260422_155353.png",
+      "status": 200,
+      "contentType": "image/png",
+      "bytes": 1783582,
+      "sha256": "f08c296f58c9fb609f2dc475026cb91c91d075f635519087d7b391705126856f",
+      "publicPath": "/reference-assets/live-site/copied-production-media/image_generation_tool_images/Sate_nyit_pr_tal_kwr_20260422_155353.png",
+      "localPath": "public/reference-assets/live-site/copied-production-media/image_generation_tool_images/Sate_nyit_pr_tal_kwr_20260422_155353.png"
+    },
+    {
+      "sourceUrl": "https://prod-gmi-magick-box.s3.amazonaws.com/image_generation_tool_images/Sate%20nyit%20pr%20tal%20kwr%20_20260422_155432.png",
+      "status": 200,
+      "contentType": "image/png",
+      "bytes": 1634884,
+      "sha256": "a389117a6b732850ffbd7ea417913e9b6b1f99cb55a565423448f4810ff04080",
+      "publicPath": "/reference-assets/live-site/copied-production-media/image_generation_tool_images/Sate_nyit_pr_tal_kwr_20260422_155432.png",
+      "localPath": "public/reference-assets/live-site/copied-production-media/image_generation_tool_images/Sate_nyit_pr_tal_kwr_20260422_155432.png"
+    },
+    {
+      "sourceUrl": "https://prod-gmi-magick-box.s3.amazonaws.com/image_generation_tool_images/Sate%20nyit%20pr%20tal%20kwr%20_20260422_160221.png",
+      "status": 200,
+      "contentType": "image/png",
+      "bytes": 1551066,
+      "sha256": "f50e71359a1cd2848e94290e0f4a951b2afa75bb91c87d3102ecc8fc207f0269",
+      "publicPath": "/reference-assets/live-site/copied-production-media/image_generation_tool_images/Sate_nyit_pr_tal_kwr_20260422_160221.png",
+      "localPath": "public/reference-assets/live-site/copied-production-media/image_generation_tool_images/Sate_nyit_pr_tal_kwr_20260422_160221.png"
+    },
+    {
+      "sourceUrl": "https://prod-gmi-magick-box.s3.amazonaws.com/image_generation_tool_images/Sate%20nyit%20pr%20tal%20kwr%20_20260422_160320.png",
+      "status": 200,
+      "contentType": "image/png",
+      "bytes": 1157843,
+      "sha256": "8f35fb7f65753ce403c5f4018be69591219aa83679ded6c3f9793b37948cc47a",
+      "publicPath": "/reference-assets/live-site/copied-production-media/image_generation_tool_images/Sate_nyit_pr_tal_kwr_20260422_160320.png",
+      "localPath": "public/reference-assets/live-site/copied-production-media/image_generation_tool_images/Sate_nyit_pr_tal_kwr_20260422_160320.png"
+    },
+    {
+      "sourceUrl": "https://prod-gmi-magick-box.s3.amazonaws.com/image_generation_tool_images/Sate%20nyit%20pr%20tal%20kwr%20_20260422_160504.png",
+      "status": 200,
+      "contentType": "image/png",
+      "bytes": 1763478,
+      "sha256": "24ec8490f92c7b91fd5b341d00b15e2f98841c5a2b6ed2f4e51c5101daf22b1c",
+      "publicPath": "/reference-assets/live-site/copied-production-media/image_generation_tool_images/Sate_nyit_pr_tal_kwr_20260422_160504.png",
+      "localPath": "public/reference-assets/live-site/copied-production-media/image_generation_tool_images/Sate_nyit_pr_tal_kwr_20260422_160504.png"
+    },
+    {
+      "sourceUrl": "https://prod-gmi-magick-box.s3.amazonaws.com/image_generation_tool_images/Sate%20nyit%20pr%20tal%20kwr%20_20260422_160537.png",
+      "status": 200,
+      "contentType": "image/png",
+      "bytes": 1165477,
+      "sha256": "f36e97d74c0b2316a16336a91142c02d3be5abb9b1d5ee1a7f657acdab919efd",
+      "publicPath": "/reference-assets/live-site/copied-production-media/image_generation_tool_images/Sate_nyit_pr_tal_kwr_20260422_160537.png",
+      "localPath": "public/reference-assets/live-site/copied-production-media/image_generation_tool_images/Sate_nyit_pr_tal_kwr_20260422_160537.png"
+    },
+    {
+      "sourceUrl": "https://prod-gmi-magick-box.s3.amazonaws.com/image_generation_tool_images/Sate%20nyit%20pr%20tal%20kwr%20_20260422_160557.png",
+      "status": 200,
+      "contentType": "image/png",
+      "bytes": 1607128,
+      "sha256": "f1f7acc55be8ee98423058210d5ab99e9132a266877e3d0248970301d32bedbc",
+      "publicPath": "/reference-assets/live-site/copied-production-media/image_generation_tool_images/Sate_nyit_pr_tal_kwr_20260422_160557.png",
+      "localPath": "public/reference-assets/live-site/copied-production-media/image_generation_tool_images/Sate_nyit_pr_tal_kwr_20260422_160557.png"
+    },
+    {
+      "sourceUrl": "https://prod-gmi-magick-box.s3.amazonaws.com/image_generation_tool_images/Sate%20nyit%20pr%20tal%20kwr%20_20260422_160619.png",
+      "status": 200,
+      "contentType": "image/png",
+      "bytes": 1739238,
+      "sha256": "290ee7803af21b6d71a0e2ceb095bf4692716a173acbfb6055cf19b88e043c4b",
+      "publicPath": "/reference-assets/live-site/copied-production-media/image_generation_tool_images/Sate_nyit_pr_tal_kwr_20260422_160619.png",
+      "localPath": "public/reference-assets/live-site/copied-production-media/image_generation_tool_images/Sate_nyit_pr_tal_kwr_20260422_160619.png"
+    },
+    {
+      "sourceUrl": "https://prod-gmi-magick-box.s3.amazonaws.com/image_generation_tool_images/Sate%20nyit%20pr%20tal%20kwr%20_20260422_160640.png",
+      "status": 200,
+      "contentType": "image/png",
+      "bytes": 1838896,
+      "sha256": "67ae9f82ba8d199c8e7a692c65bcc86630a8e2e6d5ec3acc8778bcf98a0c551d",
+      "publicPath": "/reference-assets/live-site/copied-production-media/image_generation_tool_images/Sate_nyit_pr_tal_kwr_20260422_160640.png",
+      "localPath": "public/reference-assets/live-site/copied-production-media/image_generation_tool_images/Sate_nyit_pr_tal_kwr_20260422_160640.png"
+    },
+    {
+      "sourceUrl": "https://prod-gmi-magick-box.s3.amazonaws.com/image_generation_tool_images/Sate%20nyit%20pr%20tal%20kwr%20_20260422_160701.png",
+      "status": 200,
+      "contentType": "image/png",
+      "bytes": 1515325,
+      "sha256": "fd9b5a6a125f8a4e7196839b6d6111351aec5dd1b508363ea0530b988f268af6",
+      "publicPath": "/reference-assets/live-site/copied-production-media/image_generation_tool_images/Sate_nyit_pr_tal_kwr_20260422_160701.png",
+      "localPath": "public/reference-assets/live-site/copied-production-media/image_generation_tool_images/Sate_nyit_pr_tal_kwr_20260422_160701.png"
+    },
+    {
+      "sourceUrl": "https://prod-gmi-magick-box.s3.amazonaws.com/image_generation_tool_images/Sate%20nyit%20pr%20tal%20kwr%20_20260422_160719.png",
+      "status": 200,
+      "contentType": "image/png",
+      "bytes": 1787625,
+      "sha256": "48e8b86d3b481896fda903d44273f00986f585e6d9c7bcf55f13900117a01f24",
+      "publicPath": "/reference-assets/live-site/copied-production-media/image_generation_tool_images/Sate_nyit_pr_tal_kwr_20260422_160719.png",
+      "localPath": "public/reference-assets/live-site/copied-production-media/image_generation_tool_images/Sate_nyit_pr_tal_kwr_20260422_160719.png"
+    },
+    {
+      "sourceUrl": "https://prod-gmi-magick-box.s3.amazonaws.com/image_generation_tool_images/Sate%20nyit%20pr%20tal%20kwr%20_20260422_160736.png",
+      "status": 200,
+      "contentType": "image/png",
+      "bytes": 1904581,
+      "sha256": "b15fb15a3365696b0bb2754ad1abd069aeac2fe97c6e374388fcfdd0524ac45a",
+      "publicPath": "/reference-assets/live-site/copied-production-media/image_generation_tool_images/Sate_nyit_pr_tal_kwr_20260422_160736.png",
+      "localPath": "public/reference-assets/live-site/copied-production-media/image_generation_tool_images/Sate_nyit_pr_tal_kwr_20260422_160736.png"
+    },
+    {
+      "sourceUrl": "https://prod-gmi-magick-box.s3.amazonaws.com/image_generation_tool_images/Sate%20nyit%20pr%20tal%20kwr%20_20260422_162516.png",
+      "status": 200,
+      "contentType": "image/png",
+      "bytes": 1611687,
+      "sha256": "73dbc5a6d0425a9a6a00a95ee52b85cbe2f5c009489703aec360f3983af06d50",
+      "publicPath": "/reference-assets/live-site/copied-production-media/image_generation_tool_images/Sate_nyit_pr_tal_kwr_20260422_162516.png",
+      "localPath": "public/reference-assets/live-site/copied-production-media/image_generation_tool_images/Sate_nyit_pr_tal_kwr_20260422_162516.png"
+    },
+    {
+      "sourceUrl": "https://prod-gmi-magick-box.s3.amazonaws.com/image_generation_tool_images/Sate%20nyit%20pr%20tal%20kwr%20_20260422_162537.png",
+      "status": 200,
+      "contentType": "image/png",
+      "bytes": 1551773,
+      "sha256": "7f4493e5783672a8a7c2f952ed925abccd64139e4693a6f4223ce9d49694c0c8",
+      "publicPath": "/reference-assets/live-site/copied-production-media/image_generation_tool_images/Sate_nyit_pr_tal_kwr_20260422_162537.png",
+      "localPath": "public/reference-assets/live-site/copied-production-media/image_generation_tool_images/Sate_nyit_pr_tal_kwr_20260422_162537.png"
+    },
+    {
+      "sourceUrl": "https://prod-gmi-magick-box.s3.amazonaws.com/image_generation_tool_images/Sate%20nyit%20pr%20tal%20kwr%20_20260422_162555.png",
+      "status": 200,
+      "contentType": "image/png",
+      "bytes": 1594635,
+      "sha256": "ab7dc04b8ec3c64ba7aa99ee1eca1bf77b4b5400b1c1f6886f07bf68b0663f19",
+      "publicPath": "/reference-assets/live-site/copied-production-media/image_generation_tool_images/Sate_nyit_pr_tal_kwr_20260422_162555.png",
+      "localPath": "public/reference-assets/live-site/copied-production-media/image_generation_tool_images/Sate_nyit_pr_tal_kwr_20260422_162555.png"
+    },
+    {
+      "sourceUrl": "https://prod-gmi-magick-box.s3.amazonaws.com/image_generation_tool_images/Sate%20nyit%20pr%20tal%20kwr%20_20260422_162614.png",
+      "status": 200,
+      "contentType": "image/png",
+      "bytes": 1614592,
+      "sha256": "ab39e9c0eb8949a66ccefdd21631976da91c64b08ed4ffae4ff3b33a09f4401b",
+      "publicPath": "/reference-assets/live-site/copied-production-media/image_generation_tool_images/Sate_nyit_pr_tal_kwr_20260422_162614.png",
+      "localPath": "public/reference-assets/live-site/copied-production-media/image_generation_tool_images/Sate_nyit_pr_tal_kwr_20260422_162614.png"
+    },
+    {
+      "sourceUrl": "https://prod-gmi-magick-box.s3.amazonaws.com/image_generation_tool_images/Sate%20nyit%20pr%20tal%20kwr%20_20260422_162633.png",
+      "status": 200,
+      "contentType": "image/png",
+      "bytes": 1510994,
+      "sha256": "c406708ea9fed02dbc873b53dace0b53a64671549f999a414f032e10692ddffd",
+      "publicPath": "/reference-assets/live-site/copied-production-media/image_generation_tool_images/Sate_nyit_pr_tal_kwr_20260422_162633.png",
+      "localPath": "public/reference-assets/live-site/copied-production-media/image_generation_tool_images/Sate_nyit_pr_tal_kwr_20260422_162633.png"
+    },
+    {
+      "sourceUrl": "https://prod-gmi-magick-box.s3.amazonaws.com/image_generation_tool_images/Sate%20nyit%20pr%20tal%20kwr%20_20260422_162650.png",
+      "status": 200,
+      "contentType": "image/png",
+      "bytes": 1610647,
+      "sha256": "05f58bf344b63ae7632f52c8a4fa6b2db9a6e26de9946d6bacee3f37f8ed1b97",
+      "publicPath": "/reference-assets/live-site/copied-production-media/image_generation_tool_images/Sate_nyit_pr_tal_kwr_20260422_162650.png",
+      "localPath": "public/reference-assets/live-site/copied-production-media/image_generation_tool_images/Sate_nyit_pr_tal_kwr_20260422_162650.png"
+    },
+    {
+      "sourceUrl": "https://prod-gmi-magick-box.s3.amazonaws.com/image_generation_tool_images/Sate%20nyit%20pr%20tal%20kwr%20_20260422_162723.png",
+      "status": 200,
+      "contentType": "image/png",
+      "bytes": 1401828,
+      "sha256": "c5ab4193c045add74a14939739cbbb1c65e2ad66d61c693bd56de7098debb091",
+      "publicPath": "/reference-assets/live-site/copied-production-media/image_generation_tool_images/Sate_nyit_pr_tal_kwr_20260422_162723.png",
+      "localPath": "public/reference-assets/live-site/copied-production-media/image_generation_tool_images/Sate_nyit_pr_tal_kwr_20260422_162723.png"
+    },
+    {
+      "sourceUrl": "https://prod-gmi-magick-box.s3.amazonaws.com/image_generation_tool_images/Tiago%20Julio_20260307_144559.png",
+      "status": 200,
+      "contentType": "image/png",
+      "bytes": 1517762,
+      "sha256": "574c89431bb3dda514b1b96d31be7371881aa8907ca3cffdc141e494b2c541fe",
+      "publicPath": "/reference-assets/live-site/copied-production-media/image_generation_tool_images/Tiago_Julio_20260307_144559.png",
+      "localPath": "public/reference-assets/live-site/copied-production-media/image_generation_tool_images/Tiago_Julio_20260307_144559.png"
+    },
+    {
+      "sourceUrl": "https://prod-gmi-magick-box.s3.amazonaws.com/image_generation_tool_images/Tiago%20Julio_20260307_144726.png",
+      "status": 200,
+      "contentType": "image/png",
+      "bytes": 1412396,
+      "sha256": "279065ef0c2a6038896ed9d09b5d5cacff4b27e97b0e6f76464a6595f7d7319b",
+      "publicPath": "/reference-assets/live-site/copied-production-media/image_generation_tool_images/Tiago_Julio_20260307_144726.png",
+      "localPath": "public/reference-assets/live-site/copied-production-media/image_generation_tool_images/Tiago_Julio_20260307_144726.png"
+    },
+    {
+      "sourceUrl": "https://prod-gmi-magick-box.s3.amazonaws.com/image_generation_tool_images/Tiago%20Julio_20260307_145020.png",
+      "status": 200,
+      "contentType": "image/png",
+      "bytes": 1665140,
+      "sha256": "7a87ccadc754466a03bd552a7c2a66b2a3435d04a33191b5f14de1e7cc734eec",
+      "publicPath": "/reference-assets/live-site/copied-production-media/image_generation_tool_images/Tiago_Julio_20260307_145020.png",
+      "localPath": "public/reference-assets/live-site/copied-production-media/image_generation_tool_images/Tiago_Julio_20260307_145020.png"
+    },
+    {
+      "sourceUrl": "https://prod-gmi-magick-box.s3.amazonaws.com/image_generation_tool_images/heei_20260320_130922.png",
+      "status": 200,
+      "contentType": "image/png",
+      "bytes": 1229171,
+      "sha256": "d10fa2f1022daa879a8ed70a588007fcf5e4d92e8ebfca14e1060ede2539955d",
+      "publicPath": "/reference-assets/live-site/copied-production-media/image_generation_tool_images/heei_20260320_130922.png",
+      "localPath": "public/reference-assets/live-site/copied-production-media/image_generation_tool_images/heei_20260320_130922.png"
+    },
+    {
+      "sourceUrl": "https://prod-gmi-magick-box.s3.amazonaws.com/image_generation_tool_images/nyi%20nyi_20260406_201126.png",
+      "status": 200,
+      "contentType": "image/png",
+      "bytes": 1671846,
+      "sha256": "3d30c40872a5763a800c508d8dadb4584d0239794eaafdb3c8be5d5b12a5d6ae",
+      "publicPath": "/reference-assets/live-site/copied-production-media/image_generation_tool_images/nyi_nyi_20260406_201126.png",
+      "localPath": "public/reference-assets/live-site/copied-production-media/image_generation_tool_images/nyi_nyi_20260406_201126.png"
+    },
+    {
+      "sourceUrl": "https://prod-gmi-magick-box.s3.amazonaws.com/magick_chat_gifs/Dam_20260330_054315.gif",
+      "status": 200,
+      "contentType": "image/gif",
+      "bytes": 1239525,
+      "sha256": "b6cc6aef7b4040d94f018c6963fa47a16245d4f8e5abf886b434c85d818e8b02",
+      "publicPath": "/reference-assets/live-site/copied-production-media/magick_chat_gifs/Dam_20260330_054315.gif",
+      "localPath": "public/reference-assets/live-site/copied-production-media/magick_chat_gifs/Dam_20260330_054315.gif"
+    },
+    {
+      "sourceUrl": "https://prod-gmi-magick-box.s3.amazonaws.com/magick_chat_gifs/Matteo_20260308_090858.gif",
+      "status": 200,
+      "contentType": "image/gif",
+      "bytes": 939343,
+      "sha256": "685e1507693315df758da87d0f8d87a5ba050cd37130a4732abefacdc83e6350",
+      "publicPath": "/reference-assets/live-site/copied-production-media/magick_chat_gifs/Matteo_20260308_090858.gif",
+      "localPath": "public/reference-assets/live-site/copied-production-media/magick_chat_gifs/Matteo_20260308_090858.gif"
+    },
+    {
+      "sourceUrl": "https://prod-gmi-magick-box.s3.amazonaws.com/magick_chat_gifs/Musashi_20260321_074937.gif",
+      "status": 200,
+      "contentType": "image/gif",
+      "bytes": 314603,
+      "sha256": "e21e6e8bc5a02c60c0b003338f5ae693c0297bacc0365e2fd528dd8454d8b9f1",
+      "publicPath": "/reference-assets/live-site/copied-production-media/magick_chat_gifs/Musashi_20260321_074937.gif",
+      "localPath": "public/reference-assets/live-site/copied-production-media/magick_chat_gifs/Musashi_20260321_074937.gif"
+    },
+    {
+      "sourceUrl": "https://prod-gmi-magick-box.s3.amazonaws.com/magick_chat_gifs/TiagoJulio_20260307_080214.gif",
+      "status": 200,
+      "contentType": "image/gif",
+      "bytes": 1363566,
+      "sha256": "ef22ac37cbecedb31dacceb50e8eaf8fe9dc0f1dbdd9e629b755b71e3796d91b",
+      "publicPath": "/reference-assets/live-site/copied-production-media/magick_chat_gifs/TiagoJulio_20260307_080214.gif",
+      "localPath": "public/reference-assets/live-site/copied-production-media/magick_chat_gifs/TiagoJulio_20260307_080214.gif"
+    },
+    {
+      "sourceUrl": "https://prod-gmi-magick-box.s3.ap-southeast-1.amazonaws.com/media/users/6877604c62d04f63947369a6/generated_images/gen_56e73367-10fe-4382-9869-0d7a57576a09.png",
+      "status": 200,
+      "contentType": "image/png",
+      "bytes": 895428,
+      "sha256": "5b4293d1fe2aef4c6b7b09b06d55b03e49f8858e31cc20a88ead019f644b8b21",
+      "publicPath": "/reference-assets/live-site/copied-production-media/media/users/6877604c62d04f63947369a6/generated_images/gen_56e73367-10fe-4382-9869-0d7a57576a09.png",
+      "localPath": "public/reference-assets/live-site/copied-production-media/media/users/6877604c62d04f63947369a6/generated_images/gen_56e73367-10fe-4382-9869-0d7a57576a09.png"
+    },
+    {
+      "sourceUrl": "https://prod-gmi-magick-box.s3.ap-southeast-1.amazonaws.com/media/users/6877604c62d04f63947369a6/generated_images/gen_d42418f8-9451-47ea-8d5f-4becd1a9b44b.png",
+      "status": 200,
+      "contentType": "image/png",
+      "bytes": 1607751,
+      "sha256": "4abfca84993abd0c128bce02d94a0a036e76025537301224f09e368d09e44aad",
+      "publicPath": "/reference-assets/live-site/copied-production-media/media/users/6877604c62d04f63947369a6/generated_images/gen_d42418f8-9451-47ea-8d5f-4becd1a9b44b.png",
+      "localPath": "public/reference-assets/live-site/copied-production-media/media/users/6877604c62d04f63947369a6/generated_images/gen_d42418f8-9451-47ea-8d5f-4becd1a9b44b.png"
+    },
+    {
+      "sourceUrl": "https://prod-gmi-magick-box.s3.ap-southeast-1.amazonaws.com/media/users/68834718e035181af6a92dbe/generated_images/gen_d4782fb6-4dac-4446-8ed3-82ad1d65b19c.png",
+      "status": 200,
+      "contentType": "image/png",
+      "bytes": 1345296,
+      "sha256": "7861de794aa56d752c3adfd7107b954558137fcf964d345deb83a07be6f51260",
+      "publicPath": "/reference-assets/live-site/copied-production-media/media/users/68834718e035181af6a92dbe/generated_images/gen_d4782fb6-4dac-4446-8ed3-82ad1d65b19c.png",
+      "localPath": "public/reference-assets/live-site/copied-production-media/media/users/68834718e035181af6a92dbe/generated_images/gen_d4782fb6-4dac-4446-8ed3-82ad1d65b19c.png"
+    },
+    {
+      "sourceUrl": "https://prod-gmi-magick-box.s3.ap-southeast-1.amazonaws.com/media/users/6890845da51e72f56450f922/generated_images/gen_a4cfe19f-f668-4d9c-90eb-140105e70b62.png",
+      "status": 200,
+      "contentType": "image/png",
+      "bytes": 812058,
+      "sha256": "b89bd43c22e66180cacfe9c5c906eead401e6b43aca356a7aaf8ea27e262f643",
+      "publicPath": "/reference-assets/live-site/copied-production-media/media/users/6890845da51e72f56450f922/generated_images/gen_a4cfe19f-f668-4d9c-90eb-140105e70b62.png",
+      "localPath": "public/reference-assets/live-site/copied-production-media/media/users/6890845da51e72f56450f922/generated_images/gen_a4cfe19f-f668-4d9c-90eb-140105e70b62.png"
+    },
+    {
+      "sourceUrl": "https://prod-gmi-magick-box.s3.ap-southeast-1.amazonaws.com/media/users/6890845da51e72f56450f922/generated_images/gen_ae3fcabb-cf66-4eaa-a9c9-059e1d65649b.png",
+      "status": 200,
+      "contentType": "image/png",
+      "bytes": 976123,
+      "sha256": "fce076b048281abb0caca56690858b7770207e16d68e4107d210c06116a15a7e",
+      "publicPath": "/reference-assets/live-site/copied-production-media/media/users/6890845da51e72f56450f922/generated_images/gen_ae3fcabb-cf66-4eaa-a9c9-059e1d65649b.png",
+      "localPath": "public/reference-assets/live-site/copied-production-media/media/users/6890845da51e72f56450f922/generated_images/gen_ae3fcabb-cf66-4eaa-a9c9-059e1d65649b.png"
+    },
+    {
+      "sourceUrl": "https://prod-gmi-magick-box.s3.ap-southeast-1.amazonaws.com/media/users/6890845da51e72f56450f922/generated_images/gen_bb894348-2ae6-4cb4-89c6-d446ac7e4f66.png",
+      "status": 200,
+      "contentType": "image/png",
+      "bytes": 805872,
+      "sha256": "4ecdb55ee5ccd88254fca6724ff8be85c9bc5c0834d638b6fed7ca590fc7d7c0",
+      "publicPath": "/reference-assets/live-site/copied-production-media/media/users/6890845da51e72f56450f922/generated_images/gen_bb894348-2ae6-4cb4-89c6-d446ac7e4f66.png",
+      "localPath": "public/reference-assets/live-site/copied-production-media/media/users/6890845da51e72f56450f922/generated_images/gen_bb894348-2ae6-4cb4-89c6-d446ac7e4f66.png"
+    },
+    {
+      "sourceUrl": "https://prod-gmi-magick-box.s3.ap-southeast-1.amazonaws.com/media/users/6890845da51e72f56450f922/generated_images/gen_f1162328-395b-4a8c-95a8-a20c0c9f4490.png",
+      "status": 200,
+      "contentType": "image/png",
+      "bytes": 1564180,
+      "sha256": "e7cec25885d88de70e924ce4c2d9c63c6be5ca69120df56228d8dffea95d5d35",
+      "publicPath": "/reference-assets/live-site/copied-production-media/media/users/6890845da51e72f56450f922/generated_images/gen_f1162328-395b-4a8c-95a8-a20c0c9f4490.png",
+      "localPath": "public/reference-assets/live-site/copied-production-media/media/users/6890845da51e72f56450f922/generated_images/gen_f1162328-395b-4a8c-95a8-a20c0c9f4490.png"
+    }
+  ]
+}

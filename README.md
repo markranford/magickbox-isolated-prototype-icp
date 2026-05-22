@@ -27,6 +27,7 @@ wsl -- bash -lc 'cd /mnt/c/Users/Mark/Documents/Codex/Codex_MagickBox/magick-box
 wsl -- bash -lc 'cd /mnt/c/Users/Mark/Documents/Codex/Codex_MagickBox/magick-box-rewrite-readiness-prototype && bash scripts/smoke-local-icp.sh'
 npm run smoke:icp:advanced
 npm run smoke:services
+npm run audit:media
 ```
 
 Local ICP URLs:
@@ -34,7 +35,7 @@ Local ICP URLs:
 ```text
 http://frontend.local.localhost:8010/
 http://frontend.local.localhost:8010/home/magick-chat
-http://tqzl2-p7777-77776-aaaaa-cai.localhost:8010/?id=tz2ag-zx777-77776-aaabq-cai
+http://tqzl2-p7777-77776-aaaaa-cai.localhost:8010/?id=t63gs-up777-77776-aaaba-cai
 ```
 
 The deploy helper creates/uses a local-only `magickbox-local-prototype` identity. Its seed is written under ignored `.icp/cache/local-secrets/` and must not be used for anything valuable.
@@ -46,6 +47,8 @@ The advanced smoke uses the local ICP ledger plus local AI adapters. It creates 
 Optional integration env names are listed in `.env.integrations.example`. Keep production credentials out of this prototype.
 
 Generated media storage for this prototype is ICP-only. Small worker outputs are stored directly in `magickbox_core` as `MediaAsset` blobs and referenced by `icp-media://...` URIs; larger production media should move to dedicated ICP media/chunk canisters rather than external object storage.
+
+Public media discovered from the live Magick Box site is copied into `public/reference-assets/live-site` for the isolated asset-canister build. The manifest is `public/reference-assets/live-site/media-manifest.json`; the visible Gallery and Explore surfaces use those copied local paths rather than production hotlinks.
 
 ## Verify
 
@@ -67,6 +70,8 @@ npm run e2e
 - Media storage decision: `docs/audits/magickbox-media-storage-decision.md`
 - Full ICP plan: `docs/superpowers/plans/2026-05-22-magickbox-full-icp-deployment.md`
 - Route parity: `docs/evals/route-parity.md`
+- Live media asset inventory: `docs/evals/magickbox-live-media-assets.md`
+- ICP delivery gaps: `docs/evals/magickbox-icp-delivery-gap-check.md`
 - Handoff report: `docs/handovers/magickbox-isolated-prototype-handoff.md`
 - Full ICP local handoff: `docs/handovers/magickbox-full-icp-local-deploy-handoff.md`
 - Reference screenshots: `docs/artifacts/reference/`

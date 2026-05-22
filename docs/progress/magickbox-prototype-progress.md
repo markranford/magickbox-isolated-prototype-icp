@@ -1288,3 +1288,82 @@ Blockers or risks:
 Next step:
 
 - Design and implement the dedicated ICP media/chunk canister so large assets, thumbnails, and generated media derivatives can also stay on ICP.
+
+## 2026-05-22T20:31:39+07:00 - Checkpoint 26: Public Live Media Copied Into Local ICP Asset Build And ICP Gaps Checked
+
+Current workspace/folder:
+
+`C:\Users\Mark\Documents\Codex\Codex_MagickBox\magick-box-rewrite-readiness-prototype`
+
+What was inspected:
+
+- Public live Magick Box routes, read-only:
+  - `/`
+  - `/#features`
+  - `/#gallery`
+  - `/#pricing`
+  - `/#about`
+  - `/#contact`
+  - `/home/explore?category=latest`
+  - `/home/magick-chat`
+  - `/home/subscriptions`
+  - `/signin`
+- Current prototype `public`, `src`, `dist`, and local ICP asset canister outputs.
+- Current delivery status against the mostly-on-ICP goal.
+
+What was created or changed:
+
+- Added `scripts/audit-live-media-assets.mjs`.
+- Added `npm run audit:media`.
+- Copied 95 public live-site media assets into `public/reference-assets/live-site`.
+- Added machine-readable manifest `public/reference-assets/live-site/media-manifest.json`.
+- Added human-readable inventory `docs/evals/magickbox-live-media-assets.md`.
+- Added delivery gap review `docs/evals/magickbox-icp-delivery-gap-check.md`.
+- Added `src/icp/mediaAssetParity.test.ts`.
+- Updated Gallery and Explore to render copied local media paths instead of placeholder swatches or production hotlinks.
+- Added local ICP copied-media screenshots:
+  - `docs/artifacts/prototype/local-icp-copied-media-gallery.png`
+  - `docs/artifacts/prototype/local-icp-copied-media-explore.png`
+- Updated README, checklist, and handoff docs.
+
+Commands run and results:
+
+- Read-only Playwright live crawl -> 10/10 public routes loaded; 96 media URLs discovered.
+- HEAD sizing pass -> about 114.5 MiB of reachable media.
+- `npm run audit:media` -> passed:
+  - 96 discovered media URLs;
+  - 95 copied assets;
+  - 120,324,692 bytes copied;
+  - skipped only `https://magickbox.ai/home/favicon.ico` because it returned 404.
+- `npm run test` -> passed, 6 Vitest files / 19 tests.
+- `npm run lint` -> passed.
+- `npm run build` -> passed; `dist/reference-assets/live-site` contains copied media and manifest.
+- `wsl.exe -e bash -lc '... bash scripts/deploy-local-icp.sh'` -> passed; local gateway on port `8010`; frontend canister `tz2ag-zx777-77776-aaabq-cai`; core canister `t63gs-up777-77776-aaaba-cai`.
+- `wsl.exe -e bash -lc '... bash scripts/smoke-local-icp.sh'` -> passed.
+- Local asset canister checks:
+  - `http://frontend.local.localhost:8010/reference-assets/live-site/media-manifest.json` -> HTTP 200;
+  - copied PNG -> HTTP 200 `image/png`;
+  - copied GIF -> HTTP 200 `image/gif`.
+- `npm run smoke:icp:advanced` -> passed with core canister `t63gs-up777-77776-aaaba-cai`, per-intent subaccount payment, worker runs, and ICP media assets/manifests.
+- Playwright local ICP media check -> passed:
+  - `/` gallery had 11 local reference images and no broken production hotlinks;
+  - `/home/explore?category=latest` had 6 local reference images and no broken production hotlinks;
+  - no console warnings/errors.
+- `npm run verify` -> passed: lint, 6 Vitest files / 19 tests, Vite build, and 12 Playwright tests.
+
+Decisions made:
+
+- Public media from the current live site is copied into the isolated ICP asset source, not hotlinked.
+- Local paths intentionally use `magickbox-site` and `copied-production-media` folder names so the new app does not expose storage-provider-looking paths in UI code.
+- The current copied media is static asset-canister content; a live/updateable community feed still needs canister-backed indexing and dedicated ICP media/chunk storage.
+
+Blockers or risks:
+
+- The logged-in production app still has not been exhaustively explored because production login requires a separate user-assisted checkpoint.
+- The public media inventory is a point-in-time crawl, not an ongoing sync.
+- Large newly generated media still needs a dedicated ICP media/chunk canister for production scale.
+- No mainnet or shared isolated preview deployment has been created.
+
+Next step:
+
+- Build the dedicated ICP media/chunk canister and a canister-backed gallery index so newly generated Magick Box media can live on ICP beyond static copied assets.

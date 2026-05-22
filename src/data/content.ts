@@ -194,14 +194,38 @@ export const plans = [
 ];
 
 export const galleryItems = [
-  "Neon product render",
-  "Music cover concept",
-  "Fashion film still",
-  "Mythic landscape",
-  "Recipe explainer",
-  "Creator profile shot",
-  "Podcast cover",
-  "Social promo",
+  {
+    title: "Neon product render",
+    image: "/reference-assets/live-site/copied-production-media/image_generation_tool_images/Albert_20260205_151458.png",
+  },
+  {
+    title: "Music cover concept",
+    image: "/reference-assets/live-site/copied-production-media/image_generation_tool_images/MagickBoxx_20260424_143152.png",
+  },
+  {
+    title: "Fashion film still",
+    image: "/reference-assets/live-site/copied-production-media/image_generation_tool_images/Musashi_20260416_183410.png",
+  },
+  {
+    title: "Mythic landscape",
+    image: "/reference-assets/live-site/copied-production-media/image_generation_tool_images/Santuy_20260401_170536.png",
+  },
+  {
+    title: "Recipe explainer",
+    image: "/reference-assets/live-site/copied-production-media/image_generation_tool_images/Tiago_Julio_20260307_144559.png",
+  },
+  {
+    title: "Creator profile shot",
+    image: "/reference-assets/live-site/magickbox-site/images/members/4.png",
+  },
+  {
+    title: "Podcast cover",
+    image: "/reference-assets/live-site/copied-production-media/magick_chat_gifs/Dam_20260330_054315.gif",
+  },
+  {
+    title: "Social promo",
+    image: "/reference-assets/live-site/copied-production-media/magick_chat_gifs/Matteo_20260308_090858.gif",
+  },
 ];
 
 export const icpProviderOptions = [
@@ -282,6 +306,7 @@ export const exploreItems = [
     author: "Maya",
     stat: "1.8K remixes",
     color: "blue",
+    image: "/reference-assets/live-site/copied-production-media/media/users/6877604c62d04f63947369a6/generated_images/gen_56e73367-10fe-4382-9869-0d7a57576a09.png",
   },
   {
     title: "Launch trailer loop",
@@ -289,6 +314,7 @@ export const exploreItems = [
     author: "Noah",
     stat: "642 saves",
     color: "ember",
+    image: "/reference-assets/live-site/copied-production-media/magick_chat_gifs/TiagoJulio_20260307_080214.gif",
   },
   {
     title: "Midnight synth hook",
@@ -296,6 +322,7 @@ export const exploreItems = [
     author: "Ari",
     stat: "4.2K plays",
     color: "violet",
+    image: "/reference-assets/live-site/copied-production-media/image_generation_tool_images/Albert_20260402_171030.png",
   },
   {
     title: "AI ritual workspace",
@@ -303,6 +330,7 @@ export const exploreItems = [
     author: "Lena",
     stat: "218 follows",
     color: "green",
+    image: "/reference-assets/live-site/copied-production-media/media/users/68834718e035181af6a92dbe/generated_images/gen_d4782fb6-4dac-4446-8ed3-82ad1d65b19c.png",
   },
 ];
 

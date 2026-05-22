@@ -9,6 +9,9 @@
 - [x] Accessibility check
 - [x] Metadata/SEO check
 - [x] Console error check
+- [x] Public live-site media asset inventory copied into ICP asset source
+- [x] Visible gallery/explore media uses copied local ICP asset paths
+- [x] ICP delivery gap check
 - [x] Before/after notes against live site
 - [x] ICP certified asset canister readiness check
 - [x] Local ICP payment intent and transfer claim smoke

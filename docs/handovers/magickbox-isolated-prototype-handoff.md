@@ -32,6 +32,8 @@ Main packet git checkpoint:
 - Opportunity review: `docs/audits/magickbox-opportunity-review.md`
 - ICP architecture review: `docs/audits/magickbox-icp-architecture-review.md`
 - Route parity: `docs/evals/route-parity.md`
+- Live media asset inventory: `docs/evals/magickbox-live-media-assets.md`
+- ICP delivery gap check: `docs/evals/magickbox-icp-delivery-gap-check.md`
 - Evaluation checklist: `docs/evals/checklist.md`
 - Historical first-pass audit: `docs/audit.md`
 - Historical first-pass handoff: `docs/handoff.md`
@@ -90,6 +92,7 @@ Improved:
 - Accessibility checks are automated.
 - The gallery avoids the production Three/OGL warning/error path.
 - Purchase and auth actions are visibly non-production.
+- Public live-site media has been copied into the isolated asset source and visible gallery/explore media uses copied local paths.
 - No production env file, secret, API, socket, analytics, billing, or deployment target is connected.
 - `/evaluation` includes route parity and ICP readiness.
 
@@ -129,7 +132,7 @@ Latest full verification after the ICP packet hardening passed:
 | Check | Result | Evidence |
 | --- | --- | --- |
 | Lint | Pass | `npm run lint` |
-| Unit tests | Pass, 5 files / 17 tests | `npm run test` |
+| Unit tests | Pass, 6 files / 19 tests | `npm run test` |
 | Typecheck/build | Pass | `npm run build` |
 | Browser smoke | Pass, 8 Playwright tests | `npm run e2e` |
 | Desktop screenshot | Captured | `docs/artifacts/prototype/prototype-home-desktop.png` |
@@ -137,6 +140,8 @@ Latest full verification after the ICP packet hardening passed:
 | Accessibility | Pass | Axe run in Playwright returned no violations |
 | Metadata/SEO | Pass | Build includes title, description, OG title, OG description, OG image |
 | Console health | Pass in clean Playwright context | Browser warning/error array was empty during e2e |
+| Live media asset copy | Pass | `npm run audit:media` copied 95/96 discovered public media URLs; skipped URL was a live 404 |
+| Gallery/explore media paths | Pass | visible media uses `/reference-assets/live-site/...` local paths and local ICP browser check found no broken production hotlinks |
 | ICP evaluation route | Pass | e2e verified `/evaluation` exposes route parity and ICP readiness |
 | ICP asset policy | Pass | e2e verified `dist/.ic-assets.json5` contains raw-access, SPA aliasing, and CSP policy |
 | Local ICP payment binding | Pass | advanced smoke transferred `0.001` local ICP to a per-intent ICRC subaccount |
@@ -167,6 +172,8 @@ Prototype:
 - `docs/artifacts/prototype/prototype-home-mobile.png`
 - `docs/artifacts/prototype/browser-sanity-explore.png`
 - `docs/artifacts/prototype/local-icp-payment-subaccount-ui.png`
+- `docs/artifacts/prototype/local-icp-copied-media-gallery.png`
+- `docs/artifacts/prototype/local-icp-copied-media-explore.png`
 
 ## Deployment/Preview Status
 
@@ -189,6 +196,7 @@ Full ICP local handoff: `docs/handovers/magickbox-full-icp-local-deploy-handoff.
 - MagickAI bridge health located the read-only MagickAI repo, but the local Python environment is missing `pymongo`; install bridge dependencies in an isolated environment before running the real SDK smoke.
 - The current ICP media asset store is intentionally size-limited for the local proof; production media scale needs dedicated ICP media/chunk canisters.
 - Fully on-chain AI inference and fiat billing remain high-risk and need separate proofs.
+- Copied public live-site media is static in this prototype; a live ICP community media feed still needs canister-backed indexing and a dedicated ICP media/chunk canister.
 
 ## Recommended Next Steps
 
