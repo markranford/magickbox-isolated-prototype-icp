@@ -8,9 +8,12 @@ pnpm-debug.log*
 lerna-debug.log*
 
 node_modules
+.mops
 dist
 dist-ssr
 *.local
+.icp/cache
+target
 test-results
 playwright-report
 

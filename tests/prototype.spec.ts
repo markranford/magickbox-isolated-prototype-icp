@@ -70,6 +70,23 @@ test("evaluation route exposes route parity and ICP readiness", async ({ page })
   await expect(page.getByText("Internet Identity")).toBeVisible();
 });
 
+test("insufficient credits offers ICP and non-paid AI recovery paths", async ({ page }) => {
+  await page.goto("/home/magick-chat");
+
+  await page.getByRole("tab", { name: "Video Creation" }).click();
+  await page.getByLabel("AI provider route").selectOption("paid_managed");
+  await page.getByLabel("Ask Magick Friend").fill("Create a long cinematic launch video");
+  await page.getByRole("button", { name: "Submit prompt" }).click();
+
+  await expect(page.getByRole("heading", { name: "Choose how to continue" })).toBeVisible();
+  await expect(page.getByText("Top up with ICP")).toBeVisible();
+  await expect(page.getByText("Subscribe with ICP")).toBeVisible();
+  await expect(page.getByText("Watch an advert")).toBeVisible();
+  await expect(page.getByText("Use FreeLLMAPI")).toBeVisible();
+  await expect(page.getByText("Connect own AI subscription")).toBeVisible();
+  await expect(page.getByText("Connect local Ollama")).toBeVisible();
+});
+
 test("built assets include ICP asset canister routing policy", async () => {
   const policy = await readFile("dist/.ic-assets.json5", "utf8");
 

@@ -16,6 +16,8 @@ import type { LucideIcon } from "lucide-react";
 
 export type CreationMode = "image" | "video" | "music";
 
+export const demoCreditBalance = 25;
+
 export type Feature = {
   id: string;
   icon: LucideIcon;
@@ -200,6 +202,77 @@ export const galleryItems = [
   "Creator profile shot",
   "Podcast cover",
   "Social promo",
+];
+
+export const icpProviderOptions = [
+  {
+    id: "magick_ai_worker",
+    label: "MagickAI worker",
+    description: "Rich Magick Friend media generation through a worker boundary, with job state anchored on ICP.",
+    badge: "ICP job record",
+    creditCost: 20,
+  },
+  {
+    id: "freellmapi",
+    label: "FreeLLMAPI",
+    description: "OpenAI-compatible free-provider fallback for chat-style requests.",
+    badge: "No Magick credits",
+    creditCost: 0,
+  },
+  {
+    id: "own_api_key",
+    label: "Own AI subscription",
+    description: "Use a provider subscription you already pay for, without storing raw keys on ICP.",
+    badge: "User-owned",
+    creditCost: 0,
+  },
+  {
+    id: "local_ollama",
+    label: "Local Ollama",
+    description: "Connect a local model such as Qwen, Gemma, GLM, or another Ollama model.",
+    badge: "Local AI",
+    creditCost: 0,
+  },
+  {
+    id: "paid_managed",
+    label: "Paid managed provider",
+    description: "Premium Magick Box provider route using ICP-owned credits and external generation workers.",
+    badge: "80 credits",
+    creditCost: 80,
+  },
+];
+
+export const creditRecoveryOptions = [
+  {
+    id: "icp_topup",
+    label: "Top up with ICP",
+    description: "Buy Magick credits with ICP or an ICRC-compatible payment flow.",
+  },
+  {
+    id: "icp_subscription",
+    label: "Subscribe with ICP",
+    description: "Start an ICP-native plan for recurring creation credits.",
+  },
+  {
+    id: "watch_ad",
+    label: "Watch an advert",
+    description: "Earn credits after a trusted ad verifier grants a canister credit event.",
+  },
+  {
+    id: "freellmapi",
+    label: "Use FreeLLMAPI",
+    description: "Switch this request to a free OpenAI-compatible fallback route.",
+  },
+  {
+    id: "own_api_key",
+    label: "Connect own AI subscription",
+    description: "Use your own provider account without storing raw keys on ICP.",
+  },
+  {
+    id: "local_ollama",
+    label: "Connect local Ollama",
+    description: "Run eligible requests through a local LLM such as Qwen or Gemma.",
+  },
 ];
 
 export const exploreItems = [

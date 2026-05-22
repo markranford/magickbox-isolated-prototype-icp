@@ -164,10 +164,14 @@ Prototype:
 
 ## Deployment/Preview Status
 
-- Local preview only.
+- Local Vite preview remains available at `http://127.0.0.1:5173/`.
+- Local ICP deployment is now available at `http://frontend.local.localhost:8010/`.
 - No production deployment.
-- No ICP deployment.
+- No mainnet ICP deployment.
+- No ICP spend.
 - If deploying later, use only a new isolated ICP preview canister and a new isolated deploy identity/mapping. Do not use `magickbox.ai`, existing canisters, existing DNS, existing auth settings, existing analytics, existing billing, or production secrets.
+
+Full ICP local handoff: `docs/handovers/magickbox-full-icp-local-deploy-handoff.md`
 
 ## Risks And Blockers
 

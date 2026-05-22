@@ -219,3 +219,252 @@ Blockers or risks:
 Next step:
 
 - Commit this final test/docs update locally and confirm clean status.
+
+## 2026-05-22T15:57:39+07:00 - Checkpoint 6: Full ICP Phase Scoped
+
+Current workspace/folder:
+
+`C:\Users\Mark\Documents\Codex\Codex_MagickBox\magick-box-rewrite-readiness-prototype`
+
+What was inspected:
+
+- Current isolated prototype git state and docs/source tree.
+- Memory notes for ICP proof-slice safety, local model preferences, and Caffeine.ai naming/safety defaults.
+- Existing local tooling: Node, npm, `icp`, `ic-wasm`, `mops`, Rust, Cargo, and Ollama.
+- New read-only references: `General-Magick-Industries/magick_ai` and `tashfeenahmed/freellmapi`.
+- `magick_ai` README, package metadata, Magick Friend schemas, and agent entry point.
+- `freellmapi` README, server app shape, provider base interface, and shared types.
+
+What was created or changed:
+
+- Added `docs/goals/magickbox-full-icp-deployment.goal.md`.
+- Added `docs/superpowers/plans/2026-05-22-magickbox-full-icp-deployment.md`.
+- Cloned `magick_ai` and `freellmapi` under `../_readonly_references` with push URLs disabled.
+
+Commands run and results:
+
+- `git status --short --branch` -> clean local prototype branch before this new phase.
+- `git log --oneline -5` -> latest local commit was `3a393a9 test: cover ICP evaluation route`.
+- `git remote -v` -> no remotes configured for the prototype.
+- `git clone --depth 1 https://github.com/General-Magick-Industries/magick_ai _readonly_references\magick_ai` -> cloned read-only reference.
+- `git -C _readonly_references\magick_ai remote set-url --push origin DISABLED` -> disabled push.
+- `git clone --depth 1 https://github.com/tashfeenahmed/freellmapi _readonly_references\freellmapi` -> cloned read-only reference.
+- `git -C _readonly_references\freellmapi remote set-url --push origin DISABLED` -> disabled push.
+- `icp --version` -> `icp 0.2.6`.
+- `ic-wasm --version` -> `ic-wasm 0.9.11`.
+- `mops --version` -> CLI `2.13.2`, API `1.3`.
+- `rustc --version` -> `rustc 1.94.1`.
+- `cargo --version` -> `cargo 1.94.1`.
+- `ollama --version` -> `0.24.0`.
+- `ollama list` -> local models include `gemma4:31b`, `qwen3.6`, `qwen3:14b`, `glm4:9b`, and others.
+
+Decisions made:
+
+- Continue in the existing isolated prototype repo rather than restart.
+- Treat ICP as owner of identity, credits, job metadata, collections, and audit state.
+- Treat MagickAI, FreeLLMAPI, user-owned APIs, and local Ollama as external AI adapter options.
+- Do not use Caffeine.ai yet; if used later, create a separate `codex_magickboxOnICP` app only after an explicit checkpoint.
+- Do not log into Magick Box production yet; authenticated exploration can happen later after this local ICP proof has shape.
+
+Blockers or risks:
+
+- Motoko compiler path is not installed until `mops install`/toolchain setup runs in a project with `mops.toml`.
+- No mainnet deployment, ICP spend, production login, or Caffeine.ai account action has been attempted.
+
+Next step:
+
+- Execute the first safe implementation slice: provider-options audit, ICP canister scaffold, and frontend credit recovery flow.
+
+## 2026-05-22T16:03:52+07:00 - Checkpoint 7: ICP Core And Credit Recovery Built
+
+Current workspace/folder:
+
+`C:\Users\Mark\Documents\Codex\Codex_MagickBox\magick-box-rewrite-readiness-prototype`
+
+What was inspected:
+
+- Existing frontend app, data, CSS, and e2e tests before adding the ICP credit recovery flow.
+- Motoko compiler errors from the first canister build attempts.
+- WSL tooling availability for ICP/Motoko builds.
+
+What was created or changed:
+
+- Added `docs/audits/magickbox-ai-provider-options.md`.
+- Added `icp.yaml` with local network, Internet Identity enabled, `magickbox_core`, and `frontend` canisters.
+- Added `mops.toml` with `mo:core` and Motoko toolchain config.
+- Added `canisters/magickbox_core/main.mo`.
+- Added `canisters/magickbox_core/magickbox_core.did`.
+- Updated `.gitignore` for `.icp/cache` and `target`.
+- Added ICP provider options and credit recovery options to the frontend data layer.
+- Added a provider selector and insufficient-credit recovery dialog to the composer.
+- Added e2e coverage for ICP top-up, subscription, advert reward, FreeLLMAPI, own-provider, and local Ollama recovery paths.
+
+Commands run and results:
+
+- `mops install; icp build magickbox_core` on Windows PowerShell -> failed because `mops` on Windows reports "Windows is not supported. Please use WSL".
+- `wsl -l -v` -> Ubuntu WSL2 is running.
+- WSL tooling check -> WSL has Node, npm, `icp 0.2.6`, `mops`, and Cargo.
+- `wsl -- bash -lc '... mops install && icp build magickbox_core'` -> installed Motoko toolchain, then exposed Motoko syntax/API issues.
+- Fixed reserved Motoko record fields by renaming `label` to `title` and `actor` to `caller`.
+- Fixed `mo:core` array append usage by adding a generic `append_item` helper.
+- `wsl -- bash -lc '... icp build magickbox_core'` -> passed.
+- `npm run verify` -> passed.
+- Frontend verification details: lint passed, Vitest passed 1 file / 2 tests, Vite build passed, Playwright passed 10 tests across desktop and mobile.
+
+Decisions made:
+
+- Use WSL for ICP/Motoko build commands in this Windows workspace.
+- Keep user prompts private by storing only preview/hash-oriented canister job fields in the first ICP core.
+- Model credits on ICP now, but do not connect real ICP/ICRC payment transfer until a separate payment proof.
+- Keep AI execution as adapter-boundary UI for MagickAI, FreeLLMAPI, own API, local Ollama, and paid managed providers.
+
+Blockers or risks:
+
+- No frontend or canister build blockers.
+- Local ICP deployment still needs to be attempted.
+- Windows-native Motoko builds are blocked by the installed `mops` behavior; WSL is the working path.
+
+Next step:
+
+- Start the local ICP network with Internet Identity and deploy the isolated frontend/core canisters locally if the network starts cleanly.
+
+## 2026-05-22T16:12:18+07:00 - Checkpoint 8: Local ICP Deploy And Canister Smoke Passed
+
+Current workspace/folder:
+
+`C:\Users\Mark\Documents\Codex\Codex_MagickBox\magick-box-rewrite-readiness-prototype`
+
+What was inspected:
+
+- Local ICP network launcher logs.
+- Port conflicts from other local ICP/PocketIC processes.
+- Local frontend and `/home/magick-chat` responses from the ICP asset canister.
+- `magickbox_core` canister status and query/update call behavior.
+
+What was created or changed:
+
+- Added `scripts/deploy-local-icp.sh`.
+- Added `scripts/smoke-local-icp.sh`.
+- Updated `icp.yaml` local gateway port to `8010`.
+- Updated `.gitignore` to ignore `.mops`.
+- Updated `README.md` with local ICP commands and URLs.
+- Added `docs/handovers/magickbox-full-icp-local-deploy-handoff.md`.
+- Updated `docs/handovers/magickbox-isolated-prototype-handoff.md` with local ICP deployment status.
+
+Commands run and results:
+
+- `wsl ... icp network start -d && icp deploy` initially passed on port `8002`, then reruns exposed stale local network descriptors and port conflicts.
+- `Get-Content .icp\cache\networks\local\network-launcher\stderr.log` -> showed `Failed to bind to address 127.0.0.1:8002`.
+- `netstat -ano` and WSL process checks showed other local ICP/PocketIC processes on nearby ports.
+- Changed this project to port `8010`.
+- `bash scripts/deploy-local-icp.sh` -> passed on port `8010`.
+- `bash scripts/smoke-local-icp.sh` -> passed.
+- `Invoke-WebRequest http://frontend.local.localhost:8010/` -> HTTP 200.
+- `Invoke-WebRequest http://frontend.local.localhost:8010/home/magick-chat` -> HTTP 200.
+- Local canister smoke proved profile registration, insufficient-credit response, FreeLLMAPI zero-credit job creation, job listing, and audit event listing.
+
+Decisions made:
+
+- Use port `8010` for this isolated local ICP deployment to avoid other local ICP work.
+- Use `magickbox-local-prototype` as a local-only deploy/smoke identity.
+- Keep its seed only in ignored `.icp/cache/local-secrets/`.
+- Make the deploy helper clean only this project's local network cache and gateway process before redeploying.
+
+Blockers or risks:
+
+- No local deployment blocker remains.
+- WSL/PocketIC can leave stale descriptors on rerun; `scripts/deploy-local-icp.sh` now handles this for this project.
+- Frontend does not yet call the canister; it is deployed as assets and the backend is separately smoke-tested.
+- Internet Identity and ICP payments are configured/planned but not yet wired into the React runtime.
+
+Next step:
+
+- Run final frontend/canister verification, commit the local ICP slice, and report current URLs plus the next recommended build slice.
+
+## 2026-05-22T16:14:00+07:00 - Checkpoint 9: Windows/WSL Build Boundary Fixed
+
+Current workspace/folder:
+
+`C:\Users\Mark\Documents\Codex\Codex_MagickBox\magick-box-rewrite-readiness-prototype`
+
+What was inspected:
+
+- Final verification failure from `npm run verify`.
+- Vite/Vitest startup error from missing Windows Rolldown native optional dependency.
+- The WSL deploy path that had run `npm install` through the asset canister recipe.
+
+What was created or changed:
+
+- Removed WSL-side frontend build commands from `icp.yaml`.
+- Updated `scripts/deploy-local-icp.sh` to require an existing `dist/index.html`.
+- Updated README and full ICP handoff to run `npm run build` from Windows before WSL ICP deploy.
+
+Commands run and results:
+
+- `npm run verify` -> failed at Vitest startup because `@rolldown/binding-win32-x64-msvc` was missing.
+- Root cause: WSL `npm install` during `icp deploy` rewrote optional native dependencies in shared `node_modules`.
+
+Decisions made:
+
+- Keep Windows responsible for frontend install/build/test.
+- Keep WSL responsible for ICP/Motoko/local deploy.
+- Make ICP asset canister upload the already-built `dist/` instead of running npm from WSL.
+
+Blockers or risks:
+
+- Need to run Windows `npm install` once to restore Windows native optional dependencies, then rerun final verification.
+
+Next step:
+
+- Restore Windows node modules with `npm install`, then rerun frontend verify, WSL canister build, local deploy, asset HTTP checks, and canister smoke.
+
+## 2026-05-22T16:14:50+07:00 - Checkpoint 10: Final Full ICP Slice Verification Passed
+
+Current workspace/folder:
+
+`C:\Users\Mark\Documents\Codex\Codex_MagickBox\magick-box-rewrite-readiness-prototype`
+
+What was inspected:
+
+- Windows frontend dependency state after the WSL optional-dependency issue.
+- Final frontend verification output.
+- Final Motoko build output.
+- Final local ICP deploy output.
+- Final canister smoke output.
+- Final local asset canister HTTP responses.
+
+What was created or changed:
+
+- Updated `docs/handovers/magickbox-full-icp-local-deploy-handoff.md` with final verification results.
+- Updated this progress log with final verification results.
+
+Commands run and results:
+
+- `npm install` -> restored Windows native optional dependencies; 0 vulnerabilities.
+- `npm run verify` -> passed.
+- `npm run lint` -> passed.
+- `npm run test` -> passed, 1 Vitest file / 2 tests.
+- `npm run build` -> passed.
+- `npm run e2e` -> passed, 10 Playwright tests across desktop and mobile.
+- `wsl ... icp build magickbox_core` -> passed.
+- `wsl ... bash scripts/deploy-local-icp.sh` -> passed on port `8010`, stopping only this project's stale local ICP process on that port first.
+- `wsl ... bash scripts/smoke-local-icp.sh` -> passed.
+- `Invoke-WebRequest http://frontend.local.localhost:8010/` -> HTTP 200 and expected title marker.
+- `Invoke-WebRequest http://frontend.local.localhost:8010/home/magick-chat` -> HTTP 200 and expected title marker.
+
+Decisions made:
+
+- Keep local ICP gateway on `8010`.
+- Keep mainnet deployment, Caffeine.ai creation, and authenticated production exploration paused until explicit checkpoints.
+- Treat the current slice as "locally deployed on ICP with canister-smoked backend; frontend canister calls are next."
+
+Blockers or risks:
+
+- No active local build/deploy blockers.
+- Frontend does not yet call the core canister.
+- Internet Identity is enabled locally but not wired into React.
+- ICP/ICRC payment transfer is not implemented yet.
+
+Next step:
+
+- Commit this full ICP local slice and then start the next slice: generated bindings, Internet Identity, and real frontend calls to `magickbox_core`.

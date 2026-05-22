@@ -24,16 +24,26 @@ import {
 import {
   appNav,
   architectureDecisions,
+  creditRecoveryOptions,
+  demoCreditBalance,
   exploreItems,
   features,
   galleryItems,
   icpReadiness,
+  icpProviderOptions,
   modes,
   plans,
   routeParity,
   type CreationMode,
 } from "./data/content";
 import "./App.css";
+
+type CreditRecoveryState = {
+  providerLabel: string;
+  required: number;
+  balance: number;
+  prompt: string;
+};
 
 function Logo() {
   return (
@@ -72,12 +82,34 @@ function Composer({
   compact?: boolean;
 }) {
   const selected = modes.find((item) => item.id === mode) ?? modes[0];
+  const [providerId, setProviderId] = useState("magick_ai_worker");
   const [prompt, setPrompt] = useState("");
   const [submitted, setSubmitted] = useState<string | null>(null);
+  const [recovery, setRecovery] = useState<CreditRecoveryState | null>(null);
+  const provider =
+    icpProviderOptions.find((item) => item.id === providerId) ?? icpProviderOptions[0];
 
   const submit = () => {
     const value = prompt.trim() || selected.prompt;
+    if (provider.creditCost > demoCreditBalance) {
+      setRecovery({
+        providerLabel: provider.label,
+        required: provider.creditCost,
+        balance: demoCreditBalance,
+        prompt: value,
+      });
+      return;
+    }
     setSubmitted(`${selected.label} queued locally: ${value}`);
+    setPrompt("");
+  };
+
+  const chooseRecovery = (label: string) => {
+    if (!recovery) {
+      return;
+    }
+    setSubmitted(`${label} selected locally for: ${recovery.prompt}`);
+    setRecovery(null);
     setPrompt("");
   };
 
@@ -124,11 +156,63 @@ function Composer({
           <button type="button" className="model-button" aria-label="Selected model tier">
             Essential <ChevronDown size={16} aria-hidden="true" />
           </button>
+          <label className="provider-select">
+            <span className="sr-only">AI provider route</span>
+            <select
+              aria-label="AI provider route"
+              value={providerId}
+              onChange={(event) => setProviderId(event.target.value)}
+            >
+              {icpProviderOptions.map((option) => (
+                <option key={option.id} value={option.id}>
+                  {option.label}
+                </option>
+              ))}
+            </select>
+          </label>
           <button type="button" className="send-button" aria-label="Submit prompt" onClick={submit}>
             <Send size={18} aria-hidden="true" />
           </button>
         </div>
+        <div className="provider-summary">
+          <span>{provider.badge}</span>
+          <p>{provider.description}</p>
+        </div>
       </div>
+      {recovery ? (
+        <section
+          className="credit-recovery"
+          role="dialog"
+          aria-modal="false"
+          aria-labelledby={compact ? "chat-credit-title" : "hero-credit-title"}
+        >
+          <div className="credit-recovery-header">
+            <div>
+              <h2 id={compact ? "chat-credit-title" : "hero-credit-title"}>Choose how to continue</h2>
+              <p>
+                {recovery.providerLabel} needs {recovery.required} credits. Your ICP demo wallet has{" "}
+                {recovery.balance}.
+              </p>
+            </div>
+            <button
+              type="button"
+              className="icon-button"
+              aria-label="Close credit recovery options"
+              onClick={() => setRecovery(null)}
+            >
+              <X size={18} aria-hidden="true" />
+            </button>
+          </div>
+          <div className="credit-recovery-grid">
+            {creditRecoveryOptions.map((option) => (
+              <button key={option.id} type="button" onClick={() => chooseRecovery(option.label)}>
+                <strong>{option.label}</strong>
+                <span>{option.description}</span>
+              </button>
+            ))}
+          </div>
+        </section>
+      ) : null}
       {submitted ? (
         <p className="local-status" role="status">
           {submitted}

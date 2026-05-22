@@ -300,6 +300,110 @@ textarea:focus-visible {
   background: rgba(255, 255, 255, 0.08);
 }
 
+.provider-select {
+  min-width: min(100%, 190px);
+}
+
+.provider-select select {
+  width: 100%;
+  min-height: 40px;
+  padding: 0 34px 0 12px;
+  border-radius: 8px;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text);
+  font-size: 14px;
+  font-weight: 700;
+}
+
+.provider-summary {
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  text-align: left;
+}
+
+.provider-summary span {
+  flex: 0 0 auto;
+  padding: 4px 8px;
+  border-radius: 8px;
+  background: rgba(255, 209, 102, 0.12);
+  color: var(--gold);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.provider-summary p {
+  margin: 0;
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
+.credit-recovery {
+  margin-top: 16px;
+  padding: 18px;
+  border: 1px solid rgba(255, 209, 102, 0.3);
+  border-radius: 8px;
+  background: rgba(23, 20, 15, 0.96);
+  box-shadow: var(--shadow);
+  text-align: left;
+}
+
+.credit-recovery-header {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 16px;
+  margin-bottom: 14px;
+}
+
+.credit-recovery h2 {
+  margin: 0 0 8px;
+  font-size: 22px;
+}
+
+.credit-recovery p {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
+.credit-recovery-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.credit-recovery-grid button {
+  min-height: 112px;
+  padding: 14px;
+  border-radius: 8px;
+  border: 1px solid var(--line);
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+}
+
+.credit-recovery-grid strong,
+.credit-recovery-grid span {
+  display: block;
+}
+
+.credit-recovery-grid strong {
+  margin-bottom: 8px;
+}
+
+.credit-recovery-grid span {
+  color: var(--muted);
+  font-size: 13px;
+  line-height: 1.45;
+}
+
 .local-status {
   margin: 14px 0 0;
   color: var(--gold);
@@ -1010,11 +1114,19 @@ td {
     margin-left: 0;
   }
 
+  .provider-select {
+    width: 100%;
+  }
+
   .explore-grid {
     grid-template-columns: 1fr;
   }
 
   .icp-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .credit-recovery-grid {
     grid-template-columns: 1fr;
   }
 }

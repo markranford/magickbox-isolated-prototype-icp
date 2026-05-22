@@ -1,0 +1,78 @@
+type ResultText = variant { ok : text; err : text };
+type CreditOption = record {
+  id : text;
+  title : text;
+  description : text;
+  route : text;
+  requires_payment : bool;
+  on_icp : bool;
+};
+type ProviderOption = record {
+  id : text;
+  title : text;
+  description : text;
+  on_icp_owned_state : bool;
+  requires_external_worker : bool;
+  credit_cost : nat;
+};
+type Profile = record {
+  owner : principal;
+  display_name : text;
+  email : opt text;
+  credits : nat;
+  created_at : int;
+  updated_at : int;
+};
+type GenerationJob = record {
+  id : nat;
+  owner : principal;
+  mode : text;
+  provider_id : text;
+  prompt_preview : text;
+  prompt_hash : text;
+  status : text;
+  credit_cost : nat;
+  result_url : opt text;
+  result_hash : opt text;
+  created_at : int;
+  updated_at : int;
+};
+type CollectionRecord = record {
+  id : nat;
+  owner : principal;
+  name : text;
+  job_ids : vec nat;
+  is_public : bool;
+  created_at : int;
+  updated_at : int;
+};
+type AuditEvent = record {
+  id : nat;
+  caller : principal;
+  action : text;
+  subject : text;
+  metadata : text;
+  created_at : int;
+};
+type CreateJobResult = variant {
+  ok : GenerationJob;
+  insufficient_credits : record {
+    required : nat;
+    balance : nat;
+    options : vec CreditOption;
+  };
+  err : text;
+};
+service : {
+  register_profile : (text, opt text) -> (variant { ok : Profile; err : text });
+  get_my_profile : () -> (opt Profile) query;
+  get_credit_options : () -> (vec CreditOption) query;
+  get_provider_options : () -> (vec ProviderOption) query;
+  create_generation_job : (text, text, text, text, nat) -> (CreateJobResult);
+  complete_mock_job : (nat, text, text) -> (variant { ok : GenerationJob; err : text });
+  save_to_collection : (nat, text, bool) -> (variant { ok : CollectionRecord; err : text });
+  list_my_jobs : () -> (vec GenerationJob) query;
+  list_my_collections : () -> (vec CollectionRecord) query;
+  list_audit_events : () -> (vec AuditEvent) query;
+  get_cycle_note : () -> (text) query;
+}

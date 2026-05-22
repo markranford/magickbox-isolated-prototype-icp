@@ -17,6 +17,26 @@ Local URL:
 http://127.0.0.1:5173/
 ```
 
+## Local ICP Deploy
+
+Run ICP commands through WSL from this repository:
+
+```bash
+npm run build
+wsl -- bash -lc 'cd /mnt/c/Users/Mark/Documents/Codex/Codex_MagickBox/magick-box-rewrite-readiness-prototype && bash scripts/deploy-local-icp.sh'
+wsl -- bash -lc 'cd /mnt/c/Users/Mark/Documents/Codex/Codex_MagickBox/magick-box-rewrite-readiness-prototype && bash scripts/smoke-local-icp.sh'
+```
+
+Local ICP URLs:
+
+```text
+http://frontend.local.localhost:8010/
+http://frontend.local.localhost:8010/home/magick-chat
+http://tqzl2-p7777-77776-aaaaa-cai.localhost:8010/?id=tz2ag-zx777-77776-aaabq-cai
+```
+
+The deploy helper creates/uses a local-only `magickbox-local-prototype` identity. Its seed is written under ignored `.icp/cache/local-secrets/` and must not be used for anything valuable.
+
 ## Verify
 
 ```bash
@@ -29,11 +49,15 @@ npm run e2e
 ## Docs
 
 - Goal: `docs/goals/magickbox-isolated-prototype-icp.goal.md`
+- Full ICP goal: `docs/goals/magickbox-full-icp-deployment.goal.md`
 - Progress log: `docs/progress/magickbox-prototype-progress.md`
 - Opportunity audit: `docs/audits/magickbox-opportunity-review.md`
 - ICP architecture review: `docs/audits/magickbox-icp-architecture-review.md`
+- AI provider options: `docs/audits/magickbox-ai-provider-options.md`
+- Full ICP plan: `docs/superpowers/plans/2026-05-22-magickbox-full-icp-deployment.md`
 - Route parity: `docs/evals/route-parity.md`
 - Handoff report: `docs/handovers/magickbox-isolated-prototype-handoff.md`
+- Full ICP local handoff: `docs/handovers/magickbox-full-icp-local-deploy-handoff.md`
 - Reference screenshots: `docs/artifacts/reference/`
 - Prototype screenshots: `docs/artifacts/prototype/`
 
