@@ -120,7 +120,7 @@ This isolated prototype demonstrates:
 - Observable UX parity for the public landing route and app shell entry points.
 - A lighter gallery implementation that avoids the observed Three/OGL warning path.
 - Semantic sections, labels, focus states, and automated axe checks.
-- Local ICP auth, profile, credit, payment-intent, job, worker, ad-credit, media-manifest, collection, and audit state.
+- Local ICP auth, profile, credit, per-intent subaccount payment-intent, job, worker, ad-credit, media-manifest, collection, and audit state.
 - A Vite build carrying `public/.ic-assets.json5` into `dist/` for ICP asset canister SPA routing, security headers, and disabled raw access.
 - An `/evaluation` route with route parity and ICP readiness cards.
 
@@ -150,7 +150,7 @@ Do not replace yet:
 
 Best prototype path:
 
-- Mostly ICP hybrid first. The local proof now deploys certified frontend assets plus a core canister for Internet Identity/local identity, profiles, credits, local ICP payment claims, generation jobs, worker receipts, ad credits, media manifests, collections, and audit events. Keep AI inference workers, large media binaries, fiat billing, and high-volume analytics external until their constraints are proven.
+- Mostly ICP hybrid first. The local proof now deploys certified frontend assets plus a core canister for Internet Identity/local identity, profiles, credits, per-intent ICRC subaccount payment claims, generation jobs, worker receipts, ad credits, media manifests, collections, and audit events. Keep AI inference workers, large media binaries, fiat billing, and high-volume analytics external until their constraints are proven.
 
 ## Evidence
 

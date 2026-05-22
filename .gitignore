@@ -13,6 +13,8 @@ dist
 dist-ssr
 *.local
 .icp/cache
+storage/media/index.jsonl
+storage/media/sha256
 target
 test-results
 playwright-report

@@ -869,3 +869,150 @@ Blockers or risks:
 Next step:
 
 - Commit this slice locally, then proceed to MagickAI/FreeLLMAPI workers or stronger ICRC payment binding.
+
+## 2026-05-22T19:16:18+07:00 - Checkpoint 18: Red Tests For Payment Binding And Worker Storage Hardening
+
+Current workspace/folder:
+
+`C:\Users\Mark\Documents\Codex\Codex_MagickBox\magick-box-rewrite-readiness-prototype`
+
+What was inspected:
+
+- Current Git state on `main`; working tree was clean before this checkpoint.
+- Existing `magickbox_core` Motoko payment, worker, and media manifest paths.
+- Current Candid contract and generated TypeScript bindings.
+- Existing `scripts/smoke-local-icp-advanced.mjs` local ICP payment and Ollama worker smoke.
+
+What was created or changed:
+
+- Added contract expectations that each ICP payment intent must expose a per-intent ledger subaccount and a queryable payment account for the intent.
+- Added contract expectations for real local worker adapter modules covering `local_ollama`, `freellmapi`, and `magick_ai_worker`.
+- Added contract expectations for a durable content-addressed local media store with a manifest index.
+
+Commands run and results:
+
+- `npm run test -- --runInBand` -> failed before running tests because Vitest 4 does not accept Jest's `--runInBand` flag.
+- `npm run test` -> failed as expected: 3 red tests for missing payment subaccount fields/methods and missing worker/media adapter modules; existing 10 tests still passed.
+
+Decisions made:
+
+- Use per-intent ICRC ledger subaccounts for this hardening slice, rather than ICRC-2 transfer-from, because it gives stronger local payment-intent binding without requiring a signer approval UI in this prototype pass.
+- Keep worker execution outside canister state; canister owns job, credit, worker authorization, receipt, hash, and media-manifest anchoring.
+
+Blockers or risks:
+
+- None at this red-test checkpoint.
+- The advanced smoke must be updated after implementation because local ICP transfers now need `--to-subaccount`.
+
+Next step:
+
+- Implement per-intent subaccounts in Motoko/Candid/generated bindings, then add the worker adapters and content-addressed media store.
+
+## 2026-05-22T19:23:24+07:00 - Checkpoint 19: Payment Subaccounts And Adapter Modules Implemented
+
+Current workspace/folder:
+
+`C:\Users\Mark\Documents\Codex\Codex_MagickBox\magick-box-rewrite-readiness-prototype`
+
+What was inspected:
+
+- Motoko `PaymentIntent`, `PaymentAccount`, and ledger-claim logic.
+- Generated TypeScript bindings and ICP React context payment intent flow.
+- Advanced local ICP smoke script payment, worker, and media manifest sequence.
+
+What was created or changed:
+
+- Added deterministic per-intent ICRC subaccounts in `magickbox_core`.
+- Added `payment_subaccount` and `payment_subaccount_hex` to `PaymentIntent`.
+- Added `get_payment_account_for_intent` so the UI/script can resolve the exact subaccount-bound payment account for an intent.
+- Updated `claim_icp_payment` to verify the specific intent subaccount balance instead of aggregate canister balance.
+- Regenerated TypeScript Candid bindings and updated the ICP context/UI payment notice to surface the subaccount.
+- Added `scripts/lib/worker-adapters.mjs` with `local_ollama`, `freellmapi`, and `magick_ai_worker` adapters.
+- Added `scripts/lib/media-store.mjs` and `storage/media/README.md` for content-addressed local media artifacts.
+- Reworked `scripts/smoke-local-icp-advanced.mjs` to transfer with `--to-subaccount`, execute all three worker adapters, and anchor content-addressed media manifests.
+
+Commands run and results:
+
+- `wsl ... icp build magickbox_core` -> passed after Motoko payment-subaccount changes.
+- `npx icp-bindgen --did-file canisters\magickbox_core\magickbox_core.did --out-dir src\icp\generated --declarations-typescript --declarations-flat --actor-disabled --force` -> regenerated bindings.
+- `npm run test` -> passed, 4 Vitest files / 13 tests.
+- `npm run lint` -> passed with one warning from a stale generated `eslint-disable`; the warning was removed afterward.
+- `npm run build` -> passed.
+- `wsl ... icp build magickbox_core` -> passed again after generated/client changes.
+
+Decisions made:
+
+- Keep `get_payment_account` for generic UI initialization, but use `get_payment_account_for_intent` immediately after creating a payment intent.
+- Default FreeLLMAPI execution to an OpenAI-compatible local endpoint so the proof can run against either FreeLLMAPI or Ollama's OpenAI-compatible route.
+- Support real MagickAI execution through either `MAGICKAI_WORKER_URL` or `MAGICKAI_WORKER_COMMAND`; when neither is configured, use a MagickAI-compatible request boundary with local Ollama inference for the local proof.
+- Ignore generated media payloads and media index files in Git while keeping the storage README committed.
+
+Blockers or risks:
+
+- The advanced smoke has not yet been rerun against a redeployed local ICP network after the canister interface change.
+- Actual MagickAI SDK execution still depends on a configured MagickAI worker service or command with provider credentials; the local fallback proves the worker contract and request shape without storing secrets.
+
+Next step:
+
+- Redeploy the isolated local ICP canisters, run basic and advanced smokes, then run full verification and update the handoff/audit documents.
+
+## 2026-05-22T19:29:11+07:00 - Checkpoint 20: Hardened Local ICP Payment Worker Storage Slice Verified
+
+Current workspace/folder:
+
+`C:\Users\Mark\Documents\Codex\Codex_MagickBox\magick-box-rewrite-readiness-prototype`
+
+What was inspected:
+
+- Local deploy output for the isolated ICP frontend and core canister.
+- Basic canister smoke output for profile/job/audit behavior.
+- Advanced canister smoke output for payment, ad credit, worker completion, and media manifests.
+- Browser-subscriptions flow against `http://frontend.local.localhost:8010/home/subscriptions`.
+- README, audit, eval, goal, and handoff docs for stale claims.
+
+What was created or changed:
+
+- Redeployed the local ICP asset and core canisters.
+- Captured `docs/artifacts/prototype/local-icp-payment-subaccount-ui.png`.
+- Updated README, route parity, evaluation checklist, opportunity audit, ICP architecture review, full ICP goal, and both handoff docs to reflect per-intent subaccounts, FreeLLMAPI/MagickAI adapters, and content-addressed media storage.
+- Advanced smoke generated ignored content-addressed local media artifacts under `storage/media/sha256/` and an ignored `storage/media/index.jsonl`.
+
+Commands run and results:
+
+- `wsl ... bash scripts/deploy-local-icp.sh` -> passed on port `8010`; frontend `t63gs-up777-77776-aaaba-cai`, core `tz2ag-zx777-77776-aaabq-cai`.
+- `wsl ... bash scripts/smoke-local-icp.sh` -> passed.
+- `npm run smoke:icp:advanced` -> passed:
+  - payment intent `#1` for `100_000` e8s and 100 credits;
+  - subaccount `4d42504159000000000000000000000000000000000000000000000000000001`;
+  - local ICP transfer block `30` claimed through `claim_icp_payment`;
+  - ad verifier grant `#1` for 25 credits;
+  - worker principal `qpkob-dcevx-4dmkl-ie5nc-2hkun-wqaia-vwwcq-n3gfy-rz3xt-djgfe-cae`;
+  - local Ollama job `#2` hash `a485b12be57454f7b2507f8b7a8ddfc8bf4c908ef2a741ddf5c39fe85704cc9b`;
+  - FreeLLMAPI-compatible job `#3` hash `49948eb4b02ba266cc8fedc43496c675f7a4a50adb7d59c9f06d04126319229b`;
+  - MagickAI-compatible job `#4` hash `f0943bcdb545f00287778fef70b9d0ee1f828391a1e593639386446dbd22e12c`;
+  - media manifests `#1`, `#2`, and `#3` anchored with `media-store://sha256/...` URIs.
+- `npm run verify` -> passed: lint, 4 Vitest files / 13 tests, Vite build, and 12 Playwright tests.
+- Node REPL browser attempt -> blocked because the REPL could not import the workspace Playwright package.
+- Workspace Node browser smoke -> passed:
+  - local browser identity auth from `/home/sign-in`;
+  - `/home/subscriptions` created payment intent `#2`;
+  - UI displayed subaccount `4d42504159000000000000000000000000000000000000000000000000000002`;
+  - no console warnings/errors/page errors;
+  - screenshot written to `docs/artifacts/prototype/local-icp-payment-subaccount-ui.png`.
+
+Decisions made:
+
+- Treat per-intent subaccounts as the current prototype payment binding path; keep ICRC-2 transfer-from as the next production-payment design choice rather than forcing wallet approval UX into this slice.
+- Keep AI inference outside canisters but make all provider routes use the same authorized-worker completion contract.
+- Use an ignored content-addressed local media store as the durable local proof while documenting production storage choices separately.
+
+Blockers or risks:
+
+- Internet Identity passkey login still needs manual validation in a normal browser that permits signer popups.
+- MagickAI and FreeLLMAPI adapters are implemented, but real provider/service evidence needs configured `MAGICKAI_WORKER_URL`/`MAGICKAI_WORKER_COMMAND` and `FREELLMAPI_BASE_URL`.
+- Content-addressed local media storage is a proof target, not production object/media storage.
+- No isolated mainnet canister or Caffeine.ai app was created.
+
+Next step:
+
+- Commit the verified local slice, then choose the next proof: ICRC-2 transfer-from, real MagickAI/FreeLLMAPI service wiring, production-grade media storage, or authenticated frontend surfacing of worker/media history.

@@ -87,10 +87,12 @@ export interface PaymentIntent {
   'updated_at' : bigint,
   'credits' : bigint,
   'owner' : Principal,
+  'payment_subaccount_hex' : string,
   'created_at' : bigint,
   'amount_e8s' : bigint,
   'ledger_block_index' : [] | [bigint],
   'payment_principal' : Principal,
+  'payment_subaccount' : [] | [Uint8Array],
 }
 export interface Profile {
   'updated_at' : bigint,
@@ -169,6 +171,11 @@ export interface _SERVICE {
   'get_cycle_note' : ActorMethod<[], string>,
   'get_my_profile' : ActorMethod<[], [] | [Profile]>,
   'get_payment_account' : ActorMethod<[], PaymentAccount>,
+  'get_payment_account_for_intent' : ActorMethod<
+    [bigint],
+    { 'ok' : PaymentAccount } |
+      { 'err' : string }
+  >,
   'get_provider_options' : ActorMethod<[], Array<ProviderOption>>,
   'grant_ad_credits' : ActorMethod<
     [string, string, bigint],
@@ -221,10 +228,12 @@ export const idlFactory: IDL.InterfaceFactory = ({ IDL }) => {
     'updated_at' : IDL.Int,
     'credits' : IDL.Nat,
     'owner' : IDL.Principal,
+    'payment_subaccount_hex' : IDL.Text,
     'created_at' : IDL.Int,
     'amount_e8s' : IDL.Nat,
     'ledger_block_index' : IDL.Opt(IDL.Nat),
     'payment_principal' : IDL.Principal,
+    'payment_subaccount' : IDL.Opt(IDL.Vec(IDL.Nat8)),
   });
   const GenerationJob = IDL.Record({
     'id' : IDL.Nat,
@@ -358,6 +367,11 @@ export const idlFactory: IDL.InterfaceFactory = ({ IDL }) => {
     'get_cycle_note' : IDL.Func([], [IDL.Text], ['query']),
     'get_my_profile' : IDL.Func([], [IDL.Opt(Profile)], ['query']),
     'get_payment_account' : IDL.Func([], [PaymentAccount], ['query']),
+    'get_payment_account_for_intent' : IDL.Func(
+        [IDL.Nat],
+        [IDL.Variant({ 'ok' : PaymentAccount, 'err' : IDL.Text })],
+        ['query'],
+      ),
     'get_provider_options' : IDL.Func([], [IDL.Vec(ProviderOption)], ['query']),
     'grant_ad_credits' : IDL.Func(
         [IDL.Text, IDL.Text, IDL.Nat],

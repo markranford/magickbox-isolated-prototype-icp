@@ -139,9 +139,11 @@ Payments:
 Current local payment proof:
 
 - `magickbox_core` creates ICP payment intent records.
-- `scripts/smoke-local-icp-advanced.mjs` transfers `0.001` local ICP through the local ledger to the core canister account.
-- `claim_icp_payment` verifies the core canister ledger balance has increased enough, de-duplicates claimed block indexes, and credits the caller.
-- This is enough for isolated local proof. A production version should use per-intent subaccounts or ICRC-2 approve/transfer-from verification rather than a shared default canister account.
+- Each intent now carries a deterministic 32-byte ICRC subaccount and `payment_subaccount_hex`.
+- `get_payment_account_for_intent` returns the specific ledger account for the caller's payment intent.
+- `scripts/smoke-local-icp-advanced.mjs` transfers `0.001` local ICP through the local ledger to the intent subaccount with `--to-subaccount`.
+- `claim_icp_payment` verifies that intent subaccount balance, de-duplicates claimed block indexes, and credits the caller.
+- This is strong enough for isolated local proof. A production version can keep per-intent subaccounts or add ICRC-2 approve/transfer-from for wallet-mediated recurring/subscription flows.
 
 Analytics:
 
@@ -205,16 +207,19 @@ The current isolated prototype now includes the narrow vertical slice foundation
 3. A `magickbox_core` canister stores profile, credits, provider options, credit recovery options, generation jobs, collections, and audit events.
 4. The frontend reads the asset canister `ic_env`, builds an authenticated actor, registers a profile, and creates generation jobs after auth.
 5. Canister smoke tests prove insufficient-credit recovery and FreeLLMAPI zero-credit job creation.
-6. Advanced local smoke proves a local ICP transfer, payment claim, ad credit grant, worker authorization, local Ollama worker execution, worker completion callback, and media manifest anchoring.
-7. Browser smoke confirms the asset-served frontend detects ICP mode, restores local browser identity, creates payment intents, grants ad credits, and records no console errors.
+6. Advanced local smoke proves a per-intent subaccount ICP transfer, payment claim, ad credit grant, worker authorization, local Ollama execution, FreeLLMAPI-compatible execution, MagickAI-compatible execution, worker completion callbacks, and media manifest anchoring.
+7. Browser smoke confirms the asset-served frontend detects ICP mode, restores local browser identity, creates payment intents with visible subaccounts, grants ad credits, and records no console errors.
+8. Generated media outputs are written into an ignored content-addressed local media store and anchored on ICP by URI, hash, MIME type, byte count, owner, job id, and worker principal.
 
 Next proof steps:
 
 1. Manually complete the local Internet Identity passkey flow and capture the authenticated composer state.
-2. Replace the shared default payment account with per-intent subaccounts or an ICRC-2 approve/transfer-from path.
-3. Expand worker adapters for MagickAI and FreeLLMAPI using the same authorized-worker completion contract.
-4. Surface completed worker runs, media manifests, and collection save from the authenticated frontend.
-5. Add upgrade/stable-state checks for profile, job, payment, worker, ad, media, and audit records.
+2. Decide whether production payments should stay with per-intent subaccounts, add ICRC-2 transfer-from, or support both.
+3. Connect `MAGICKAI_WORKER_URL` or `MAGICKAI_WORKER_COMMAND` to a real MagickAI service with provider credentials kept outside canister state.
+4. Point `FREELLMAPI_BASE_URL` at a running FreeLLMAPI instance and capture routed-provider evidence.
+5. Replace the local content-addressed media store with the preferred durable storage target: dedicated asset canister chunks, S3-compatible object storage, IPFS/Filecoin, or another media service.
+6. Surface completed worker runs, media manifests, and collection save from the authenticated frontend.
+7. Add upgrade/stable-state checks for profile, job, payment, worker, ad, media, and audit records.
 
 Success criteria:
 

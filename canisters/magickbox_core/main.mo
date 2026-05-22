@@ -1,6 +1,7 @@
 import Array "mo:core/Array";
 import Blob "mo:core/Blob";
 import Nat "mo:core/Nat";
+import Nat8 "mo:core/Nat8";
 import Principal "mo:core/Principal";
 import Text "mo:core/Text";
 import Time "mo:core/Time";
@@ -90,6 +91,8 @@ persistent actor MagickBoxCore {
     id : Nat;
     owner : Principal;
     payment_principal : Principal;
+    payment_subaccount : ?Blob;
+    payment_subaccount_hex : Text;
     amount_e8s : Nat;
     credits : Nat;
     status : Text;
@@ -155,6 +158,7 @@ persistent actor MagickBoxCore {
   type ProfileResult = { #ok : Profile; #err : Text };
   type JobResult = { #ok : GenerationJob; #err : Text };
   type CollectionResult = { #ok : CollectionRecord; #err : Text };
+  type PaymentAccountResult = { #ok : PaymentAccount; #err : Text };
   type PaymentIntentResult = { #ok : PaymentIntent; #err : Text };
   type WorkerGrantResult = { #ok : WorkerGrant; #err : Text };
   type WorkerRunResult = { #ok : WorkerRun; #err : Text };
@@ -171,7 +175,6 @@ persistent actor MagickBoxCore {
   var ad_credit_grants : [AdCreditGrant] = [];
   var media_manifests : [MediaManifest] = [];
   var claimed_payment_blocks : [Nat] = [];
-  var claimed_payment_e8s : Nat = 0;
   var next_job_id : Nat = 1;
   var next_collection_id : Nat = 1;
   var next_audit_id : Nat = 1;
@@ -301,6 +304,47 @@ persistent actor MagickBoxCore {
     {
       owner = Principal.fromActor(MagickBoxCore);
       subaccount = null;
+      ledger_id = ICP_LEDGER_ID;
+      token_symbol = "ICP";
+      fee_e8s = 10_000;
+    };
+  };
+
+  func nat_byte(value : Nat, byte_index_from_lsb : Nat) : Nat8 {
+    var shifted = value;
+    var i : Nat = 0;
+    while (i < byte_index_from_lsb) {
+      shifted /= 256;
+      i += 1;
+    };
+    Nat8.fromNat(shifted % 256);
+  };
+
+  func subaccount_for_payment_intent(intent_id : Nat) : Blob {
+    let bytes : [Nat8] = [
+      77, 66, 80, 65, 89, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0,
+      nat_byte(intent_id, 7), nat_byte(intent_id, 6), nat_byte(intent_id, 5), nat_byte(intent_id, 4),
+      nat_byte(intent_id, 3), nat_byte(intent_id, 2), nat_byte(intent_id, 1), nat_byte(intent_id, 0),
+    ];
+    Blob.fromArray(bytes);
+  };
+
+  func blob_to_hex(blob : Blob) : Text {
+    let hex_chars : [Text] = ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "a", "b", "c", "d", "e", "f"];
+    var hex = "";
+    for (byte in Blob.toArray(blob).vals()) {
+      let value = Nat8.toNat(byte);
+      hex := hex # hex_chars[value / 16] # hex_chars[value % 16];
+    };
+    hex;
+  };
+
+  func account_for_payment_intent(intent_id : Nat) : PaymentAccount {
+    {
+      owner = Principal.fromActor(MagickBoxCore);
+      subaccount = ?subaccount_for_payment_intent(intent_id);
       ledger_id = ICP_LEDGER_ID;
       token_symbol = "ICP";
       fee_e8s = 10_000;
@@ -520,6 +564,24 @@ persistent actor MagickBoxCore {
     payment_account();
   };
 
+  public shared query ({ caller }) func get_payment_account_for_intent(intent_id : Nat) : async PaymentAccountResult {
+    switch (require_authenticated(caller)) {
+      case (?err) { return #err(err) };
+      case null {};
+    };
+
+    let intent_index = switch (find_payment_intent_index(intent_id)) {
+      case (?index) { index };
+      case null { return #err("Payment intent not found") };
+    };
+    let intent = payment_intents[intent_index];
+    if (not Principal.equal(intent.owner, caller)) {
+      return #err("Only the payment intent owner can view this payment account");
+    };
+
+    #ok(account_for_payment_intent(intent.id));
+  };
+
   public shared ({ caller }) func register_profile(display_name : Text, email : ?Text) : async ProfileResult {
     switch (require_authenticated(caller)) {
       case (?err) { return #err(err) };
@@ -587,10 +649,14 @@ persistent actor MagickBoxCore {
     };
 
     let timestamp = now();
+    let intent_id = next_payment_intent_id;
+    let payment_subaccount = subaccount_for_payment_intent(intent_id);
     let intent : PaymentIntent = {
-      id = next_payment_intent_id;
+      id = intent_id;
       owner = caller;
       payment_principal = payment_account().owner;
+      payment_subaccount = ?payment_subaccount;
+      payment_subaccount_hex = blob_to_hex(payment_subaccount);
       amount_e8s;
       credits;
       status = "pending";
@@ -600,7 +666,7 @@ persistent actor MagickBoxCore {
     };
     next_payment_intent_id += 1;
     payment_intents := append_item<PaymentIntent>(payment_intents, intent);
-    record_audit(caller, "icp_payment_intent_created", Nat.toText(intent.id), "amount_e8s=" # Nat.toText(amount_e8s) # ";credits=" # Nat.toText(credits));
+    record_audit(caller, "icp_payment_intent_created", Nat.toText(intent.id), "amount_e8s=" # Nat.toText(amount_e8s) # ";credits=" # Nat.toText(credits) # ";subaccount=" # intent.payment_subaccount_hex);
     #ok(intent);
   };
 
@@ -626,14 +692,13 @@ persistent actor MagickBoxCore {
       return #err("Payment intent is not pending");
     };
 
-    let account = payment_account();
+    let account = account_for_payment_intent(intent.id);
     let observed_balance = await icp_ledger.icrc1_balance_of({
       owner = account.owner;
       subaccount = account.subaccount;
     });
-    let required_balance = claimed_payment_e8s + intent.amount_e8s;
-    if (observed_balance < required_balance) {
-      return #err("ICP ledger balance has not reached the expected paid amount");
+    if (observed_balance < intent.amount_e8s) {
+      return #err("ICP ledger subaccount balance has not reached the expected paid amount");
     };
 
     switch (credit_profile(caller, intent.credits)) {
@@ -646,6 +711,8 @@ persistent actor MagickBoxCore {
       id = intent.id;
       owner = intent.owner;
       payment_principal = intent.payment_principal;
+      payment_subaccount = intent.payment_subaccount;
+      payment_subaccount_hex = intent.payment_subaccount_hex;
       amount_e8s = intent.amount_e8s;
       credits = intent.credits;
       status = "claimed";
@@ -654,9 +721,8 @@ persistent actor MagickBoxCore {
       updated_at = timestamp;
     };
     replace_payment_intent(intent_index, updated);
-    claimed_payment_e8s += intent.amount_e8s;
     claimed_payment_blocks := append_item<Nat>(claimed_payment_blocks, ledger_block_index);
-    record_audit(caller, "icp_payment_claimed", Nat.toText(intent.id), "block=" # Nat.toText(ledger_block_index) # ";credits=" # Nat.toText(intent.credits));
+    record_audit(caller, "icp_payment_claimed", Nat.toText(intent.id), "block=" # Nat.toText(ledger_block_index) # ";credits=" # Nat.toText(intent.credits) # ";subaccount=" # intent.payment_subaccount_hex);
     #ok(updated);
   };
 

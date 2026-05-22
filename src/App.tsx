@@ -59,6 +59,25 @@ function paymentPackageFor(optionId: string) {
     : { credits: 100, amountE8s: 100_000 };
 }
 
+type PaymentNoticeIntent = {
+  id: bigint;
+  payment_principal: { toText: () => string };
+  payment_subaccount_hex: string;
+};
+
+function paymentIntentNotice(
+  intent: PaymentNoticeIntent,
+  credits: number,
+  amountE8s: number,
+  accountPrincipal?: string,
+) {
+  const principal = accountPrincipal ?? intent.payment_principal.toText();
+
+  return `Payment intent #${Number(intent.id)} created for ${credits} credits. Transfer ${formatIcp(
+    amountE8s,
+  )} ICP to ${principal} with subaccount ${intent.payment_subaccount_hex}, then claim the intent from the local ICP payment smoke script.`;
+}
+
 function Logo() {
   return (
     <Link className="logo" to="/" aria-label="Magick Box home">
@@ -198,11 +217,13 @@ function Composer({
       const result = await icp.createIcpPaymentIntent(paymentPackage);
 
       if (result.kind === "ok") {
-        const principal = icp.paymentAccount?.owner.toText() ?? result.intent.payment_principal.toText();
         setSubmitted(
-          `Payment intent #${Number(result.intent.id)} created for ${paymentPackage.credits} credits. Transfer ${formatIcp(
+          paymentIntentNotice(
+            result.intent,
+            paymentPackage.credits,
             paymentPackage.amountE8s,
-          )} ICP to ${principal}, then claim the intent from the local ICP payment smoke script.`,
+            icp.paymentAccount?.owner.toText(),
+          ),
         );
       } else {
         setSubmitted(result.message);
@@ -641,11 +662,13 @@ function SubscriptionsPage() {
       const result = await icp.createIcpPaymentIntent(paymentPackage);
 
       if (result.kind === "ok") {
-        const principal = icp.paymentAccount?.owner.toText() ?? result.intent.payment_principal.toText();
         setNotice(
-          `Payment intent #${Number(result.intent.id)} is ready: transfer ${formatIcp(
+          paymentIntentNotice(
+            result.intent,
+            paymentPackage.credits,
             paymentPackage.amountE8s,
-          )} ICP to ${principal}, then claim it with the local payment smoke script.`,
+            icp.paymentAccount?.owner.toText(),
+          ),
         );
       } else {
         setNotice(result.message);

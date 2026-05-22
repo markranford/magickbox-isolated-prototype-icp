@@ -65,6 +65,8 @@ type PaymentIntent = record {
   id : nat;
   owner : principal;
   payment_principal : principal;
+  payment_subaccount : opt blob;
+  payment_subaccount_hex : text;
   amount_e8s : nat;
   credits : nat;
   status : text;
@@ -127,6 +129,7 @@ service : {
   get_credit_options : () -> (vec CreditOption) query;
   get_provider_options : () -> (vec ProviderOption) query;
   get_payment_account : () -> (PaymentAccount) query;
+  get_payment_account_for_intent : (nat) -> (variant { ok : PaymentAccount; err : text }) query;
   create_icp_payment_intent : (nat, nat) -> (variant { ok : PaymentIntent; err : text });
   claim_icp_payment : (nat, nat) -> (variant { ok : PaymentIntent; err : text });
   grant_ad_credits : (text, text, nat) -> (variant { ok : AdCreditGrant; err : text });

@@ -7,7 +7,7 @@
 | `/home/explore` | App shell with Create, Explore, Collections, Subscriptions, Settings, Sign in; Explore heading; Latest/Trending tabs | Playwright route smoke |
 | `/home/magick-chat` | Magick Friend composer, mode buttons, prompt tools, provider selector, ICP status strip, canister job creation, ad-credit grant recovery, and local worker completion evidence | Unit, Playwright, local asset-canister smoke, and advanced ICP smoke |
 | `/home/collections` | Collections route with explicit privacy/publishing state | Manual/browser smoke |
-| `/home/subscriptions` | Canister credit recovery paths for ICP top-up, subscription, ad credit, FreeLLMAPI, own provider, and local Ollama; ICP top-up creates a real payment intent | Manual/browser smoke and `local-icp-payment-intent-ui.png` |
+| `/home/subscriptions` | Canister credit recovery paths for ICP top-up, subscription, ad credit, FreeLLMAPI, own provider, and local Ollama; ICP top-up creates a real payment intent with a per-intent ICRC subaccount | Manual/browser smoke and `local-icp-payment-subaccount-ui.png` |
 | `/auth/sign-in` | Internet Identity and local signed browser identity; no credential fields | Unit and Playwright interaction tests |
 
 Intentional differences:

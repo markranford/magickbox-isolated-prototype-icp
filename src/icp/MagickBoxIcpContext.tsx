@@ -544,8 +544,8 @@ export function MagickBoxIcpProvider({ children }: { children: ReactNode }) {
           return { kind: "err", message: result.err };
         }
 
-        const account = await actor.get_payment_account();
-        setPaymentAccount(account);
+        const account = await actor.get_payment_account_for_intent(result.ok.id);
+        setPaymentAccount("ok" in account ? account.ok : await actor.get_payment_account());
         return { kind: "ok", intent: result.ok };
       } catch (error) {
         return {

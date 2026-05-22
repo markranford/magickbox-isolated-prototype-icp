@@ -67,23 +67,24 @@ The local seed is stored only under ignored `.icp/cache/local-secrets/`. Do not 
 - Local browser identity auto-reconnect after direct route loads.
 - Composer path that creates canister generation jobs after Internet Identity or local browser identity auth.
 - Browser-visible provider and credit-recovery options loaded from `magickbox_core` when served by the asset canister.
-- ICP payment intent records and claimed local ledger block indexes.
-- Local ICP ledger balance verification for claimed top-ups.
+- ICP payment intent records with deterministic per-intent ICRC subaccounts and claimed local ledger block indexes.
+- Local ICP ledger subaccount balance verification for claimed top-ups.
 - Ad verifier credit grant records with duplicate proof protection.
 - User-authorized worker principal records.
-- Worker completion records with result hash, receipt, and output preview.
+- Worker completion records with provider id, result hash, receipt, and output preview.
 - Media manifest records for off-chain/local artifacts anchored by content hash.
+- Content-addressed local media store for isolated worker outputs.
 
 ## Off-ICP Boundaries
 
-- AI inference remains off-canister, with a verified local Ollama worker path.
-- MagickAI is a worker/reference option, not embedded into the canister.
-- FreeLLMAPI is a user-managed OpenAI-compatible proxy option, not embedded into the canister.
+- AI inference remains off-canister, with verified local Ollama, FreeLLMAPI-compatible, and MagickAI-compatible worker paths.
+- MagickAI can be connected by `MAGICKAI_WORKER_URL` or `MAGICKAI_WORKER_COMMAND`; it is not embedded into the canister.
+- FreeLLMAPI can be connected by `FREELLMAPI_BASE_URL`; it is not embedded into the canister.
 - Own-provider API keys are not stored on ICP.
 - Local Ollama stays user-local.
 - Stripe/fiat remains secondary and is not connected.
 - Advert verification is represented by canister credit grants in the local prototype; production still needs a trusted verifier principal/service.
-- Large media remains off-chain, with ICP media manifests and hashes now anchored locally.
+- Large media remains off-chain, with ICP media manifests and hashes anchored locally through `storage/media`.
 
 ## Commands
 
@@ -122,7 +123,7 @@ npm run verify
 
 Latest completed checks:
 
-- `npm run verify` passed: lint, 3 Vitest files / 10 tests, Vite build, and 12 Playwright tests.
+- `npm run verify` passed: lint, 4 Vitest files / 13 tests, Vite build, and 12 Playwright tests.
 - `wsl ... icp build magickbox_core` passed.
 - `scripts/deploy-local-icp.sh` passed on port `8010`.
 - `scripts/smoke-local-icp.sh` passed.
@@ -140,9 +141,10 @@ Latest completed checks:
   - screenshot artifacts written to `docs/artifacts/prototype/local-browser-identity-job.png` and `docs/artifacts/prototype/local-browser-identity-insufficient-credits.png`.
 - Browser smoke also confirmed:
   - subscriptions page creates a real canister payment intent after local browser identity auth and hard navigation;
+  - payment intent `#2` displayed per-intent subaccount `4d42504159000000000000000000000000000000000000000000000000000002`;
   - recovery panel grants 25 ad credits through `grant_ad_credits`;
   - no console warnings/errors were recorded;
-  - screenshots written to `docs/artifacts/prototype/local-icp-payment-intent-ui.png` and `docs/artifacts/prototype/local-icp-ad-credit-ui.png`.
+  - screenshots written to `docs/artifacts/prototype/local-icp-payment-subaccount-ui.png` and `docs/artifacts/prototype/local-icp-ad-credit-ui.png`.
 - Backend smoke proved:
   - profile registration for `mark@stratagility.com`;
   - insufficient-credit result for `paid_managed` requiring 80 credits with 25 balance;
@@ -151,29 +153,32 @@ Latest completed checks:
   - audit event listing.
 - Advanced smoke proved:
   - ICP payment intent `#1` for 100 credits and `100_000` e8s;
-  - local ledger transfer of `0.001` ICP to core canister `tz2ag-zx777-77776-aaabq-cai`, claimed at block `30`;
+  - per-intent subaccount `4d42504159000000000000000000000000000000000000000000000000000001`;
+  - local ledger transfer of `0.001` ICP to core canister `tz2ag-zx777-77776-aaabq-cai` with `--to-subaccount`, claimed at block `30`;
   - ad verifier grant of 25 credits;
   - separate worker principal `qpkob-dcevx-4dmkl-ie5nc-2hkun-wqaia-vwwcq-n3gfy-rz3xt-djgfe-cae`;
-  - local Ollama model `glm4:9b` completed job `#2`;
-  - worker run stored result hash `a8d570f0366be2738a6244560bcc58356457d6431f6c32add2f0e8b73ae9cf6a`;
-  - media manifest `#1` anchored `local-artifact://magickbox/worker/job-2.txt`;
-  - artifact written to `docs/artifacts/prototype/local-ollama-worker-job-2.txt`.
+  - local Ollama model `glm4:9b` completed job `#2` with hash `a485b12be57454f7b2507f8b7a8ddfc8bf4c908ef2a741ddf5c39fe85704cc9b`;
+  - FreeLLMAPI-compatible adapter completed job `#3` with hash `49948eb4b02ba266cc8fedc43496c675f7a4a50adb7d59c9f06d04126319229b`;
+  - MagickAI-compatible adapter completed job `#4` with hash `f0943bcdb545f00287778fef70b9d0ee1f828391a1e593639386446dbd22e12c`;
+  - media manifests `#1`, `#2`, and `#3` anchored `media-store://sha256/...` URIs;
+  - content-addressed artifacts written under ignored `storage/media/sha256/`.
 
 ## Known Gaps
 
 - Windows owns the frontend build and WSL owns ICP deploy. This avoids WSL `npm install` rewriting native optional dependencies in `node_modules`.
 - Vite development cannot write canister state without `ic_env`; real canister mode is active from the local ICP asset canister through `ic_env`.
 - Internet Identity is wired into the React runtime, but the Codex in-app browser blocks the signer popup. Use `Use local browser identity` in that browser, or open the same URL in a normal browser for II.
-- Local ICP/ICRC top-up proof uses the core canister default account. Production should move to per-intent subaccounts or ICRC-2 approve/transfer-from verification.
-- The verified worker protocol covers local Ollama. MagickAI and FreeLLMAPI adapters still need implementation against the same worker contract.
-- The media manifest stores hashes and URI metadata only; large binary storage remains off-chain/user-local for this slice.
+- Local ICP/ICRC top-up proof now uses per-intent subaccounts. Production should decide whether to add ICRC-2 approve/transfer-from for wallet-mediated subscription or recurring payment flows.
+- MagickAI and FreeLLMAPI adapters are implemented as local worker boundaries; production use still needs real deployed worker services and secrets kept outside canister state.
+- The media manifest stores hashes and URI metadata only; large binary storage remains off-chain/user-local for this slice, with content-addressed local artifacts under `storage/media`.
 - No isolated mainnet preview canister was created.
 
 ## Recommended Next Build Slice
 
-1. Replace shared-account payment claim with per-intent subaccounts or ICRC-2 transfer-from.
-2. Add MagickAI and FreeLLMAPI worker adapters using `authorize_worker` and `complete_worker_job`.
-3. Surface worker runs, media manifests, and claim/payment status in the app shell.
-4. Add collection save from a completed external-worker job.
-5. Manually exercise Internet Identity in a browser that permits signer popups.
-6. Add an explicit checkpoint before any Caffeine.ai creation, live Magick Box login, or isolated mainnet canister deployment.
+1. Decide whether to supplement per-intent subaccounts with ICRC-2 transfer-from for subscription-style payments.
+2. Run the MagickAI adapter against a real `MAGICKAI_WORKER_URL` or `MAGICKAI_WORKER_COMMAND`.
+3. Run the FreeLLMAPI adapter against a real FreeLLMAPI instance and capture routed-provider evidence.
+4. Surface worker runs, media manifests, and claim/payment status in the app shell.
+5. Add collection save from a completed external-worker job.
+6. Manually exercise Internet Identity in a browser that permits signer popups.
+7. Add an explicit checkpoint before any Caffeine.ai creation, live Magick Box login, or isolated mainnet canister deployment.

@@ -95,7 +95,7 @@ Improved:
 
 Intentional deviations:
 
-- Production auth, fiat billing, MagickAI/FreeLLMAPI workers, production community data, and production media storage are not connected. Local ICP auth, credit accounting, payment-intent claims, ad-credit grants, local Ollama worker completion, and media manifest anchoring are implemented in the isolated prototype.
+- Production auth, fiat billing, production community data, and production media storage are not connected. Local ICP auth, credit accounting, per-intent subaccount payment claims, ad-credit grants, local Ollama, FreeLLMAPI-compatible, and MagickAI-compatible worker completion, and content-addressed media manifest anchoring are implemented in the isolated prototype.
 - The backend is not rewritten.
 - The prototype is Vite/React Router for evaluation speed; this is not a final production stack decision.
 - No production or shared preview deployment was created.
@@ -129,7 +129,7 @@ Latest full verification after the ICP packet hardening passed:
 | Check | Result | Evidence |
 | --- | --- | --- |
 | Lint | Pass | `npm run lint` |
-| Unit tests | Pass, 1 file / 2 tests | `npm run test` |
+| Unit tests | Pass, 4 files / 13 tests | `npm run test` |
 | Typecheck/build | Pass | `npm run build` |
 | Browser smoke | Pass, 8 Playwright tests | `npm run e2e` |
 | Desktop screenshot | Captured | `docs/artifacts/prototype/prototype-home-desktop.png` |
@@ -139,6 +139,9 @@ Latest full verification after the ICP packet hardening passed:
 | Console health | Pass in clean Playwright context | Browser warning/error array was empty during e2e |
 | ICP evaluation route | Pass | e2e verified `/evaluation` exposes route parity and ICP readiness |
 | ICP asset policy | Pass | e2e verified `dist/.ic-assets.json5` contains raw-access, SPA aliasing, and CSP policy |
+| Local ICP payment binding | Pass | advanced smoke transferred `0.001` local ICP to a per-intent ICRC subaccount |
+| Worker adapters | Pass | advanced smoke completed local Ollama, FreeLLMAPI-compatible, and MagickAI-compatible worker jobs |
+| Media storage manifests | Pass | advanced smoke anchored `media-store://sha256/...` manifests and wrote local content-addressed artifacts |
 
 The new e2e suite includes a check that `dist/.ic-assets.json5` carries:
 
@@ -161,6 +164,7 @@ Prototype:
 - `docs/artifacts/prototype/prototype-home-desktop.png`
 - `docs/artifacts/prototype/prototype-home-mobile.png`
 - `docs/artifacts/prototype/browser-sanity-explore.png`
+- `docs/artifacts/prototype/local-icp-payment-subaccount-ui.png`
 
 ## Deployment/Preview Status
 
@@ -179,13 +183,13 @@ Full ICP local handoff: `docs/handovers/magickbox-full-icp-local-deploy-handoff.
 - Backend behavior is inferred from code structure, not exercised against production or staging.
 - Production auth, billing, analytics, socket, and database flows were intentionally not tested.
 - Reference assets were copied locally for parity; final production work should confirm asset ownership and design-source files.
-- The ICP backend proof is not implemented yet; this pass prepares the frontend and architecture packet.
-- Fully on-chain AI inference, media storage, and fiat billing remain high-risk and need separate proofs.
+- The local ICP backend proof is implemented for profile, credits, jobs, payments, worker completion, media manifests, collections, and audit state, but it is not a production backend.
+- Fully on-chain AI inference, production media storage, and fiat billing remain high-risk and need separate proofs.
 
 ## Recommended Next Steps
 
-1. Run fresh verification after this ICP hardening pass.
-2. Open the local prototype and `/evaluation` route in a browser to inspect the new ICP readiness panel.
-3. Promote the proven local ICP slice to a new isolated preview only after an explicit checkpoint: asset canister, Internet Identity, core backend canister, local/test payment proof, worker callback, media manifests, collection save, append-only audit events.
-4. Define the shared generation job contract before backend migration.
+1. Decide whether subscription payments need ICRC-2 transfer-from in addition to per-intent subaccounts.
+2. Connect the adapters to real isolated MagickAI and FreeLLMAPI worker services.
+3. Choose the durable media target for the next proof: asset canister chunks, S3-compatible object storage, IPFS/Filecoin, or another media service.
+4. Promote the proven local ICP slice to a new isolated preview only after an explicit checkpoint: asset canister, Internet Identity, core backend canister, local/test payment proof, worker callback, media manifests, collection save, append-only audit events.
 5. Run a separately authorized secrets/config audit on the existing repos before any production rewrite planning.

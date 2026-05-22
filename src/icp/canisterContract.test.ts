@@ -6,6 +6,10 @@ const candid = readFileSync(
   resolve(__dirname, "../../canisters/magickbox_core/magickbox_core.did"),
   "utf8",
 );
+const canisterSource = readFileSync(
+  resolve(__dirname, "../../canisters/magickbox_core/main.mo"),
+  "utf8",
+);
 
 describe("magickbox_core Candid contract", () => {
   it("exposes real worker, payment, ad-credit, and media manifest methods", () => {
@@ -40,5 +44,15 @@ describe("magickbox_core Candid contract", () => {
     for (const typeName of requiredTypes) {
       expect(candid).toContain(typeName);
     }
+  });
+
+  it("binds each ICP payment intent to its own ledger subaccount", () => {
+    expect(candid).toContain("payment_subaccount : opt blob");
+    expect(candid).toContain("payment_subaccount_hex : text");
+    expect(candid).toContain("get_payment_account_for_intent :");
+    expect(canisterSource).toContain("func subaccount_for_payment_intent");
+    expect(canisterSource).toContain("func account_for_payment_intent");
+    expect(canisterSource).toContain("subaccount = account.subaccount");
+    expect(canisterSource).not.toContain("claimed_payment_e8s + intent.amount_e8s");
   });
 });
