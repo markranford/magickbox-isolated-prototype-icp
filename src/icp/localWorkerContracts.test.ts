@@ -29,7 +29,7 @@ describe("local ICP worker and media storage contracts", () => {
     expect(mediaStore).toContain("media-store://sha256/");
     expect(mediaStore).toContain("index.jsonl");
     expect(mediaStore).toContain("sha256");
-    expect(advancedSmoke).toContain("storeMediaArtifact");
-    expect(advancedSmoke).toContain("content-addressed-local-media-store");
+    expect(mediaStore).toContain("content-addressed-local-media-store");
+    expect(advancedSmoke).toContain("storeMediaFromEnv");
   });
 });

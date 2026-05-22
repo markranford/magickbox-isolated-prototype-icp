@@ -1016,3 +1016,126 @@ Blockers or risks:
 Next step:
 
 - Commit the verified local slice, then choose the next proof: ICRC-2 transfer-from, real MagickAI/FreeLLMAPI service wiring, production-grade media storage, or authenticated frontend surfacing of worker/media history.
+
+## 2026-05-22T19:36:03+07:00 - Checkpoint 21: Red Tests For Live Worker Services And Durable Media Backend
+
+Current workspace/folder:
+
+`C:\Users\Mark\Documents\Codex\Codex_MagickBox\magick-box-rewrite-readiness-prototype`
+
+What was inspected:
+
+- Clean local commit `c337893`.
+- Read-only FreeLLMAPI README and server routes:
+  - `/v1/chat/completions`;
+  - `/v1/models`;
+  - `/api/ping`;
+  - `/api/health`.
+- Read-only MagickAI UniversalAgent docs and SDK client:
+  - `MagickAI.from_env()`;
+  - `universal_process(...)`;
+  - MagickAI's own docs expect S3 for large generated media.
+- Existing local worker adapters and local content-addressed media store.
+
+What was created or changed:
+
+- Added `src/icp/externalServiceContracts.test.ts` with red expectations for:
+  - a live-service smoke script for isolated FreeLLMAPI and MagickAI connections;
+  - a MagickAI SDK command bridge that imports from a read-only repo path;
+  - an S3-compatible durable media backend while retaining local content-addressed storage as fallback;
+  - a durable media storage decision document.
+
+Commands run and results:
+
+- `npm run test` -> failed as expected:
+  - missing `scripts/smoke-worker-services.mjs`;
+  - missing `workers/magickai_worker_bridge.py`;
+  - missing `scripts/lib/media-backends.mjs`;
+  - missing `docs/audits/magickbox-media-storage-decision.md`;
+  - existing 13 tests still passed.
+
+Decisions made:
+
+- Do not install or write into the read-only reference repos.
+- Use FreeLLMAPI as an external isolated service when `FREELLMAPI_BASE_URL` and `FREELLMAPI_API_KEY` are configured.
+- Use a command bridge for MagickAI so the prototype can call the actual SDK from a read-only repo path without embedding SDK dependencies in the canister.
+- Choose S3-compatible object storage as the next production-grade media backend for the mostly ICP path, with ICP manifests as the source of ownership and integrity truth.
+
+Blockers or risks:
+
+- Live FreeLLMAPI and MagickAI service checks will be skipped unless env vars are configured, or fail intentionally with `--require-live`.
+- MagickAI still needs valid provider/storage credentials to run the actual SDK.
+
+Next step:
+
+- Implement the live-service smoke, MagickAI bridge, S3-compatible media backend, and media decision doc.
+
+## 2026-05-22T19:44:16+07:00 - Checkpoint 22: Live Service Harness And S3-Compatible Media Backend Added
+
+Current workspace/folder:
+
+`C:\Users\Mark\Documents\Codex\Codex_MagickBox\magick-box-rewrite-readiness-prototype`
+
+What was inspected:
+
+- FreeLLMAPI route mounting and health endpoints in the read-only reference:
+  - `/api/ping`;
+  - `/api/health`;
+  - `/v1/models`;
+  - `/v1/chat/completions`.
+- MagickAI SDK client in the read-only reference:
+  - `MagickAI.from_env()`;
+  - `universal_process(...)`.
+- MagickAI storage docs indicating S3-style storage for large files.
+- Existing local ICP advanced smoke and media store.
+
+What was created or changed:
+
+- Added `@aws-sdk/client-s3` dependency for optional isolated S3-compatible media uploads.
+- Added `.env.integrations.example` with non-secret placeholders for FreeLLMAPI, MagickAI, and S3-compatible storage.
+- Added `scripts/lib/media-backends.mjs`:
+  - default local content-addressed media store;
+  - optional `s3-compatible-object-store` backend selected by `MAGICKBOX_MEDIA_BACKEND=s3`.
+- Updated `scripts/smoke-local-icp-advanced.mjs` to use the media backend selector.
+- Added `scripts/smoke-worker-services.mjs`:
+  - optional mode skips missing live services safely;
+  - `--require-live` fails when isolated FreeLLMAPI or MagickAI env vars are missing.
+- Added package scripts `smoke:services` and `smoke:services:required`.
+- Added `workers/magickai_worker_bridge.py` to call the real MagickAI SDK from `MAGICKAI_REPO_PATH` through `MAGICKAI_WORKER_COMMAND`.
+- Added `docs/audits/magickbox-media-storage-decision.md`, choosing S3-compatible object storage for the mostly ICP media backend while keeping ICP manifests as the source of ownership/integrity truth.
+- Updated README, AI provider audit, ICP architecture review, evaluation checklist, and handoff docs.
+
+Commands run and results:
+
+- `npm install @aws-sdk/client-s3` -> passed, 47 packages added, 0 vulnerabilities.
+- `npm run test` after red tests -> failed as expected because new service/media files did not exist.
+- `npm run test` after implementation -> passed, 5 Vitest files / 16 tests.
+- `npm run smoke:services` -> passed in optional mode:
+  - FreeLLMAPI skipped because `FREELLMAPI_BASE_URL` and `FREELLMAPI_API_KEY` are not configured;
+  - MagickAI skipped because neither `MAGICKAI_WORKER_URL` nor `MAGICKAI_WORKER_COMMAND` is configured.
+- `python workers\magickai_worker_bridge.py --health` -> located the read-only MagickAI repo but failed to import because local Python is missing `pymongo`.
+- `npm run lint` -> passed.
+- `npm run smoke:icp:advanced` -> passed through the new media backend selector:
+  - payment intent `#3`;
+  - subaccount `4d42504159000000000000000000000000000000000000000000000000000003`;
+  - ledger block `31`;
+  - jobs `#5`, `#6`, `#7`;
+  - storage provider remained `content-addressed-local-media-store` because no S3 env was configured.
+- `npm run verify` -> passed: lint, 5 Vitest files / 16 tests, Vite build, and 12 Playwright tests.
+
+Decisions made:
+
+- The mostly ICP media path should use S3-compatible object storage for large generated media, with ICP canister manifests anchoring owner, job id, worker, URI, hash, MIME type, byte count, and audit records.
+- Fully ICP media chunk storage remains a separate later proof because it needs cost, certification, lifecycle, chunk indexing, and cycle-monitoring work.
+- Live FreeLLMAPI/MagickAI checks should be optional by default and fail only under `--require-live`.
+
+Blockers or risks:
+
+- No isolated FreeLLMAPI service or unified key is configured yet, so routed-provider evidence is not captured.
+- MagickAI SDK bridge needs an isolated Python environment with MagickAI dependencies such as `pymongo` before it can run real SDK execution.
+- S3-compatible upload path was not exercised because no isolated bucket/endpoint credentials are configured.
+- No production services, mainnet canisters, Caffeine.ai, production repos, DNS, auth, analytics, billing, databases, secrets, or live users were touched.
+
+Next step:
+
+- Choose which external boundary to make live first: isolated FreeLLMAPI service, isolated MagickAI SDK environment, or isolated S3-compatible bucket/MinIO media backend.

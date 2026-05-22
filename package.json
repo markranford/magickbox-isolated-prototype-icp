@@ -12,9 +12,12 @@
     "test:watch": "vitest",
     "e2e": "playwright test",
     "smoke:icp:advanced": "node scripts/smoke-local-icp-advanced.mjs",
+    "smoke:services": "node scripts/smoke-worker-services.mjs",
+    "smoke:services:required": "node scripts/smoke-worker-services.mjs --require-live",
     "verify": "npm run lint && npm run test && npm run build && npm run e2e"
   },
   "dependencies": {
+    "@aws-sdk/client-s3": "^3.1052.0",
     "@icp-sdk/auth": "^7.0.0",
     "@icp-sdk/core": "^5.4.0",
     "axe-core": "^4.11.4",

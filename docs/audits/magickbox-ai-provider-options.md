@@ -49,6 +49,7 @@ ICP fit:
 - Canister should store only an endpoint preference or non-secret reference.
 - The proxy itself should remain off-chain or user-local.
 - Good target for the insufficient-credit recovery flow: "Use FreeLLMAPI instead."
+- Live isolated service checks are available through `npm run smoke:services` when `FREELLMAPI_BASE_URL` and `FREELLMAPI_API_KEY` are configured.
 
 ## Local LLM Option
 
@@ -92,3 +93,10 @@ Private prompts and uploaded assets should not be stored raw on ICP by default. 
 - audit metadata
 
 Future work can add opt-in encrypted prompt storage or vetKD-backed encryption after a privacy design pass.
+
+## Current Integration Harness
+
+- `scripts/smoke-worker-services.mjs` checks real isolated FreeLLMAPI and MagickAI connections without touching production.
+- `workers/magickai_worker_bridge.py` calls the real MagickAI SDK from `MAGICKAI_REPO_PATH` through `MagickAI.from_env()` and `universal_process(...)`.
+- `scripts/lib/media-backends.mjs` adds an S3-compatible object-storage backend for generated media while preserving the local content-addressed fallback.
+- `docs/audits/magickbox-media-storage-decision.md` records the media storage choice for the mostly ICP path.

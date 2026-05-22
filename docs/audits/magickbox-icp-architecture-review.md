@@ -215,9 +215,9 @@ Next proof steps:
 
 1. Manually complete the local Internet Identity passkey flow and capture the authenticated composer state.
 2. Decide whether production payments should stay with per-intent subaccounts, add ICRC-2 transfer-from, or support both.
-3. Connect `MAGICKAI_WORKER_URL` or `MAGICKAI_WORKER_COMMAND` to a real MagickAI service with provider credentials kept outside canister state.
-4. Point `FREELLMAPI_BASE_URL` at a running FreeLLMAPI instance and capture routed-provider evidence.
-5. Replace the local content-addressed media store with the preferred durable storage target: dedicated asset canister chunks, S3-compatible object storage, IPFS/Filecoin, or another media service.
+3. Connect `MAGICKAI_WORKER_URL` or `MAGICKAI_WORKER_COMMAND` to a real MagickAI service with provider credentials kept outside canister state; the prototype now includes `workers/magickai_worker_bridge.py` for the command path.
+4. Point `FREELLMAPI_BASE_URL` and `FREELLMAPI_API_KEY` at a running FreeLLMAPI instance and capture routed-provider evidence with `npm run smoke:services:required`.
+5. Use the selected durable media target: S3-compatible object storage for mostly ICP, with dedicated ICP chunk/certification storage left as a later fully ICP proof.
 6. Surface completed worker runs, media manifests, and collection save from the authenticated frontend.
 7. Add upgrade/stable-state checks for profile, job, payment, worker, ad, media, and audit records.
 

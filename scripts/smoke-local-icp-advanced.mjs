@@ -4,7 +4,7 @@ import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { storeMediaArtifact } from "./lib/media-store.mjs";
+import { storeMediaFromEnv } from "./lib/media-backends.mjs";
 import { runWorkerAdapter } from "./lib/worker-adapters.mjs";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -161,7 +161,7 @@ async function createAndCompleteWorkerJob({ providerId, label, prompt, requested
     mode: "chat",
     jobId,
   });
-  const stored = storeMediaArtifact({
+  const stored = await storeMediaFromEnv({
     rootDir: mediaStoreDir,
     jobId,
     providerId,
@@ -184,6 +184,7 @@ async function createAndCompleteWorkerJob({ providerId, label, prompt, requested
 
   console.log(`adapter=${execution.adapter}`);
   console.log(`model=${execution.model}`);
+  console.log(`storage_provider=${stored.storageProvider}`);
   console.log(`artifact=${stored.path}`);
 
   console.log(`== Complete ${providerId} worker job on ICP ==`);
@@ -206,7 +207,7 @@ async function createAndCompleteWorkerJob({ providerId, label, prompt, requested
       `canister call magickbox_core attach_media_manifest --args-file ${shellQuote(
         writeArgs(
           `${providerId}-media-manifest.did`,
-          `(${jobId} : nat, "content-addressed-local-media-store", ${candidText(
+          `(${jobId} : nat, ${candidText(stored.storageProvider)}, ${candidText(
             stored.uri,
           )}, ${candidText(stored.hash)}, ${candidText(stored.mimeType)}, ${stored.bytes} : nat)`,
         ),

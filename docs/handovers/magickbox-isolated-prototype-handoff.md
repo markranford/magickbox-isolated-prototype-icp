@@ -129,7 +129,7 @@ Latest full verification after the ICP packet hardening passed:
 | Check | Result | Evidence |
 | --- | --- | --- |
 | Lint | Pass | `npm run lint` |
-| Unit tests | Pass, 4 files / 13 tests | `npm run test` |
+| Unit tests | Pass, 5 files / 16 tests | `npm run test` |
 | Typecheck/build | Pass | `npm run build` |
 | Browser smoke | Pass, 8 Playwright tests | `npm run e2e` |
 | Desktop screenshot | Captured | `docs/artifacts/prototype/prototype-home-desktop.png` |
@@ -142,6 +142,8 @@ Latest full verification after the ICP packet hardening passed:
 | Local ICP payment binding | Pass | advanced smoke transferred `0.001` local ICP to a per-intent ICRC subaccount |
 | Worker adapters | Pass | advanced smoke completed local Ollama, FreeLLMAPI-compatible, and MagickAI-compatible worker jobs |
 | Media storage manifests | Pass | advanced smoke anchored `media-store://sha256/...` manifests and wrote local content-addressed artifacts |
+| Live service harness | Pass in optional mode | `npm run smoke:services` skipped unconfigured live services safely |
+| Durable media backend | Pass for code path and decision | S3-compatible backend added; not exercised without isolated bucket credentials |
 
 The new e2e suite includes a check that `dist/.ic-assets.json5` carries:
 
@@ -184,12 +186,14 @@ Full ICP local handoff: `docs/handovers/magickbox-full-icp-local-deploy-handoff.
 - Production auth, billing, analytics, socket, and database flows were intentionally not tested.
 - Reference assets were copied locally for parity; final production work should confirm asset ownership and design-source files.
 - The local ICP backend proof is implemented for profile, credits, jobs, payments, worker completion, media manifests, collections, and audit state, but it is not a production backend.
+- MagickAI bridge health located the read-only MagickAI repo, but the local Python environment is missing `pymongo`; install bridge dependencies in an isolated environment before running the real SDK smoke.
+- S3-compatible media storage code exists but was not exercised because no isolated object-storage bucket credentials were configured.
 - Fully on-chain AI inference, production media storage, and fiat billing remain high-risk and need separate proofs.
 
 ## Recommended Next Steps
 
 1. Decide whether subscription payments need ICRC-2 transfer-from in addition to per-intent subaccounts.
-2. Connect the adapters to real isolated MagickAI and FreeLLMAPI worker services.
-3. Choose the durable media target for the next proof: asset canister chunks, S3-compatible object storage, IPFS/Filecoin, or another media service.
+2. Run FreeLLMAPI and MagickAI through `npm run smoke:services:required` after configuring isolated service env vars.
+3. Configure isolated S3-compatible media storage and rerun `npm run smoke:icp:advanced` with `MAGICKBOX_MEDIA_BACKEND=s3`.
 4. Promote the proven local ICP slice to a new isolated preview only after an explicit checkpoint: asset canister, Internet Identity, core backend canister, local/test payment proof, worker callback, media manifests, collection save, append-only audit events.
 5. Run a separately authorized secrets/config audit on the existing repos before any production rewrite planning.
