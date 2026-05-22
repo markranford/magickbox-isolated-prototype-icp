@@ -28,11 +28,16 @@ npm run e2e
 
 ## Docs
 
-- Audit: `docs/audit.md`
+- Goal: `docs/goals/magickbox-isolated-prototype-icp.goal.md`
+- Progress log: `docs/progress/magickbox-prototype-progress.md`
+- Opportunity audit: `docs/audits/magickbox-opportunity-review.md`
+- ICP architecture review: `docs/audits/magickbox-icp-architecture-review.md`
 - Route parity: `docs/evals/route-parity.md`
-- Handoff report: `docs/handoff.md`
+- Handoff report: `docs/handovers/magickbox-isolated-prototype-handoff.md`
 - Reference screenshots: `docs/artifacts/reference/`
 - Prototype screenshots: `docs/artifacts/prototype/`
+
+Legacy first-pass docs are still present at `docs/audit.md` and `docs/handoff.md`.
 
 ## Safety
 

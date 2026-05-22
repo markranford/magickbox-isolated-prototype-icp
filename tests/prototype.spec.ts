@@ -1,5 +1,6 @@
 import { expect, test } from "@playwright/test";
 import axe from "axe-core";
+import { readFile } from "node:fs/promises";
 
 test("landing route preserves observable UX and has no runtime errors", async ({ page }, testInfo) => {
   const browserMessages: string[] = [];
@@ -57,6 +58,14 @@ test("Launch Beta enters the app shell and chat controls respond locally", async
   await page.getByLabel("Ask Magick Friend").fill("Make a product theme");
   await page.getByRole("button", { name: "Submit prompt" }).click();
   await expect(page.getByRole("status")).toContainText("Music Creation queued locally");
+});
+
+test("built assets include ICP asset canister routing policy", async () => {
+  const policy = await readFile("dist/.ic-assets.json5", "utf8");
+
+  expect(policy).toContain('"allow_raw_access": false');
+  expect(policy).toContain('"enable_aliasing": true');
+  expect(policy).toContain("Content-Security-Policy");
 });
 
 declare global {

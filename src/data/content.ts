@@ -246,6 +246,7 @@ export const architectureDecisions = [
   "The prototype uses local mock state to validate UX parity and interaction quality.",
   "The landing route preserves observed public copy, sections, and Launch Beta behavior.",
   "The app shell preserves the observed Explore entry point and major navigation labels.",
+  "The Vite build includes an ICP asset canister policy for certified serving and SPA fallback.",
   "Backend rewrite is deferred until API contracts, queue semantics, and production data ownership are documented.",
 ];
 
@@ -256,4 +257,35 @@ export const routeParity = [
   { route: "/home/collections", reference: "Collections route", prototype: "Collection overview state" },
   { route: "/home/subscriptions", reference: "Subscription routes", prototype: "Plan comparison and purchase-safe mock CTAs" },
   { route: "/auth/sign-in", reference: "Auth route exists in repo", prototype: "Non-production sign-in mock with no credential submission" },
+];
+
+export const icpReadiness = [
+  {
+    area: "Certified frontend",
+    recommendation: "Deploy the built Vite assets to a new ICP asset canister for an isolated preview.",
+    prototype: "Includes .ic-assets.json5 with raw access disabled, cache headers, CSP, and SPA aliasing.",
+  },
+  {
+    area: "Auth",
+    recommendation: "Use Internet Identity for the ICP proof slice, with app-specific principals and no password storage.",
+    prototype: "Sign-in remains mocked locally until a separate canister preview exists.",
+  },
+  {
+    area: "Application state",
+    recommendation:
+      "Move user profiles, project records, conversation metadata, generation jobs, collection state, and audit events into stable canister storage.",
+    prototype: "Models these states in local UI only so no production data is touched.",
+  },
+  {
+    area: "AI inference",
+    recommendation:
+      "Keep dynamic model inference in external workers/providers first; store job state, hashes, ownership, and result metadata on ICP.",
+    prototype: "Creation submits queue locally and documents the future canister contract boundary.",
+  },
+  {
+    area: "Payments and media",
+    recommendation:
+      "Evaluate ICRC-compatible credits for ICP-native payments while keeping Stripe and large media off-chain until product constraints are proven.",
+    prototype: "All subscription actions are disabled and media is static sample UI.",
+  },
 ];

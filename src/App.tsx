@@ -27,6 +27,7 @@ import {
   exploreItems,
   features,
   galleryItems,
+  icpReadiness,
   modes,
   plans,
   routeParity,
@@ -345,7 +346,7 @@ function ExplorePage() {
                 <span>{item.type}</span>
                 <h2>{item.title}</h2>
                 <p>
-                  by {item.author} · {item.stat}
+                  by {item.author} - {item.stat}
                 </p>
               </div>
               <button type="button">Remix</button>
@@ -520,6 +521,18 @@ function EvaluationPage() {
             ))}
           </tbody>
         </table>
+        <div className="eval-subsection">
+          <h2>ICP Readiness</h2>
+          <div className="icp-grid">
+            {icpReadiness.map((item) => (
+              <article className="icp-card" key={item.area}>
+                <h3>{item.area}</h3>
+                <p>{item.recommendation}</p>
+                <span>{item.prototype}</span>
+              </article>
+            ))}
+          </div>
+        </div>
       </section>
     </main>
   );
