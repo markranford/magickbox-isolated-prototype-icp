@@ -622,3 +622,44 @@ Blockers or risks:
 Next step:
 
 - Commit the ICP-connected frontend slice locally, then start manual II auth verification and the ICP/ICRC payment intent proof.
+
+## 2026-05-22T17:19:18+07:00 - Checkpoint 14: ICP-Connected Frontend Slice Committed Locally
+
+Current workspace/folder:
+
+`C:\Users\Mark\Documents\Codex\Codex_MagickBox\magick-box-rewrite-readiness-prototype`
+
+What was inspected:
+
+- Final git status and diff hygiene.
+- Remote configuration.
+- Ignored local ICP cache/secrets.
+
+What was created or changed:
+
+- Created local-only commit `7d3ccff feat: connect frontend to local ICP canister`.
+- Confirmed `.icp/` remains ignored.
+- Confirmed there are no configured remotes, so no push/PR/deploy-to-production path was touched.
+
+Commands run and results:
+
+- `git diff --check` -> no whitespace errors; expected LF-to-CRLF warnings only.
+- `git remote -v` -> no remotes printed.
+- `git status --short --ignored .icp` -> `.icp/` ignored.
+- First combined PowerShell `git add ... && git commit ...` attempt failed because this shell did not accept `&&`; no staging occurred from that command.
+- `git add README.md docs package.json package-lock.json src tests docs/artifacts/prototype` -> staged intended prototype files and artifacts only.
+- `git commit -m "feat: connect frontend to local ICP canister"` -> created commit `7d3ccff`.
+
+Decisions made:
+
+- Keep the commit local only.
+- Do not push, open PRs, configure remotes, or create any mainnet/production deployment.
+
+Blockers or risks:
+
+- No active blocker.
+- A final status check remains after this progress-log update is committed.
+
+Next step:
+
+- Commit this progress-log checkpoint, confirm clean status, and report the local ICP URLs plus the next recommended build slice.
