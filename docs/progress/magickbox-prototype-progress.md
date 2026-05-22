@@ -510,3 +510,115 @@ Blockers or risks:
 Next step:
 
 - Start generated bindings and Internet Identity wiring in the next implementation pass.
+
+## 2026-05-22T17:14:39+07:00 - Checkpoint 12: ICP Frontend Adapter And Bindings Added
+
+Current workspace/folder:
+
+`C:\Users\Mark\Documents\Codex\Codex_MagickBox\magick-box-rewrite-readiness-prototype`
+
+What was inspected:
+
+- `docs/goals/magickbox-full-icp-deployment.goal.md`.
+- Existing progress log tail.
+- Current React app, content data, Playwright tests, Vitest tests, Vite config, Candid interface, and Motoko canister source.
+- `@icp-sdk/auth`, `@icp-sdk/core`, and `@icp-sdk/bindgen` package metadata and local type definitions.
+- Current local asset canister response headers, confirming `ic_env` includes `PUBLIC_CANISTER_ID:magickbox_core`, `PUBLIC_CANISTER_ID:frontend`, and `IC_ROOT_KEY`.
+
+What was created or changed:
+
+- Added ICP frontend dependencies: `@icp-sdk/auth`, `@icp-sdk/core`, and dev dependency `@icp-sdk/bindgen`.
+- Generated TypeScript Candid bindings from `canisters/magickbox_core/magickbox_core.did` into `src/icp/generated/magickbox_core.did.ts`.
+- Added `src/icp/magickboxClient.ts` for `ic_env` runtime detection, local II URL selection, authenticated actor creation, and prompt hashing.
+- Added `src/icp/MagickBoxIcpContext.tsx` for dual-mode runtime state: ICP asset-canister mode with II/canister calls, or labeled mock fallback in Vite.
+- Wired `src/App.tsx` so the composer uses canister provider/credit options when available, requires II before canister writes, creates canister generation jobs after auth, and shows canister insufficient-credit recovery options.
+- Added ICP account/status UI and recent job/credit display without touching production services.
+- Added `src/icp/magickboxClient.test.ts` for adapter fallback, local II URL, and prompt-hash coverage.
+
+Commands run and results:
+
+- `npm install @icp-sdk/auth@7.0.0 @icp-sdk/core@5.4.0 @dfinity/candid@3.4.3 @dfinity/principal@3.4.3` -> installed, then showed deprecation warnings for old DFINITY packages.
+- `npm uninstall @dfinity/candid @dfinity/principal` -> removed deprecated packages and kept the current `@icp-sdk/core` Candid/Principal exports.
+- `npm install -D @icp-sdk/bindgen@0.4.0` -> installed bindgen.
+- `npx icp-bindgen --did-file canisters\magickbox_core\magickbox_core.did --out-dir src\icp\generated --declarations-typescript --declarations-flat --actor-interface-file --force` -> generated bindings.
+- `npm run lint` -> initially failed on the React Fast Refresh context-module export rule.
+- Added a narrow file-level ESLint exception for the context/provider module, then `npm run lint` -> passed.
+- `npm run test` -> passed, 2 files / 5 tests.
+- `npm run build` -> initially failed on generated binding unused `IDL` and strict Candid option indexing.
+- Fixed the generated init stub and option indexing with `firstOrNull`, then `npm run build` -> passed.
+
+Decisions made:
+
+- Use `@icp-sdk/core` and `@icp-sdk/auth` rather than deprecated `@dfinity/*` frontend packages.
+- Read `ic_env` from the ICP asset canister and avoid runtime root-key fetching.
+- Keep Vite development as a labeled mock fallback unless the app is served by the local ICP asset canister.
+- Use `http://id.ai.localhost:<current-port>` for local Internet Identity so the existing port `8010` works.
+- Store prompt hashes/previews only in canister calls, matching the canister privacy boundary.
+
+Blockers or risks:
+
+- Browser sign-in against local Internet Identity still needs to be exercised from the local ICP asset canister after redeploying the new frontend build.
+- ICP/ICRC payment transfers are still not implemented.
+- The UI now has adapter wiring, but worker callback protocols for MagickAI, FreeLLMAPI, and local Ollama remain future slices.
+
+Next step:
+
+- Run full frontend verification, redeploy the built frontend to local ICP, smoke the canister plus asset canister, then update the handoff docs and commit the ICP-connected frontend slice locally.
+
+## 2026-05-22T17:18:10+07:00 - Checkpoint 13: ICP-Connected Frontend Verified And Redeployed Locally
+
+Current workspace/folder:
+
+`C:\Users\Mark\Documents\Codex\Codex_MagickBox\magick-box-rewrite-readiness-prototype`
+
+What was inspected:
+
+- Final frontend verification output.
+- WSL Motoko canister build output.
+- Local ICP deploy output on gateway port `8010`.
+- Local canister smoke output.
+- Local asset canister HTTP responses for `/`, `/home/magick-chat`, and `/evaluation`.
+- Browser-rendered asset canister `/home/magick-chat` page and console output.
+
+What was created or changed:
+
+- Rebuilt `dist/` through `npm run verify`.
+- Redeployed the frontend asset canister and `magickbox_core` canister locally.
+- Added browser smoke screenshot `docs/artifacts/prototype/local-icp-chat-connected.png`.
+- Updated `docs/handovers/magickbox-full-icp-local-deploy-handoff.md` with the new ICP-connected frontend status, current canister IDs, verification results, known gaps, and next build slice.
+- Updated `docs/audits/magickbox-icp-architecture-review.md` to mark the ICP proof slice foundations as implemented.
+- Updated `README.md` Candid UI URL.
+- Updated `docs/goals/magickbox-full-icp-deployment.goal.md` current build status.
+
+Commands run and results:
+
+- `npm run verify` -> passed with no warnings: lint, 2 Vitest files / 5 tests, Vite build, and 10 Playwright tests.
+- `wsl ... icp build magickbox_core` -> passed.
+- `wsl ... bash scripts/deploy-local-icp.sh` -> passed on port `8010`; stopped only this project's stale local ICP process on that port.
+- `wsl ... bash scripts/smoke-local-icp.sh` -> passed; proved profile registration, insufficient-credit response, FreeLLMAPI zero-credit job creation, job listing, and audit listing.
+- `Invoke-WebRequest http://frontend.local.localhost:8010/` -> HTTP 200, expected title marker, and `ic_env` cookie includes `PUBLIC_CANISTER_ID:magickbox_core`.
+- `Invoke-WebRequest http://frontend.local.localhost:8010/home/magick-chat` -> HTTP 200 and expected title marker.
+- `Invoke-WebRequest http://frontend.local.localhost:8010/evaluation` -> HTTP 200 and expected title marker.
+- Browser smoke with Playwright against `http://frontend.local.localhost:8010/home/magick-chat` -> UI showed `ICP canister`, loaded five provider options from `magickbox_core`, wrote screenshot, and recorded no console warnings/errors.
+
+Current local canister IDs:
+
+- Frontend asset canister: `tz2ag-zx777-77776-aaabq-cai`.
+- Core canister: `t63gs-up777-77776-aaaba-cai`.
+- Candid UI: `http://tqzl2-p7777-77776-aaaaa-cai.localhost:8010/?id=t63gs-up777-77776-aaaba-cai`.
+
+Decisions made:
+
+- Keep Vite as a labeled mock fallback while making the local asset canister the real ICP runtime.
+- Keep local Internet Identity manual/passkey completion as the next checkpoint because automated passkey interaction was not required for this slice.
+- Keep all deployment local only; no mainnet spend, no production login, no Caffeine.ai action, and no production repo action.
+
+Blockers or risks:
+
+- No active local build/deploy blocker.
+- Internet Identity is wired but authenticated browser flow still needs manual exercise.
+- ICP/ICRC payments, worker callbacks, media manifests, and local/own-provider handshakes remain future slices.
+
+Next step:
+
+- Commit the ICP-connected frontend slice locally, then start manual II auth verification and the ICP/ICRC payment intent proof.

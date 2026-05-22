@@ -32,7 +32,7 @@ Local ICP URLs:
 ```text
 http://frontend.local.localhost:8010/
 http://frontend.local.localhost:8010/home/magick-chat
-http://tqzl2-p7777-77776-aaaaa-cai.localhost:8010/?id=tz2ag-zx777-77776-aaabq-cai
+http://tqzl2-p7777-77776-aaaaa-cai.localhost:8010/?id=t63gs-up777-77776-aaaba-cai
 ```
 
 The deploy helper creates/uses a local-only `magickbox-local-prototype` identity. Its seed is written under ignored `.icp/cache/local-secrets/` and must not be used for anything valuable.

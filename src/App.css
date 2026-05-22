@@ -411,6 +411,88 @@ textarea:focus-visible {
   font-weight: 700;
 }
 
+.icp-status-strip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 12px;
+  padding: 12px 14px;
+  border: 1px solid rgba(75, 212, 216, 0.24);
+  border-radius: 8px;
+  background: rgba(12, 19, 21, 0.72);
+  text-align: left;
+}
+
+.icp-status-strip.compact {
+  width: min(100%, 760px);
+  margin-left: auto;
+  margin-right: auto;
+}
+
+.icp-status-strip > div:first-child {
+  min-width: 0;
+  display: grid;
+  gap: 4px;
+}
+
+.icp-status-strip span,
+.icp-status-strip small {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.35;
+}
+
+.icp-status-strip strong {
+  color: var(--text);
+  font-size: 13px;
+  line-height: 1.35;
+}
+
+.icp-status-strip small {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  max-width: 34rem;
+}
+
+.icp-status-actions {
+  flex: 0 0 auto;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.icp-status-actions span {
+  min-height: 28px;
+  display: inline-flex;
+  align-items: center;
+  padding: 0 8px;
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.06);
+  color: rgba(255, 255, 255, 0.78);
+  font-weight: 750;
+}
+
+.icp-status-actions button {
+  min-height: 32px;
+  padding: 0 10px;
+  border-radius: 8px;
+  background: rgba(75, 212, 216, 0.16);
+  border: 1px solid rgba(75, 212, 216, 0.28);
+  color: var(--text);
+  font-size: 12px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.icp-status-actions button:disabled {
+  cursor: wait;
+  opacity: 0.6;
+}
+
 .section,
 .gallery-section {
   width: min(100% - 40px, 1200px);
@@ -1088,6 +1170,15 @@ td {
 
   .workspace-header {
     flex-direction: column;
+  }
+
+  .icp-status-strip {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .icp-status-actions {
+    justify-content: flex-start;
   }
 }
 

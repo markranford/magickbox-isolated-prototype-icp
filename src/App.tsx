@@ -24,18 +24,21 @@ import {
 import {
   appNav,
   architectureDecisions,
-  creditRecoveryOptions,
   demoCreditBalance,
   exploreItems,
   features,
   galleryItems,
   icpReadiness,
-  icpProviderOptions,
   modes,
   plans,
   routeParity,
   type CreationMode,
 } from "./data/content";
+import {
+  MagickBoxIcpProvider,
+  useMagickBoxIcp,
+  type UiCreditOption,
+} from "./icp/MagickBoxIcpContext";
 import "./App.css";
 
 type CreditRecoveryState = {
@@ -43,6 +46,7 @@ type CreditRecoveryState = {
   required: number;
   balance: number;
   prompt: string;
+  options: UiCreditOption[];
 };
 
 function Logo() {
@@ -72,6 +76,36 @@ function LandingHeader() {
   );
 }
 
+function IcpStatusStrip({ compact = false }: { compact?: boolean }) {
+  const icp = useMagickBoxIcp();
+  const credits = icp.profile ? Number(icp.profile.credits) : demoCreditBalance;
+  const recentJob = icp.jobs[0];
+
+  return (
+    <div className={compact ? "icp-status-strip compact" : "icp-status-strip"}>
+      <div>
+        <span>{icp.runtimeMode === "icp" ? "ICP canister" : "Local mock"}</span>
+        <strong>{icp.statusMessage}</strong>
+        {icp.principalText ? <small>{icp.principalText}</small> : null}
+      </div>
+      <div className="icp-status-actions">
+        <span>{credits} credits</span>
+        {recentJob ? <span>Latest job #{Number(recentJob.id)}</span> : null}
+        {icp.runtimeMode === "icp" && icp.isAuthenticated ? (
+          <button type="button" onClick={icp.signOut} disabled={icp.isBusy}>
+            Sign out
+          </button>
+        ) : null}
+        {icp.runtimeMode === "icp" && !icp.isAuthenticated ? (
+          <button type="button" onClick={icp.signIn} disabled={icp.isBusy}>
+            Sign in with Internet Identity
+          </button>
+        ) : null}
+      </div>
+    </div>
+  );
+}
+
 function Composer({
   mode,
   onModeChange,
@@ -81,22 +115,64 @@ function Composer({
   onModeChange: (mode: CreationMode) => void;
   compact?: boolean;
 }) {
+  const icp = useMagickBoxIcp();
   const selected = modes.find((item) => item.id === mode) ?? modes[0];
   const [providerId, setProviderId] = useState("magick_ai_worker");
   const [prompt, setPrompt] = useState("");
   const [submitted, setSubmitted] = useState<string | null>(null);
   const [recovery, setRecovery] = useState<CreditRecoveryState | null>(null);
+  const [isSubmitting, setIsSubmitting] = useState(false);
+  const providerOptions = icp.providerOptions;
   const provider =
-    icpProviderOptions.find((item) => item.id === providerId) ?? icpProviderOptions[0];
+    providerOptions.find((item) => item.id === providerId) ?? providerOptions[0];
 
-  const submit = () => {
+  const submit = async () => {
     const value = prompt.trim() || selected.prompt;
+    setSubmitted(null);
+
+    if (icp.runtimeMode === "icp") {
+      setIsSubmitting(true);
+      const result = await icp.createGenerationJob({
+        mode,
+        providerId: provider.id,
+        prompt: value,
+        creditCost: provider.creditCost,
+      });
+      setIsSubmitting(false);
+
+      if (result.kind === "auth_required") {
+        setSubmitted(result.message);
+        return;
+      }
+
+      if (result.kind === "insufficient_credits") {
+        setRecovery({
+          providerLabel: provider.label,
+          required: result.required,
+          balance: result.balance,
+          prompt: value,
+          options: result.options,
+        });
+        return;
+      }
+
+      if (result.kind === "err") {
+        setSubmitted(result.message);
+        return;
+      }
+
+      setSubmitted(`${selected.label} queued on ICP job #${Number(result.job.id)}: ${value}`);
+      setPrompt("");
+      return;
+    }
+
     if (provider.creditCost > demoCreditBalance) {
       setRecovery({
         providerLabel: provider.label,
         required: provider.creditCost,
         balance: demoCreditBalance,
         prompt: value,
+        options: icp.creditOptions,
       });
       return;
     }
@@ -163,14 +239,20 @@ function Composer({
               value={providerId}
               onChange={(event) => setProviderId(event.target.value)}
             >
-              {icpProviderOptions.map((option) => (
+              {providerOptions.map((option) => (
                 <option key={option.id} value={option.id}>
                   {option.label}
                 </option>
               ))}
             </select>
           </label>
-          <button type="button" className="send-button" aria-label="Submit prompt" onClick={submit}>
+          <button
+            type="button"
+            className="send-button"
+            aria-label="Submit prompt"
+            onClick={submit}
+            disabled={isSubmitting || icp.isBusy}
+          >
             <Send size={18} aria-hidden="true" />
           </button>
         </div>
@@ -179,6 +261,7 @@ function Composer({
           <p>{provider.description}</p>
         </div>
       </div>
+      <IcpStatusStrip compact={compact} />
       {recovery ? (
         <section
           className="credit-recovery"
@@ -204,7 +287,7 @@ function Composer({
             </button>
           </div>
           <div className="credit-recovery-grid">
-            {creditRecoveryOptions.map((option) => (
+            {recovery.options.map((option) => (
               <button key={option.id} type="button" onClick={() => chooseRecovery(option.label)}>
                 <strong>{option.label}</strong>
                 <span>{option.description}</span>
@@ -552,13 +635,22 @@ function SettingsPage() {
 
 function SignInPage() {
   const navigate = useNavigate();
+  const icp = useMagickBoxIcp();
+
+  const continueWithIdentity = async () => {
+    if (icp.runtimeMode === "icp") {
+      await icp.signIn();
+    }
+
+    navigate("/home/explore?category=latest");
+  };
 
   return (
     <main className="auth-page">
       <Logo />
       <section className="auth-card" aria-labelledby="signin-title">
         <h1 id="signin-title">Sign in</h1>
-        <p>This is a non-production mock. It validates layout only and never sends credentials.</p>
+        <p>{icp.statusMessage}</p>
         <label>
           Email
           <input type="email" placeholder="john.doe@gmail.com" autoComplete="email" />
@@ -567,8 +659,8 @@ function SignInPage() {
           Password
           <input type="password" placeholder="Please enter your password" autoComplete="current-password" />
         </label>
-        <button type="button" onClick={() => navigate("/home/explore?category=latest")}>
-          Continue locally
+        <button type="button" onClick={continueWithIdentity} disabled={icp.isBusy}>
+          {icp.runtimeMode === "icp" ? "Sign in with Internet Identity" : "Continue locally"}
         </button>
       </section>
     </main>
@@ -624,21 +716,23 @@ function EvaluationPage() {
 
 function App() {
   return (
-    <BrowserRouter>
-      <Routes>
-        <Route path="/" element={<LandingPage />} />
-        <Route path="/home/explore" element={<ExplorePage />} />
-        <Route path="/home/magick-chat" element={<ChatPage />} />
-        <Route path="/home/magick-chat/c" element={<ChatPage />} />
-        <Route path="/home/magick-chat/c/:id" element={<ChatPage />} />
-        <Route path="/home/collections" element={<CollectionsPage />} />
-        <Route path="/home/subscriptions" element={<SubscriptionsPage />} />
-        <Route path="/home/settings" element={<SettingsPage />} />
-        <Route path="/auth/sign-in" element={<SignInPage />} />
-        <Route path="/evaluation" element={<EvaluationPage />} />
-        <Route path="*" element={<LandingPage />} />
-      </Routes>
-    </BrowserRouter>
+    <MagickBoxIcpProvider>
+      <BrowserRouter>
+        <Routes>
+          <Route path="/" element={<LandingPage />} />
+          <Route path="/home/explore" element={<ExplorePage />} />
+          <Route path="/home/magick-chat" element={<ChatPage />} />
+          <Route path="/home/magick-chat/c" element={<ChatPage />} />
+          <Route path="/home/magick-chat/c/:id" element={<ChatPage />} />
+          <Route path="/home/collections" element={<CollectionsPage />} />
+          <Route path="/home/subscriptions" element={<SubscriptionsPage />} />
+          <Route path="/home/settings" element={<SettingsPage />} />
+          <Route path="/auth/sign-in" element={<SignInPage />} />
+          <Route path="/evaluation" element={<EvaluationPage />} />
+          <Route path="*" element={<LandingPage />} />
+        </Routes>
+      </BrowserRouter>
+    </MagickBoxIcpProvider>
   );
 }
 

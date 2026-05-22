@@ -1,6 +1,6 @@
 # /goal Magick Box Mostly-On-ICP Deployment Prototype
 
-Last updated: 2026-05-22T15:57:39+07:00
+Last updated: 2026-05-22T17:20:00+07:00
 
 ## Mission
 
@@ -81,6 +81,11 @@ Off-chain/external adapters should handle:
 First safe build slice:
 
 - Local ICP configuration and canister source.
+- Certified frontend asset canister deploy on isolated local gateway `8010`.
+- Generated TypeScript Candid binding from `magickbox_core.did`.
+- Frontend adapter that reads asset canister `ic_env`.
+- React Internet Identity entry points.
+- Composer canister job creation path after Internet Identity auth.
 - No mainnet deploy.
 - No production live login.
 - No production payment connection.

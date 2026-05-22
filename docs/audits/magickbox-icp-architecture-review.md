@@ -92,8 +92,9 @@ Existing OAuth/Auth.js:
 
 Prototype choice:
 
-- Keep current UI sign-in mocked locally.
-- Next isolated proof: Internet Identity only, no production OAuth provider.
+- Use Internet Identity only for the isolated proof path.
+- Current local implementation: React detects the ICP asset canister `ic_env`, exposes Internet Identity sign-in/sign-out, and can write profile/job state to `magickbox_core` after auth.
+- No production OAuth provider is connected.
 
 ## Storage Options
 
@@ -187,16 +188,24 @@ A mostly ICP hybrid Magick Box would need:
 
 This is the best prototype path because it proves ICP-native ownership, trust, identity, and deployment safety while avoiding premature dependence on fully on-chain AI/media economics.
 
-## Suggested ICP Proof Slice
+## Current ICP Proof Slice
 
-Build one narrow vertical slice after this frontend prototype:
+The current isolated prototype now includes the narrow vertical slice foundations:
 
-1. New isolated ICP asset canister serves the current frontend.
-2. Internet Identity sign-in writes/reads a minimal profile from a new isolated backend canister.
-3. A `create_generation_job` canister method records mode, prompt hash, model/tier, status, and caller principal.
-4. A local/off-chain mock worker marks the job complete with a result hash and media URL.
-5. The frontend shows job status and allows saving the result into a collection.
-6. Append-only audit events record profile creation, job creation, completion, and collection save.
+1. Local isolated ICP asset canister serves the current frontend.
+2. Local Internet Identity is enabled for the network and wired into the React runtime.
+3. A `magickbox_core` canister stores profile, credits, provider options, credit recovery options, generation jobs, collections, and audit events.
+4. The frontend reads the asset canister `ic_env`, builds an authenticated actor, registers a profile, and creates generation jobs after auth.
+5. Canister smoke tests prove insufficient-credit recovery and FreeLLMAPI zero-credit job creation.
+6. Browser smoke confirms the asset-served frontend detects ICP mode and loads provider options from the core canister with no console errors.
+
+Next proof steps:
+
+1. Manually complete the local Internet Identity passkey flow and capture the authenticated composer state.
+2. Add local ICRC/ICP payment intent records and a local/test-ledger top-up proof.
+3. Add a mock worker callback that marks a job complete with a result hash and media URL.
+4. Surface job status and save-to-collection from the authenticated frontend.
+5. Add upgrade/stable-state checks for profile, job, and audit records.
 
 Success criteria:
 

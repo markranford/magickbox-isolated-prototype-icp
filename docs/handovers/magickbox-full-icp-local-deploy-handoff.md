@@ -28,15 +28,15 @@ Frontend asset canister:
 
 Core canister:
 
-`tz2ag-zx777-77776-aaabq-cai`
+`t63gs-up777-77776-aaaba-cai`
 
 Candid UI:
 
-`http://tqzl2-p7777-77776-aaaaa-cai.localhost:8010/?id=tz2ag-zx777-77776-aaabq-cai`
+`http://tqzl2-p7777-77776-aaaaa-cai.localhost:8010/?id=t63gs-up777-77776-aaaba-cai`
 
 Frontend canister:
 
-`t63gs-up777-77776-aaaba-cai`
+`tz2ag-zx777-77776-aaabq-cai`
 
 Local prototype identity:
 
@@ -60,6 +60,11 @@ The local seed is stored only under ignored `.icp/cache/local-secrets/`. Do not 
 - Generation job records.
 - Collection save endpoint.
 - Append-only audit events.
+- Generated TypeScript Candid binding for the frontend.
+- React adapter that reads `ic_env` from the asset canister.
+- React Internet Identity sign-in and sign-out entry points.
+- Composer path that creates canister generation jobs after Internet Identity auth.
+- Browser-visible provider and credit-recovery options loaded from `magickbox_core` when served by the asset canister.
 
 ## Off-ICP Boundaries
 
@@ -103,13 +108,19 @@ npm run verify
 
 Latest completed checks:
 
-- `npm install` restored Windows native optional dependencies after the WSL build-boundary fix.
-- `npm run verify` passed: lint, Vitest, Vite build, and 10 Playwright tests.
+- `npm run verify` passed: lint, 2 Vitest files / 5 tests, Vite build, and 10 Playwright tests.
 - `wsl ... icp build magickbox_core` passed.
 - `scripts/deploy-local-icp.sh` passed on port `8010`.
 - `scripts/smoke-local-icp.sh` passed.
 - `http://frontend.local.localhost:8010/` returned HTTP 200.
 - `http://frontend.local.localhost:8010/home/magick-chat` returned HTTP 200.
+- `http://frontend.local.localhost:8010/evaluation` returned HTTP 200.
+- Browser smoke against `http://frontend.local.localhost:8010/home/magick-chat` confirmed:
+  - app detected `ic_env`;
+  - UI switched to `ICP canister` mode;
+  - provider options loaded from the core canister;
+  - no console warnings/errors were recorded;
+  - screenshot artifact written to `docs/artifacts/prototype/local-icp-chat-connected.png`.
 - Backend smoke proved:
   - profile registration for `mark@stratagility.com`;
   - insufficient-credit result for `paid_managed` requiring 80 credits with 25 balance;
@@ -120,9 +131,8 @@ Latest completed checks:
 ## Known Gaps
 
 - Windows owns the frontend build and WSL owns ICP deploy. This avoids WSL `npm install` rewriting native optional dependencies in `node_modules`.
-- The frontend is deployed as ICP assets but still uses local/mock state for the visible composer interactions.
-- The frontend does not yet call `magickbox_core` through generated bindings.
-- Internet Identity is enabled in the local ICP network but not wired into the React sign-in page yet.
+- Vite development intentionally remains a labeled mock fallback; real canister mode is active from the local ICP asset canister through `ic_env`.
+- Internet Identity is wired into the React runtime, but manual passkey/login completion was not exercised in this automated pass.
 - ICP/ICRC payment transfer flow is not implemented yet.
 - No worker callback protocol for MagickAI/FreeLLMAPI/local Ollama is implemented yet.
 - No media hash/manifest upload flow yet.
@@ -130,10 +140,9 @@ Latest completed checks:
 
 ## Recommended Next Build Slice
 
-1. Generate TypeScript bindings for `magickbox_core`.
-2. Add an ICP client adapter that reads the local asset canister `ic_env`.
-3. Replace the mock sign-in with Internet Identity.
-4. Wire `register_profile`, `get_provider_options`, `create_generation_job`, and insufficient-credit results into the React composer.
-5. Add local ICRC/ICP payment intent records, then a real test-ledger top-up proof.
-6. Add a worker callback contract for MagickAI and FreeLLMAPI.
-7. Add an explicit checkpoint before any Caffeine.ai creation, live Magick Box login, or isolated mainnet canister deployment.
+1. Manually exercise Internet Identity in the local asset canister and capture the authenticated job flow screenshot.
+2. Add local ICRC/ICP payment intent records, then a real test-ledger top-up proof.
+3. Add a worker callback contract for MagickAI and FreeLLMAPI.
+4. Add a local Ollama/own-provider adapter handshake that stores endpoint metadata without storing raw secrets on ICP.
+5. Add media manifest/hash records and collection save from a completed mock job.
+6. Add an explicit checkpoint before any Caffeine.ai creation, live Magick Box login, or isolated mainnet canister deployment.
