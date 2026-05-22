@@ -19,7 +19,7 @@ describe("Magick Box rewrite prototype", () => {
     );
   });
 
-  it("queues a local creation without calling production services", async () => {
+  it("does not pretend to queue a creation when no ICP runtime is available", async () => {
     const user = userEvent.setup();
     render(<App />);
 
@@ -28,7 +28,20 @@ describe("Magick Box rewrite prototype", () => {
     await user.click(screen.getByRole("button", { name: "Submit prompt" }));
 
     expect(screen.getByRole("status")).toHaveTextContent(
-      "Video Creation queued locally: Make a launch reel",
+      "Open the local ICP asset canister to create a real ICP job",
     );
+    expect(screen.queryByText(/queued locally/i)).not.toBeInTheDocument();
+  });
+
+  it("offers ICP sign-in choices without credential fields", () => {
+    window.history.pushState({}, "", "/auth/sign-in");
+
+    render(<App />);
+
+    expect(screen.getByRole("heading", { name: "Sign in" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Sign in with Internet Identity" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: "Use local browser identity" })).toBeInTheDocument();
+    expect(screen.queryByLabelText("Email")).not.toBeInTheDocument();
+    expect(screen.queryByLabelText("Password")).not.toBeInTheDocument();
   });
 });

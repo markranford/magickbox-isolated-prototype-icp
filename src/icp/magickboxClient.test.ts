@@ -2,17 +2,18 @@ import { describe, expect, it } from "vitest";
 import {
   canUseIcpRuntime,
   getIdentityProviderUrl,
+  getOrCreateLocalBrowserIdentity,
   promptHash,
   resolveIcpRuntime,
 } from "./magickboxClient";
 
 describe("Magick Box ICP client adapter", () => {
-  it("uses the mock fallback when the asset canister ic_env cookie is absent", () => {
+  it("requires the asset canister runtime when the ic_env cookie is absent", () => {
     const runtime = resolveIcpRuntime();
 
     expect(canUseIcpRuntime(runtime)).toBe(false);
     expect(runtime.canisterId).toBeNull();
-    expect(runtime.reason).toContain("no ic_env cookie");
+    expect(runtime.reason).toContain("canister writes require the ICP asset canister");
   });
 
   it("targets local Internet Identity from localhost-style origins", () => {
@@ -25,5 +26,13 @@ describe("Magick Box ICP client adapter", () => {
 
     expect(first).toBe(second);
     expect(first.length).toBeGreaterThanOrEqual(8);
+  });
+
+  it("persists a real local browser identity for popup-blocked environments", () => {
+    const first = getOrCreateLocalBrowserIdentity();
+    const second = getOrCreateLocalBrowserIdentity();
+
+    expect(first.getPrincipal().toText()).toBe(second.getPrincipal().toText());
+    expect(first.getPrincipal().isAnonymous()).toBe(false);
   });
 });

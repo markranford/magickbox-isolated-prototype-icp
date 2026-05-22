@@ -41,7 +41,7 @@ test("landing route preserves observable UX and has no runtime errors", async ({
   expect(browserMessages).toEqual([]);
 });
 
-test("Launch Beta enters the app shell and chat controls respond locally", async ({ page }) => {
+test("Launch Beta enters the app shell and creation requires a real ICP runtime", async ({ page }) => {
   await page.goto("/");
   await page.getByRole("link", { name: "Launch Beta" }).click();
   await expect(page).toHaveURL(/\/home\/explore\?category=latest/);
@@ -57,7 +57,9 @@ test("Launch Beta enters the app shell and chat controls respond locally", async
   await page.getByRole("tab", { name: "Music Creation" }).click();
   await page.getByLabel("Ask Magick Friend").fill("Make a product theme");
   await page.getByRole("button", { name: "Submit prompt" }).click();
-  await expect(page.getByRole("status")).toContainText("Music Creation queued locally");
+  await expect(page.getByRole("status")).toContainText(
+    "Open the local ICP asset canister to create a real ICP job",
+  );
 });
 
 test("evaluation route exposes route parity and ICP readiness", async ({ page }) => {
@@ -67,24 +69,26 @@ test("evaluation route exposes route parity and ICP readiness", async ({ page })
   await expect(page.getByRole("heading", { name: "ICP Readiness" })).toBeVisible();
   await expect(page.getByRole("cell", { name: "/", exact: true })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Certified frontend" })).toBeVisible();
-  await expect(page.getByText("Internet Identity")).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Auth" })).toBeVisible();
+  await expect(page.getByText(/local signed browser identity/).first()).toBeVisible();
 });
 
-test("insufficient credits offers ICP and non-paid AI recovery paths", async ({ page }) => {
+test("sign-in route offers ICP identities without credential fields", async ({ page }) => {
+  await page.goto("/auth/sign-in");
+
+  await expect(page.getByRole("heading", { name: "Sign in" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Sign in with Internet Identity" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Use local browser identity" })).toBeVisible();
+  await expect(page.getByLabel("Email")).toHaveCount(0);
+  await expect(page.getByLabel("Password")).toHaveCount(0);
+});
+
+test("creation surface exposes provider choices and credit state", async ({ page }) => {
   await page.goto("/home/magick-chat");
 
   await page.getByRole("tab", { name: "Video Creation" }).click();
-  await page.getByLabel("AI provider route").selectOption("paid_managed");
-  await page.getByLabel("Ask Magick Friend").fill("Create a long cinematic launch video");
-  await page.getByRole("button", { name: "Submit prompt" }).click();
-
-  await expect(page.getByRole("heading", { name: "Choose how to continue" })).toBeVisible();
-  await expect(page.getByText("Top up with ICP")).toBeVisible();
-  await expect(page.getByText("Subscribe with ICP")).toBeVisible();
-  await expect(page.getByText("Watch an advert")).toBeVisible();
-  await expect(page.getByText("Use FreeLLMAPI")).toBeVisible();
-  await expect(page.getByText("Connect own AI subscription")).toBeVisible();
-  await expect(page.getByText("Connect local Ollama")).toBeVisible();
+  await expect(page.getByLabel("AI provider route")).toContainText("MagickAI worker");
+  await expect(page.getByText("25 credits")).toBeVisible();
 });
 
 test("built assets include ICP asset canister routing policy", async () => {

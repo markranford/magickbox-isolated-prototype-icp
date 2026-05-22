@@ -663,3 +663,64 @@ Blockers or risks:
 Next step:
 
 - Commit this progress-log checkpoint, confirm clean status, and report the local ICP URLs plus the next recommended build slice.
+
+## 2026-05-22T17:37:57+07:00 - Checkpoint 15: In-App Browser Signed Identity And No-Fake-Queue Flow
+
+Current workspace/folder:
+
+`C:\Users\Mark\Documents\Codex\Codex_MagickBox\magick-box-rewrite-readiness-prototype`
+
+What was inspected:
+
+- User screenshot showing `Signer window could not be opened` in the Codex in-app browser.
+- `@icp-sdk/auth` and `@icp-sdk/signer` implementation around `window.open`, confirming web signers require a popup window.
+- Current React ICP context, client adapter, composer, sign-in page, tests, and local deploy helper.
+
+What was created or changed:
+
+- Added a persistent local signed browser identity using `Ed25519KeyIdentity` for local asset-canister testing when the in-app browser blocks Internet Identity popups.
+- Kept Internet Identity as the preferred path where signer popups are allowed.
+- Removed credential-form sign-in fields.
+- Removed fake local generation queueing; Vite/no-`ic_env` mode now refuses to create jobs and tells the user to open the ICP asset canister.
+- Added `Use local browser identity` in the ICP status strip and sign-in page.
+- Wired local browser identity to register/read profile state and create real canister generation jobs.
+- Renamed the canister completion method from `complete_mock_job` to `complete_external_job`.
+- Updated route parity, ICP architecture review, full ICP goal, full ICP handoff, and visible app copy to reflect the real local ICP flow.
+- Hardened `scripts/deploy-local-icp.sh` with retrying project-local ICP cache cleanup.
+
+Commands run and results:
+
+- `npm run test` after RED tests -> failed as expected because local queueing, credential fields, and local browser identity helper still existed/missed in old behavior.
+- `npm run test` after implementation -> passed, 2 files / 7 tests.
+- `npm run verify` -> initially failed because a broad `Internet Identity` Playwright locator matched three elements after doc copy updates.
+- Tightened the locator to the Auth readiness card, then `npm run verify` -> passed: lint, 2 Vitest files / 7 tests, Vite build, and 12 Playwright tests.
+- First redeploy attempt failed during `.icp/cache/networks/local` cleanup with `Directory not empty`; root cause was a local PocketIC checkpoint cleanup race after stopping the stale gateway process.
+- Manual `rm -rf .icp/cache/networks/local` succeeded after process release.
+- Updated deploy script with cleanup retries.
+- `wsl ... bash scripts/deploy-local-icp.sh && bash scripts/smoke-local-icp.sh` -> passed on port `8010`.
+- `Invoke-WebRequest http://frontend.local.localhost:8010/` -> HTTP 200, expected title, `ic_env` contains `PUBLIC_CANISTER_ID:magickbox_core`.
+- `Invoke-WebRequest http://frontend.local.localhost:8010/home/magick-chat` -> HTTP 200 and expected title.
+- Playwright browser smoke against `http://frontend.local.localhost:8010/home/magick-chat` -> `Use local browser identity` connected a non-anonymous principal, created ICP job `#2`, then `paid_managed` showed the canister insufficient-credit recovery panel; no console warnings/errors.
+
+Current local canister IDs:
+
+- Frontend asset canister: `tz2ag-zx777-77776-aaabq-cai`.
+- Core canister: `t63gs-up777-77776-aaaba-cai`.
+- Candid UI: `http://tqzl2-p7777-77776-aaaaa-cai.localhost:8010/?id=t63gs-up777-77776-aaaba-cai`.
+
+Decisions made:
+
+- Treat in-app browser popup blocking as an environment limitation, not an auth-code failure.
+- Add a real signed local browser identity rather than an unauthenticated development bypass.
+- Refuse to fake generation when no canister runtime is available.
+- Keep payment, ad verification, external AI execution, and media storage as explicit canister/adapter deployments rather than hidden UI stubs.
+
+Blockers or risks:
+
+- Internet Identity still needs a browser that allows signer popups, or further work on a same-window auth strategy if the SDK supports it later.
+- ICP/ICRC payment transfer, ad verifier credit grants, AI worker callbacks, and media manifests are not yet implemented.
+- Local browser identity is for isolated local testing only; it is not a production replacement for Internet Identity or wallet auth.
+
+Next step:
+
+- Commit this slice locally, then build the next real canister slice: ICRC/ICP payment intent/test-ledger top-up or external AI worker callback.

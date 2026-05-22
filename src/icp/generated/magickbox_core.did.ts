@@ -73,7 +73,7 @@ export interface ProviderOption {
 export type ResultText = { 'ok' : string } |
   { 'err' : string };
 export interface _SERVICE {
-  'complete_mock_job' : ActorMethod<
+  'complete_external_job' : ActorMethod<
     [bigint, string, string],
     { 'ok' : GenerationJob } |
       { 'err' : string }
@@ -167,7 +167,7 @@ export const idlFactory: IDL.InterfaceFactory = ({ IDL }) => {
   });
   
   return IDL.Service({
-    'complete_mock_job' : IDL.Func(
+    'complete_external_job' : IDL.Func(
         [IDL.Nat, IDL.Text, IDL.Text],
         [IDL.Variant({ 'ok' : GenerationJob, 'err' : IDL.Text })],
         [],

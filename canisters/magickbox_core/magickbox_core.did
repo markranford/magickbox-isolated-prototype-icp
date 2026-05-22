@@ -69,7 +69,7 @@ service : {
   get_credit_options : () -> (vec CreditOption) query;
   get_provider_options : () -> (vec ProviderOption) query;
   create_generation_job : (text, text, text, text, nat) -> (CreateJobResult);
-  complete_mock_job : (nat, text, text) -> (variant { ok : GenerationJob; err : text });
+  complete_external_job : (nat, text, text) -> (variant { ok : GenerationJob; err : text });
   save_to_collection : (nat, text, bool) -> (variant { ok : CollectionRecord; err : text });
   list_my_jobs : () -> (vec GenerationJob) query;
   list_my_collections : () -> (vec CollectionRecord) query;

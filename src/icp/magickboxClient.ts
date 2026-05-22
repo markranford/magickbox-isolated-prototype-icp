@@ -6,6 +6,7 @@ import {
   type Identity,
 } from "@icp-sdk/core/agent";
 import { safeGetCanisterEnv } from "@icp-sdk/core/agent/canister-env";
+import { Ed25519KeyIdentity } from "@icp-sdk/core/identity";
 import {
   idlFactory,
   type _SERVICE,
@@ -26,6 +27,7 @@ export type IcpRuntime = {
 };
 
 const eightHoursInNanoseconds = BigInt(8) * BigInt(3_600_000_000_000);
+const localIdentityStorageKey = "magickbox.localBrowserIdentity.v1";
 
 function currentOrigin() {
   if (typeof window === "undefined") {
@@ -64,7 +66,7 @@ export function resolveIcpRuntime(): IcpRuntime {
   const host = env ? currentOrigin() : viteHost ?? currentOrigin();
   const reason = env
     ? "ic_env detected from the ICP asset canister"
-    : "no ic_env cookie found; using local mock fallback unless Vite ICP env is supplied";
+    : "no ic_env cookie found; canister writes require the ICP asset canister unless Vite ICP env is supplied";
 
   return {
     canisterId,
@@ -105,6 +107,19 @@ export function createAuthClient() {
       disableDefaultIdleCallback: true,
     },
   });
+}
+
+export function getOrCreateLocalBrowserIdentity() {
+  const stored = globalThis.localStorage?.getItem(localIdentityStorageKey);
+
+  if (stored) {
+    return Ed25519KeyIdentity.fromJSON(stored);
+  }
+
+  const identity = Ed25519KeyIdentity.generate();
+  globalThis.localStorage?.setItem(localIdentityStorageKey, JSON.stringify(identity.toJSON()));
+
+  return identity;
 }
 
 export async function signInWithInternetIdentity(authClient: AuthClient) {

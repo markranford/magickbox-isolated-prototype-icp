@@ -80,11 +80,12 @@ function IcpStatusStrip({ compact = false }: { compact?: boolean }) {
   const icp = useMagickBoxIcp();
   const credits = icp.profile ? Number(icp.profile.credits) : demoCreditBalance;
   const recentJob = icp.jobs[0];
+  const runtimeLabel = icp.runtimeMode === "icp" ? "ICP canister" : "ICP unavailable";
 
   return (
     <div className={compact ? "icp-status-strip compact" : "icp-status-strip"}>
       <div>
-        <span>{icp.runtimeMode === "icp" ? "ICP canister" : "Local mock"}</span>
+        <span>{runtimeLabel}</span>
         <strong>{icp.statusMessage}</strong>
         {icp.principalText ? <small>{icp.principalText}</small> : null}
       </div>
@@ -97,9 +98,14 @@ function IcpStatusStrip({ compact = false }: { compact?: boolean }) {
           </button>
         ) : null}
         {icp.runtimeMode === "icp" && !icp.isAuthenticated ? (
-          <button type="button" onClick={icp.signIn} disabled={icp.isBusy}>
-            Sign in with Internet Identity
-          </button>
+          <>
+            <button type="button" onClick={icp.signIn} disabled={icp.isBusy}>
+              Sign in with Internet Identity
+            </button>
+            <button type="button" onClick={icp.signInWithLocalIdentity} disabled={icp.isBusy}>
+              Use local browser identity
+            </button>
+          </>
         ) : null}
       </div>
     </div>
@@ -166,27 +172,20 @@ function Composer({
       return;
     }
 
-    if (provider.creditCost > demoCreditBalance) {
-      setRecovery({
-        providerLabel: provider.label,
-        required: provider.creditCost,
-        balance: demoCreditBalance,
-        prompt: value,
-        options: icp.creditOptions,
-      });
-      return;
-    }
-    setSubmitted(`${selected.label} queued locally: ${value}`);
-    setPrompt("");
+    setSubmitted("Open the local ICP asset canister to create a real ICP job");
   };
 
-  const chooseRecovery = (label: string) => {
+  const chooseRecovery = (option: UiCreditOption) => {
     if (!recovery) {
       return;
     }
-    setSubmitted(`${label} selected locally for: ${recovery.prompt}`);
+    if (["freellmapi", "own_api_key", "local_ollama"].includes(option.id)) {
+      setProviderId(option.id);
+      setSubmitted(`${option.label} selected. Submit again to create a zero-credit ICP job.`);
+    } else {
+      setSubmitted(`${option.label} requires the ICP payment/ad verifier canister in the next slice.`);
+    }
     setRecovery(null);
-    setPrompt("");
   };
 
   return (
@@ -288,7 +287,7 @@ function Composer({
           </div>
           <div className="credit-recovery-grid">
             {recovery.options.map((option) => (
-              <button key={option.id} type="button" onClick={() => chooseRecovery(option.label)}>
+              <button key={option.id} type="button" onClick={() => chooseRecovery(option)}>
                 <strong>{option.label}</strong>
                 <span>{option.description}</span>
               </button>
@@ -373,7 +372,7 @@ function LandingPage() {
       <section className="section" id="pricing" aria-labelledby="pricing-title">
         <div className="section-heading">
           <h2 id="pricing-title">Get More AI Power</h2>
-          <p>No subscription required in the prototype. Purchase actions are disabled and clearly marked.</p>
+          <p>Credit packages route through the ICP-first account model before any payment provider is attached.</p>
         </div>
         <div className="plan-grid">
           {plans.map((plan) => (
@@ -389,9 +388,7 @@ function LandingPage() {
                   </li>
                 ))}
               </ul>
-              <button type="button" disabled>
-                Subscribe
-              </button>
+              <Link to="/home/subscriptions">View credit paths</Link>
             </article>
           ))}
         </div>
@@ -542,7 +539,7 @@ function ChatPage() {
         <div className="chat-welcome">
           <Sparkles size={30} aria-hidden="true" />
           <h1 id="chat-title">What are we creating today?</h1>
-          <p>Same Magick Friend entry point, clearer state, keyboard-friendly controls, and local-only prototype behavior.</p>
+          <p>Same Magick Friend entry point with ICP-backed account, credit, provider, and job state.</p>
         </div>
         <div className="suggestion-list">
           {suggestions.map((suggestion) => (
@@ -564,14 +561,14 @@ function CollectionsPage() {
         <div className="workspace-header">
           <div>
             <h1 id="collections-title">Collections</h1>
-            <p>Prototype state for private and public creation boards.</p>
+            <p>ICP-backed state for private and public creation boards.</p>
           </div>
           <button type="button" className="primary-button">New collection</button>
         </div>
         <div className="empty-state">
           <LockKeyhole size={30} aria-hidden="true" />
           <h2>Personal boards stay private until published</h2>
-          <p>Reference parity keeps the route, while the rewrite proposal makes privacy and publishing state explicit.</p>
+          <p>Privacy and publishing state are explicit before anything is shared.</p>
         </div>
       </section>
     </AppShell>
@@ -579,23 +576,36 @@ function CollectionsPage() {
 }
 
 function SubscriptionsPage() {
+  const icp = useMagickBoxIcp();
+  const [notice, setNotice] = useState("ICP credit paths are loaded from the core canister when served by ICP assets.");
+
   return (
     <AppShell>
       <section className="workspace-panel" aria-labelledby="subscriptions-title">
         <div className="workspace-header">
           <div>
             <h1 id="subscriptions-title">Subscriptions</h1>
-            <p>Purchase-safe mock plan comparison. No billing provider is connected.</p>
+            <p>{notice}</p>
           </div>
         </div>
         <div className="plan-grid in-app">
-          {plans.map((plan) => (
-            <article className="plan-card" key={plan.name}>
-              <span>{plan.tag}</span>
-              <h2>{plan.name}</h2>
-              <strong>{plan.price}</strong>
-              <p>{plan.keys}</p>
-              <button type="button" disabled>Disabled in prototype</button>
+          {icp.creditOptions.map((option) => (
+            <article className="plan-card" key={option.id}>
+              <span>{option.onIcp ? "ICP-native" : "External adapter"}</span>
+              <h2>{option.label}</h2>
+              <p>{option.description}</p>
+              <button
+                type="button"
+                onClick={() => {
+                  setNotice(
+                    option.requiresPayment
+                      ? `${option.label} needs the ICP/ICRC payment canister deployment next.`
+                      : `${option.label} is available through the provider selector in Create.`,
+                  );
+                }}
+              >
+                Select path
+              </button>
             </article>
           ))}
         </div>
@@ -621,7 +631,7 @@ function SettingsPage() {
           </div>
           <div>
             <dt>Model routing</dt>
-            <dd>Visible tier and mode controls, mocked locally</dd>
+            <dd>Visible tier and mode controls backed by provider options from `magickbox_core` on ICP</dd>
           </div>
           <div>
             <dt>Deployment safety</dt>
@@ -637,11 +647,8 @@ function SignInPage() {
   const navigate = useNavigate();
   const icp = useMagickBoxIcp();
 
-  const continueWithIdentity = async () => {
-    if (icp.runtimeMode === "icp") {
-      await icp.signIn();
-    }
-
+  const continueAfter = async (action: () => Promise<void>) => {
+    await action();
     navigate("/home/explore?category=latest");
   };
 
@@ -651,17 +658,14 @@ function SignInPage() {
       <section className="auth-card" aria-labelledby="signin-title">
         <h1 id="signin-title">Sign in</h1>
         <p>{icp.statusMessage}</p>
-        <label>
-          Email
-          <input type="email" placeholder="john.doe@gmail.com" autoComplete="email" />
-        </label>
-        <label>
-          Password
-          <input type="password" placeholder="Please enter your password" autoComplete="current-password" />
-        </label>
-        <button type="button" onClick={continueWithIdentity} disabled={icp.isBusy}>
-          {icp.runtimeMode === "icp" ? "Sign in with Internet Identity" : "Continue locally"}
-        </button>
+        <div className="auth-actions">
+          <button type="button" onClick={() => continueAfter(icp.signIn)} disabled={icp.isBusy}>
+            Sign in with Internet Identity
+          </button>
+          <button type="button" onClick={() => continueAfter(icp.signInWithLocalIdentity)} disabled={icp.isBusy}>
+            Use local browser identity
+          </button>
+        </div>
       </section>
     </main>
   );

@@ -133,7 +133,7 @@ Payments:
 
 - ICP/ICRC payments can make Magick Keys or credits transparent and programmable.
 - Fiat/card billing, refunds, fraud, tax, subscriptions, and customer support may require Stripe or another off-chain system.
-- Prototype payments should stay disabled or use a test/local ledger only.
+- Prototype payments should use a local/test ledger proof before any mainnet spend or production billing is connected.
 
 Analytics:
 
@@ -203,7 +203,7 @@ Next proof steps:
 
 1. Manually complete the local Internet Identity passkey flow and capture the authenticated composer state.
 2. Add local ICRC/ICP payment intent records and a local/test-ledger top-up proof.
-3. Add a mock worker callback that marks a job complete with a result hash and media URL.
+3. Add an external worker callback that marks a job complete with a result hash and media URL.
 4. Surface job status and save-to-collection from the authenticated frontend.
 5. Add upgrade/stable-state checks for profile, job, and audit records.
 

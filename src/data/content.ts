@@ -316,11 +316,11 @@ export const appNav = [
 
 export const architectureDecisions = [
   "No production API, Auth.js, analytics, DNS, database, or deployment target is connected.",
-  "The prototype uses local mock state to validate UX parity and interaction quality.",
+  "The ICP asset build uses canister-owned profile, credit, provider, job, collection, and audit state.",
   "The landing route preserves observed public copy, sections, and Launch Beta behavior.",
   "The app shell preserves the observed Explore entry point and major navigation labels.",
   "The Vite build includes an ICP asset canister policy for certified serving and SPA fallback.",
-  "Backend rewrite is deferred until API contracts, queue semantics, and production data ownership are documented.",
+  "AI execution, payments, ads, and media storage stay behind explicit adapter boundaries instead of hidden placeholders.",
 ];
 
 export const routeParity = [
@@ -328,8 +328,8 @@ export const routeParity = [
   { route: "/home/explore?category=latest", reference: "Launch Beta target", prototype: "Explore app shell with Latest/Trending tabs and creation feed" },
   { route: "/home/magick-chat", reference: "Creator chat surface", prototype: "Magick Friend composer with local chat state" },
   { route: "/home/collections", reference: "Collections route", prototype: "Collection overview state" },
-  { route: "/home/subscriptions", reference: "Subscription routes", prototype: "Plan comparison and purchase-safe mock CTAs" },
-  { route: "/auth/sign-in", reference: "Auth route exists in repo", prototype: "Non-production sign-in mock with no credential submission" },
+  { route: "/home/subscriptions", reference: "Subscription routes", prototype: "ICP credit path options from the core account model" },
+  { route: "/auth/sign-in", reference: "Auth route exists in repo", prototype: "Internet Identity plus local signed browser identity for popup-blocked local testing" },
 ];
 
 export const icpReadiness = [
@@ -341,24 +341,24 @@ export const icpReadiness = [
   {
     area: "Auth",
     recommendation: "Use Internet Identity for the ICP proof slice, with app-specific principals and no password storage.",
-    prototype: "Sign-in remains mocked locally until a separate canister preview exists.",
+    prototype: "React uses Internet Identity where popups are allowed and a persistent local browser identity for signed local canister calls.",
   },
   {
     area: "Application state",
     recommendation:
       "Move user profiles, project records, conversation metadata, generation jobs, collection state, and audit events into stable canister storage.",
-    prototype: "Models these states in local UI only so no production data is touched.",
+    prototype: "The local `magickbox_core` canister owns profile, credits, provider options, jobs, collections, and audit events.",
   },
   {
     area: "AI inference",
     recommendation:
       "Keep dynamic model inference in external workers/providers first; store job state, hashes, ownership, and result metadata on ICP.",
-    prototype: "Creation submits queue locally and documents the future canister contract boundary.",
+    prototype: "Creation writes canister job records; worker execution is the next explicit adapter deployment.",
   },
   {
     area: "Payments and media",
     recommendation:
       "Evaluate ICRC-compatible credits for ICP-native payments while keeping Stripe and large media off-chain until product constraints are proven.",
-    prototype: "All subscription actions are disabled and media is static sample UI.",
+    prototype: "Credit recovery options are canister data; ICP payment transfer and media manifests are next canister slices.",
   },
 ];

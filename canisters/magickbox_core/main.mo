@@ -399,7 +399,7 @@ persistent actor {
     #ok(job);
   };
 
-  public shared ({ caller }) func complete_mock_job(job_id : Nat, result_url : Text, result_hash : Text) : async JobResult {
+  public shared ({ caller }) func complete_external_job(job_id : Nat, result_url : Text, result_hash : Text) : async JobResult {
     switch (require_authenticated(caller)) {
       case (?err) { return #err(err) };
       case null {};
@@ -435,7 +435,7 @@ persistent actor {
       updated_at = now();
     };
     replace_job(job_index, updated);
-    record_audit(caller, "generation_job_completed", Nat.toText(job_id), "mock worker completion");
+    record_audit(caller, "generation_job_completed", Nat.toText(job_id), "external worker completion");
     #ok(updated);
   };
 

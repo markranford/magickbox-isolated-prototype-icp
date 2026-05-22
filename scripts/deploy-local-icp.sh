@@ -32,7 +32,16 @@ if [[ -n "$GATEWAY_PORT" ]]; then
   fi
 fi
 
-rm -rf .icp/cache/networks/local
+for attempt in 1 2 3 4 5; do
+  rm -rf .icp/cache/networks/local && break
+  echo "Local ICP cache cleanup attempt ${attempt} failed; retrying..." >&2
+  sleep 1
+done
+
+if [[ -e .icp/cache/networks/local ]]; then
+  echo "Unable to clean this project's local ICP cache. Stop local processes on port ${GATEWAY_PORT:-unknown} and retry." >&2
+  exit 1
+fi
 
 "$ICP_BIN" network start -d
 "$ICP_BIN" deploy --identity "$IDENTITY"

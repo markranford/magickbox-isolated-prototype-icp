@@ -69,7 +69,7 @@ Off-chain/external adapters should handle:
 1. Plan and scaffold the ICP project inside the isolated prototype.
 2. Add a core ICP canister for account, credits, provider options, generation jobs, collections, and audit events.
 3. Prepare the frontend asset canister configuration.
-4. Add a frontend ICP adapter layer that can use local mocks now and real canister bindings next.
+4. Add a frontend ICP adapter layer that requires `ic_env` for canister writes and refuses to fake generation when no canister runtime is present.
 5. Add the credit recovery popup and provider-selection UI.
 6. Deploy locally to ICP if tooling allows.
 7. Add tests and docs that prove the ICP-owned state model works.
@@ -85,7 +85,8 @@ First safe build slice:
 - Generated TypeScript Candid binding from `magickbox_core.did`.
 - Frontend adapter that reads asset canister `ic_env`.
 - React Internet Identity entry points.
-- Composer canister job creation path after Internet Identity auth.
+- Persistent local signed browser identity for the Codex in-app browser when signer popups are blocked.
+- Composer canister job creation path after Internet Identity or local browser identity auth.
 - No mainnet deploy.
 - No production live login.
 - No production payment connection.

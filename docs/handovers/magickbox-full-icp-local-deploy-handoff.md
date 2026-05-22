@@ -63,7 +63,8 @@ The local seed is stored only under ignored `.icp/cache/local-secrets/`. Do not 
 - Generated TypeScript Candid binding for the frontend.
 - React adapter that reads `ic_env` from the asset canister.
 - React Internet Identity sign-in and sign-out entry points.
-- Composer path that creates canister generation jobs after Internet Identity auth.
+- Persistent local signed browser identity for app-browser environments that block Internet Identity popups.
+- Composer path that creates canister generation jobs after Internet Identity or local browser identity auth.
 - Browser-visible provider and credit-recovery options loaded from `magickbox_core` when served by the asset canister.
 
 ## Off-ICP Boundaries
@@ -108,7 +109,7 @@ npm run verify
 
 Latest completed checks:
 
-- `npm run verify` passed: lint, 2 Vitest files / 5 tests, Vite build, and 10 Playwright tests.
+- `npm run verify` passed: lint, 2 Vitest files / 7 tests, Vite build, and 12 Playwright tests.
 - `wsl ... icp build magickbox_core` passed.
 - `scripts/deploy-local-icp.sh` passed on port `8010`.
 - `scripts/smoke-local-icp.sh` passed.
@@ -119,8 +120,10 @@ Latest completed checks:
   - app detected `ic_env`;
   - UI switched to `ICP canister` mode;
   - provider options loaded from the core canister;
+  - `Use local browser identity` registered a real non-anonymous principal and created canister job `#2`;
+  - paid managed provider returned the canister insufficient-credit recovery panel;
   - no console warnings/errors were recorded;
-  - screenshot artifact written to `docs/artifacts/prototype/local-icp-chat-connected.png`.
+  - screenshot artifacts written to `docs/artifacts/prototype/local-browser-identity-job.png` and `docs/artifacts/prototype/local-browser-identity-insufficient-credits.png`.
 - Backend smoke proved:
   - profile registration for `mark@stratagility.com`;
   - insufficient-credit result for `paid_managed` requiring 80 credits with 25 balance;
@@ -131,8 +134,8 @@ Latest completed checks:
 ## Known Gaps
 
 - Windows owns the frontend build and WSL owns ICP deploy. This avoids WSL `npm install` rewriting native optional dependencies in `node_modules`.
-- Vite development intentionally remains a labeled mock fallback; real canister mode is active from the local ICP asset canister through `ic_env`.
-- Internet Identity is wired into the React runtime, but manual passkey/login completion was not exercised in this automated pass.
+- Vite development cannot write canister state without `ic_env`; real canister mode is active from the local ICP asset canister through `ic_env`.
+- Internet Identity is wired into the React runtime, but the Codex in-app browser blocks the signer popup. Use `Use local browser identity` in that browser, or open the same URL in a normal browser for II.
 - ICP/ICRC payment transfer flow is not implemented yet.
 - No worker callback protocol for MagickAI/FreeLLMAPI/local Ollama is implemented yet.
 - No media hash/manifest upload flow yet.
@@ -140,9 +143,9 @@ Latest completed checks:
 
 ## Recommended Next Build Slice
 
-1. Manually exercise Internet Identity in the local asset canister and capture the authenticated job flow screenshot.
-2. Add local ICRC/ICP payment intent records, then a real test-ledger top-up proof.
-3. Add a worker callback contract for MagickAI and FreeLLMAPI.
-4. Add a local Ollama/own-provider adapter handshake that stores endpoint metadata without storing raw secrets on ICP.
-5. Add media manifest/hash records and collection save from a completed mock job.
+1. Add local ICRC/ICP payment intent records, then a real test-ledger top-up proof.
+2. Add a worker callback contract for MagickAI and FreeLLMAPI.
+3. Add a local Ollama/own-provider adapter handshake that stores endpoint metadata without storing raw secrets on ICP.
+4. Add media manifest/hash records and collection save from a completed external-worker job.
+5. Manually exercise Internet Identity in a browser that permits signer popups.
 6. Add an explicit checkpoint before any Caffeine.ai creation, live Magick Box login, or isolated mainnet canister deployment.

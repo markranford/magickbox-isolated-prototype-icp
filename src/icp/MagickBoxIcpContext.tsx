@@ -20,6 +20,7 @@ import {
   canUseIcpRuntime,
   createAuthClient,
   createCoreActor,
+  getOrCreateLocalBrowserIdentity,
   promptHash,
   resolveIcpRuntime,
   signInWithInternetIdentity,
@@ -38,7 +39,7 @@ export type UiProviderOption = {
   description: string;
   badge: string;
   creditCost: number;
-  source: "canister" | "mock";
+  source: "canister" | "static_catalog";
 };
 
 export type UiCreditOption = {
@@ -69,13 +70,15 @@ type MagickBoxIcpState = {
   providerOptions: UiProviderOption[];
   creditOptions: UiCreditOption[];
   runtime: IcpRuntime;
-  runtimeMode: "icp" | "mock";
-  status: "connecting" | "anonymous" | "authenticated" | "mock" | "error";
+  runtimeMode: "icp" | "unavailable";
+  status: "connecting" | "anonymous" | "authenticated" | "unavailable" | "error";
   statusMessage: string;
   principalText: string | null;
+  authMethod: "internet_identity" | "local_browser" | null;
   isAuthenticated: boolean;
   isBusy: boolean;
   signIn: () => Promise<void>;
+  signInWithLocalIdentity: () => Promise<void>;
   signOut: () => Promise<void>;
   createGenerationJob: (params: {
     mode: CreationMode;
@@ -109,14 +112,14 @@ function mapProviderOption(option: ProviderOption): UiProviderOption {
   };
 }
 
-function mapMockProviderOption(option: (typeof icpProviderOptions)[number]): UiProviderOption {
+function mapStaticProviderOption(option: (typeof icpProviderOptions)[number]): UiProviderOption {
   return {
     id: option.id,
     label: option.label,
     description: option.description,
     badge: option.badge,
     creditCost: option.creditCost,
-    source: "mock",
+    source: "static_catalog",
   };
 }
 
@@ -131,7 +134,7 @@ function mapCreditOption(option: CreditOption): UiCreditOption {
   };
 }
 
-function mapMockCreditOption(option: (typeof creditRecoveryOptions)[number]): UiCreditOption {
+function mapStaticCreditOption(option: (typeof creditRecoveryOptions)[number]): UiCreditOption {
   return {
     id: option.id,
     label: option.label,
@@ -180,23 +183,24 @@ export function MagickBoxIcpProvider({ children }: { children: ReactNode }) {
   const [profile, setProfile] = useState<Profile | null>(null);
   const [jobs, setJobs] = useState<GenerationJob[]>([]);
   const [providerOptions, setProviderOptions] = useState<UiProviderOption[]>(
-    icpProviderOptions.map(mapMockProviderOption),
+    icpProviderOptions.map(mapStaticProviderOption),
   );
   const [creditOptions, setCreditOptions] = useState<UiCreditOption[]>(
-    creditRecoveryOptions.map(mapMockCreditOption),
+    creditRecoveryOptions.map(mapStaticCreditOption),
   );
-  const [runtimeMode, setRuntimeMode] = useState<"icp" | "mock">(
-    canUseIcpRuntime(initialRuntime) ? "icp" : "mock",
+  const [runtimeMode, setRuntimeMode] = useState<"icp" | "unavailable">(
+    canUseIcpRuntime(initialRuntime) ? "icp" : "unavailable",
   );
   const [status, setStatus] = useState<MagickBoxIcpState["status"]>(
-    canUseIcpRuntime(initialRuntime) ? "connecting" : "mock",
+    canUseIcpRuntime(initialRuntime) ? "connecting" : "unavailable",
   );
   const [statusMessage, setStatusMessage] = useState(
     canUseIcpRuntime(initialRuntime)
       ? "Connecting to local ICP canisters"
-      : "Mock fallback active outside the ICP asset canister",
+      : "ICP runtime unavailable here. Open the local ICP asset canister to create real jobs.",
   );
   const [principalText, setPrincipalText] = useState<string | null>(null);
+  const [authMethod, setAuthMethod] = useState<"internet_identity" | "local_browser" | null>(null);
   const [isBusy, setIsBusy] = useState(false);
 
   const refreshAccount = useCallback(async () => {
@@ -220,9 +224,9 @@ export function MagickBoxIcpProvider({ children }: { children: ReactNode }) {
       const runtime = resolveIcpRuntime();
 
       if (!canUseIcpRuntime(runtime)) {
-        setRuntimeMode("mock");
-        setStatus("mock");
-        setStatusMessage("Mock fallback active outside the ICP asset canister");
+        setRuntimeMode("unavailable");
+        setStatus("unavailable");
+        setStatusMessage("ICP runtime unavailable here. Open the local ICP asset canister to create real jobs.");
         return;
       }
 
@@ -258,6 +262,7 @@ export function MagickBoxIcpProvider({ children }: { children: ReactNode }) {
           setProfile(nextProfile);
           setJobs(nextJobs);
           setPrincipalText(identity.getPrincipal().toText());
+          setAuthMethod("internet_identity");
           setStatus("authenticated");
           setStatusMessage("Internet Identity connected to local ICP");
           return;
@@ -270,7 +275,7 @@ export function MagickBoxIcpProvider({ children }: { children: ReactNode }) {
           return;
         }
 
-        setRuntimeMode("mock");
+        setRuntimeMode("unavailable");
         setStatus("error");
         setStatusMessage(error instanceof Error ? error.message : "ICP connection failed");
       }
@@ -287,8 +292,8 @@ export function MagickBoxIcpProvider({ children }: { children: ReactNode }) {
     const runtime = resolveIcpRuntime();
 
     if (!canUseIcpRuntime(runtime)) {
-      setRuntimeMode("mock");
-      setStatus("mock");
+      setRuntimeMode("unavailable");
+      setStatus("unavailable");
       setStatusMessage("Open the local ICP asset canister to use Internet Identity");
       return;
     }
@@ -313,15 +318,60 @@ export function MagickBoxIcpProvider({ children }: { children: ReactNode }) {
       setProviderOptions(providers.map(mapProviderOption));
       setCreditOptions(credits.map(mapCreditOption));
       setPrincipalText(identity.getPrincipal().toText());
+      setAuthMethod("internet_identity");
       setStatus("authenticated");
       setStatusMessage("Internet Identity connected to local ICP");
     } catch (error) {
-      setStatus("error");
-      setStatusMessage(error instanceof Error ? error.message : "Internet Identity sign-in failed");
+      const message = error instanceof Error ? error.message : "Internet Identity sign-in failed";
+      setStatus(message.includes("Signer window could not be opened") ? "anonymous" : "error");
+      setStatusMessage(
+        message.includes("Signer window could not be opened")
+          ? "Signer popup was blocked here. Use local browser identity or open this URL in an external browser for Internet Identity."
+          : message,
+      );
     } finally {
       setIsBusy(false);
     }
   }, [authClient]);
+
+  const signInWithLocalIdentity = useCallback(async () => {
+    const runtime = resolveIcpRuntime();
+
+    if (!canUseIcpRuntime(runtime)) {
+      setRuntimeMode("unavailable");
+      setStatus("unavailable");
+      setStatusMessage("Open the local ICP asset canister to create a signed local browser identity");
+      return;
+    }
+
+    setIsBusy(true);
+    try {
+      const identity = getOrCreateLocalBrowserIdentity();
+      const localActor = await createCoreActor(identity);
+      const nextProfile = await ensureProfile(localActor);
+      const nextJobs = await localActor.list_my_jobs();
+      const [providers, credits] = await Promise.all([
+        localActor.get_provider_options(),
+        localActor.get_credit_options(),
+      ]);
+
+      setRuntimeMode("icp");
+      setActor(localActor);
+      setProfile(nextProfile);
+      setJobs(nextJobs);
+      setProviderOptions(providers.map(mapProviderOption));
+      setCreditOptions(credits.map(mapCreditOption));
+      setPrincipalText(identity.getPrincipal().toText());
+      setAuthMethod("local_browser");
+      setStatus("authenticated");
+      setStatusMessage("Local browser identity connected to ICP");
+    } catch (error) {
+      setStatus("error");
+      setStatusMessage(error instanceof Error ? error.message : "Local browser identity failed");
+    } finally {
+      setIsBusy(false);
+    }
+  }, []);
 
   const signOut = useCallback(async () => {
     setIsBusy(true);
@@ -333,11 +383,12 @@ export function MagickBoxIcpProvider({ children }: { children: ReactNode }) {
       setProfile(null);
       setJobs([]);
       setPrincipalText(null);
-      setStatus(anonymousActor ? "anonymous" : "mock");
+      setAuthMethod(null);
+      setStatus(anonymousActor ? "anonymous" : "unavailable");
       setStatusMessage(
         anonymousActor
           ? "Local ICP canister detected; sign in to write account state"
-          : "Mock fallback active outside the ICP asset canister",
+          : "ICP runtime unavailable here. Open the local ICP asset canister to create real jobs.",
       );
     } catch (error) {
       setStatus("error");
@@ -362,7 +413,7 @@ export function MagickBoxIcpProvider({ children }: { children: ReactNode }) {
       if (runtimeMode !== "icp" || !actor) {
         return {
           kind: "auth_required",
-          message: "Mock runtime is active; no canister write was attempted",
+          message: "Open the local ICP asset canister to create a real ICP job",
         };
       }
 
@@ -418,9 +469,11 @@ export function MagickBoxIcpProvider({ children }: { children: ReactNode }) {
       status,
       statusMessage,
       principalText,
+      authMethod,
       isAuthenticated: status === "authenticated",
       isBusy,
       signIn,
+      signInWithLocalIdentity,
       signOut,
       createGenerationJob,
       refreshAccount,
@@ -437,8 +490,10 @@ export function MagickBoxIcpProvider({ children }: { children: ReactNode }) {
       status,
       statusMessage,
       principalText,
+      authMethod,
       isBusy,
       signIn,
+      signInWithLocalIdentity,
       signOut,
       createGenerationJob,
       refreshAccount,

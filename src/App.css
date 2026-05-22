@@ -736,13 +736,19 @@ textarea:focus-visible {
   line-height: 1;
 }
 
-.plan-card button {
+.plan-card button,
+.plan-card a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
   width: 100%;
   min-height: 42px;
   margin-top: 22px;
   border-radius: 8px;
   color: var(--white);
   background: rgba(255, 255, 255, 0.09);
+  font-weight: 750;
+  cursor: pointer;
 }
 
 .about-section {
@@ -1020,6 +1026,11 @@ textarea:focus-visible {
   padding: 30px;
   display: grid;
   gap: 16px;
+}
+
+.auth-actions {
+  display: grid;
+  gap: 10px;
 }
 
 .eval-page .workspace-panel {
