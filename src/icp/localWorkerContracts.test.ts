@@ -4,7 +4,6 @@ import { describe, expect, it } from "vitest";
 
 describe("local ICP worker and media storage contracts", () => {
   const workerAdaptersPath = resolve(__dirname, "../../scripts/lib/worker-adapters.mjs");
-  const mediaStorePath = resolve(__dirname, "../../scripts/lib/media-store.mjs");
   const advancedSmokePath = resolve(__dirname, "../../scripts/smoke-local-icp-advanced.mjs");
 
   it("declares real worker adapters for MagickAI, FreeLLMAPI, and local Ollama", () => {
@@ -20,16 +19,13 @@ describe("local ICP worker and media storage contracts", () => {
     expect(adapters).toContain("MAGICKAI_WORKER_COMMAND");
   });
 
-  it("anchors generated media in a durable content-addressed store", () => {
-    expect(existsSync(mediaStorePath)).toBe(true);
-
-    const mediaStore = readFileSync(mediaStorePath, "utf8");
+  it("stores generated media in the ICP canister before anchoring manifests", () => {
     const advancedSmoke = readFileSync(advancedSmokePath, "utf8");
 
-    expect(mediaStore).toContain("media-store://sha256/");
-    expect(mediaStore).toContain("index.jsonl");
-    expect(mediaStore).toContain("sha256");
-    expect(mediaStore).toContain("content-addressed-local-media-store");
-    expect(advancedSmoke).toContain("storeMediaFromEnv");
+    expect(advancedSmoke).toContain("store_media_asset");
+    expect(advancedSmoke).toContain("icp-canister-media-store");
+    expect(advancedSmoke).toContain("icp-media://");
+    expect(advancedSmoke).not.toContain("storage/media");
+    expect(advancedSmoke).not.toContain("media-store://sha256/");
   });
 });

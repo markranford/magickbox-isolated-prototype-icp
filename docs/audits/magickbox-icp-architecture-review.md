@@ -12,7 +12,7 @@ The recommended next proof is:
 - Internet Identity sign-in for an app-specific principal.
 - One small backend canister for user profile, project metadata, generation job records, collection membership, and append-only audit events.
 - External AI inference workers/providers for actual image, video, music, and chat generation.
-- Large media stored off-chain initially, with hashes, ownership records, manifests, and publication state anchored on ICP.
+- Generated media stored on ICP. The current proof stores small outputs in the core canister; production scale should move media bytes into dedicated ICP media/chunk canisters with manifests anchored in the app canister.
 - Payments modeled separately: ICRC-compatible credits for ICP-native flow, and Stripe retained off-chain only if fiat/card payment remains required.
 
 This path proves the ICP-native value without making the prototype depend on the hardest parts of fully on-chain AI generation, media storage, fiat payments, and analytics.
@@ -50,7 +50,6 @@ Good canister candidates:
 Keep external at first:
 
 - Dynamic AI inference and streaming model responses.
-- Large media files and thumbnails at scale.
 - Fiat payment rails, invoices, refunds, tax/compliance, and card billing.
 - High-volume analytics dashboards.
 - Email, support, abuse workflows, and admin tooling that depend on existing SaaS systems.
@@ -65,8 +64,8 @@ Keep external at first:
 | Projects | Canister stable storage | Search/index mirror if needed | Project ownership should bind to principal. |
 | Conversation metadata | Canister stable storage | Full message bodies off-chain if private/sensitive | Avoid storing private prompts on-chain until privacy model is explicit. |
 | Generation jobs | Canister stable storage | Worker queue/execution system | Canister state should be source of truth for status and ownership. |
-| Generated media | Hashes/manifests on ICP | Object/media storage for large binaries | Store byte hashes and signed/public URLs or asset references. |
-| Public gallery | Canister index plus selected asset metadata | CDN/object store for heavy media | Published items can be more ICP-native than private drafts. |
+| Generated media | Media assets and manifests on ICP | AI workers may produce bytes before canister upload | Current proof stores small blobs in `magickbox_core`; scale with dedicated ICP media/chunk canisters. |
+| Public gallery | Canister index plus selected asset metadata/media | Optional read mirrors only | Published items can be more ICP-native than private drafts. |
 | Credits/payments | ICRC ledger or canister accounting | Stripe for card/fiat | Keep production billing disconnected from prototype. |
 | Analytics | Aggregated counters only | Privacy-focused analytics/service logs | Avoid high-volume behavioral streams on-chain. |
 | Audit trail | Append-only canister events | Export/mirror for ops | Strong ICP fit. |
@@ -109,12 +108,13 @@ Asset canister:
 
 - Use for the frontend.
 - Consider for small public/static assets and selected published media only.
-- Large generated video/music/image catalogs are likely better in object/media storage first, with hashes and manifests on-chain.
+- Large generated video/music/image catalogs should use dedicated ICP media/chunk canisters rather than the app-state canister directly.
 
-External object/media storage:
+Dedicated ICP media/chunk canisters:
 
 - Use for large generated files, thumbnails, waveform/video derivatives, and transient uploads.
-- Anchor ownership, status, content hashes, and publication decisions on ICP.
+- Keep ownership, status, content hashes, and publication decisions in the app canister.
+- Store bytes in ICP-controlled chunks with quota, cycle, retention, and deletion policy.
 
 Search/index storage:
 
@@ -152,8 +152,9 @@ Analytics:
 
 Media storage:
 
-- Asset canisters can serve certified web assets, but large generated media at product scale introduces cost, upload, cache, and lifecycle concerns.
-- Use off-chain object/media storage first, anchored by hashes and canister metadata.
+- Asset canisters can serve certified web assets, but product media should use a purpose-built ICP media/chunk canister path.
+- The prototype now proves small generated outputs can be stored directly on ICP before manifests are attached.
+- Production needs separate upload limits, chunking, certification, quotas, deletion/retention, and cycle monitoring.
 
 External API calls:
 
@@ -190,13 +191,13 @@ A mostly ICP hybrid Magick Box would need:
 - Internet Identity proof for app principal.
 - Backend canister for durable product state and auditability.
 - External AI worker fleet/provider integration.
-- External media storage with on-chain hashes/manifests.
+- ICP media storage with canister-held hashes/manifests.
 - Optional Stripe or ICRC payment adapter depending on market strategy.
 - Off-chain analytics/search/admin systems fed by canister events.
 - Clear API contract between frontend, canister, worker, and media service.
 - Separate preview/staging/prod canisters and explicit deploy identities.
 
-This is the best prototype path because it proves ICP-native ownership, trust, identity, and deployment safety while avoiding premature dependence on fully on-chain AI/media economics.
+This is the best prototype path because it proves ICP-native ownership, trust, identity, deployment safety, and storage while avoiding premature dependence on fully on-chain AI inference economics.
 
 ## Current ICP Proof Slice
 
@@ -209,7 +210,7 @@ The current isolated prototype now includes the narrow vertical slice foundation
 5. Canister smoke tests prove insufficient-credit recovery and FreeLLMAPI zero-credit job creation.
 6. Advanced local smoke proves a per-intent subaccount ICP transfer, payment claim, ad credit grant, worker authorization, local Ollama execution, FreeLLMAPI-compatible execution, MagickAI-compatible execution, worker completion callbacks, and media manifest anchoring.
 7. Browser smoke confirms the asset-served frontend detects ICP mode, restores local browser identity, creates payment intents with visible subaccounts, grants ad credits, and records no console errors.
-8. Generated media outputs are written into an ignored content-addressed local media store and anchored on ICP by URI, hash, MIME type, byte count, owner, job id, and worker principal.
+8. Generated media output bytes are stored in `magickbox_core` through `store_media_asset` and anchored with `icp-canister-media-store` manifests by URI, hash, MIME type, byte count, owner, job id, and worker principal.
 
 Next proof steps:
 
@@ -217,7 +218,7 @@ Next proof steps:
 2. Decide whether production payments should stay with per-intent subaccounts, add ICRC-2 transfer-from, or support both.
 3. Connect `MAGICKAI_WORKER_URL` or `MAGICKAI_WORKER_COMMAND` to a real MagickAI service with provider credentials kept outside canister state; the prototype now includes `workers/magickai_worker_bridge.py` for the command path.
 4. Point `FREELLMAPI_BASE_URL` and `FREELLMAPI_API_KEY` at a running FreeLLMAPI instance and capture routed-provider evidence with `npm run smoke:services:required`.
-5. Use the selected durable media target: S3-compatible object storage for mostly ICP, with dedicated ICP chunk/certification storage left as a later fully ICP proof.
+5. Move large generated media from the small core-canister proof into dedicated ICP media/chunk canisters, with optional certification for public assets.
 6. Surface completed worker runs, media manifests, and collection save from the authenticated frontend.
 7. Add upgrade/stable-state checks for profile, job, payment, worker, ad, media, and audit records.
 

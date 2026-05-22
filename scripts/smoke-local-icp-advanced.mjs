@@ -4,7 +4,6 @@ import { createHash } from "node:crypto";
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { storeMediaFromEnv } from "./lib/media-backends.mjs";
 import { runWorkerAdapter } from "./lib/worker-adapters.mjs";
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -13,7 +12,8 @@ const workerIdentity = process.env.MAGICKBOX_WORKER_IDENTITY ?? "magickbox-local
 const icpBin = process.env.ICP_BIN ?? "/home/mark/.cargo/bin/icp";
 const callArgsDir = resolve(root, ".icp/cache/call-args");
 const secretsDir = resolve(root, ".icp/cache/local-secrets");
-const mediaStoreDir = resolve(root, "storage/media");
+const ICP_MEDIA_URI_SCHEME = "icp-media://";
+const ICP_MEDIA_STORAGE_PROVIDER = "icp-canister-media-store";
 
 const workerScenarios = [
   {
@@ -86,6 +86,12 @@ function candidText(value) {
     .replaceAll("\\", "\\\\")
     .replaceAll("\"", "\\\"")
     .replaceAll("\n", "\\n")}"`;
+}
+
+function candidBlob(value) {
+  const bytes = Buffer.from(String(value), "utf8");
+
+  return `blob "${Array.from(bytes, (byte) => `\\${byte.toString(16).padStart(2, "0")}`).join("")}"`;
 }
 
 function parseNat(label, output) {
@@ -161,31 +167,40 @@ async function createAndCompleteWorkerJob({ providerId, label, prompt, requested
     mode: "chat",
     jobId,
   });
-  const stored = await storeMediaFromEnv({
-    rootDir: mediaStoreDir,
-    jobId,
-    providerId,
-    content: execution.output,
-    mimeType: "text/plain",
-    metadata: {
-      adapter: execution.adapter,
-      model: execution.model,
-      label,
-    },
-  });
+
+  const resultHash = createHash("sha256").update(execution.output).digest("hex");
+  const resultBytes = Buffer.byteLength(execution.output, "utf8");
+  console.log(`== Store ${providerId} media asset on ICP ==`);
+  const mediaAssetOutput = icp(
+    `canister call magickbox_core store_media_asset --args-file ${shellQuote(
+      writeArgs(
+        `${providerId}-media-asset.did`,
+        `(${jobId} : nat, ${candidText(resultHash)}, "text/plain", ${candidBlob(execution.output)})`,
+      ),
+    )} -e local --identity ${shellQuote(workerIdentity)}`,
+  );
+  console.log(mediaAssetOutput);
+  const assetUri = parseText("uri", mediaAssetOutput);
+
+  if (!assetUri.startsWith(ICP_MEDIA_URI_SCHEME)) {
+    throw new Error(`Expected ICP media URI, got ${assetUri}`);
+  }
+
   const receipt = JSON.stringify({
     provider: providerId,
     adapter: execution.adapter,
     model: execution.model,
-    artifact: stored.uri,
-    hash: stored.hash,
+    label,
+    artifact: assetUri,
+    hash: resultHash,
+    storage_provider: ICP_MEDIA_STORAGE_PROVIDER,
     receipt: execution.receipt,
   });
 
   console.log(`adapter=${execution.adapter}`);
   console.log(`model=${execution.model}`);
-  console.log(`storage_provider=${stored.storageProvider}`);
-  console.log(`artifact=${stored.path}`);
+  console.log(`storage_provider=${ICP_MEDIA_STORAGE_PROVIDER}`);
+  console.log(`artifact=${assetUri}`);
 
   console.log(`== Complete ${providerId} worker job on ICP ==`);
   console.log(
@@ -193,7 +208,7 @@ async function createAndCompleteWorkerJob({ providerId, label, prompt, requested
       `canister call magickbox_core complete_worker_job --args-file ${shellQuote(
         writeArgs(
           `${providerId}-worker-complete.did`,
-          `(${jobId} : nat, ${candidText(stored.uri)}, ${candidText(stored.hash)}, ${candidText(
+          `(${jobId} : nat, ${candidText(assetUri)}, ${candidText(resultHash)}, ${candidText(
             receipt,
           )}, ${candidText(execution.output.slice(0, 500))})`,
         ),
@@ -207,9 +222,9 @@ async function createAndCompleteWorkerJob({ providerId, label, prompt, requested
       `canister call magickbox_core attach_media_manifest --args-file ${shellQuote(
         writeArgs(
           `${providerId}-media-manifest.did`,
-          `(${jobId} : nat, ${candidText(stored.storageProvider)}, ${candidText(
-            stored.uri,
-          )}, ${candidText(stored.hash)}, ${candidText(stored.mimeType)}, ${stored.bytes} : nat)`,
+          `(${jobId} : nat, ${candidText(ICP_MEDIA_STORAGE_PROVIDER)}, ${candidText(
+            assetUri,
+          )}, ${candidText(resultHash)}, "text/plain", ${resultBytes} : nat)`,
         ),
       )} -e local --identity ${shellQuote(workerIdentity)}`,
     ),
@@ -217,7 +232,6 @@ async function createAndCompleteWorkerJob({ providerId, label, prompt, requested
 }
 
 async function main() {
-  mkdirSync(mediaStoreDir, { recursive: true });
   ensureIdentity(ownerIdentity);
   ensureIdentity(workerIdentity);
 
@@ -319,6 +333,7 @@ async function main() {
     "list_my_ad_credit_grants",
     "list_my_worker_grants",
     "list_my_worker_runs",
+    "list_my_media_assets",
     "list_my_media_manifests",
   ]) {
     console.log(`-- ${method}`);

@@ -1139,3 +1139,152 @@ Blockers or risks:
 Next step:
 
 - Choose which external boundary to make live first: isolated FreeLLMAPI service, isolated MagickAI SDK environment, or isolated S3-compatible bucket/MinIO media backend.
+
+## 2026-05-22T19:49:15+07:00 - Checkpoint 23: Course Correction To ICP-Only Media Storage
+
+Current workspace/folder:
+
+`C:\Users\Mark\Documents\Codex\Codex_MagickBox\magick-box-rewrite-readiness-prototype`
+
+What was inspected:
+
+- User correction: all storage should move to ICP; do not use AWS.
+- Current S3-compatible media backend slice from commit `f890416`.
+- Current Motoko canister media manifest contract.
+- Stable-memory guidance for Motoko persistent actors.
+
+What was created or changed:
+
+- Updated tests to require:
+  - `MediaAsset` Candid type;
+  - `store_media_asset`, `get_media_asset`, and `list_my_media_assets`;
+  - advanced smoke storing generated media via the ICP canister before manifest anchoring;
+  - package and smoke scripts excluding AWS/S3 storage paths.
+
+Commands run and results:
+
+- `npm run test` -> failed as expected:
+  - missing ICP media asset methods/types;
+  - advanced smoke still using local/S3 media backend selector;
+  - S3/AWS dependency still present.
+
+Decisions made:
+
+- Supersede the S3-compatible media backend decision immediately.
+- Store generated proof artifacts directly in the ICP canister for this prototype.
+- Keep future scale-up on ICP through dedicated media/chunk canisters, not AWS.
+
+Blockers or risks:
+
+- Direct blob storage in the core canister is acceptable for a small local proof, but larger generated images/video/music should move to dedicated ICP media canisters with chunking, lifecycle, and cycle accounting.
+
+Next step:
+
+- Remove AWS/S3 dependency and code, add ICP media asset storage to `magickbox_core`, update advanced smoke/docs, redeploy, and verify.
+
+## 2026-05-22T19:58:29+07:00 - Checkpoint 24: External Media Storage Path Removed
+
+Current workspace/folder:
+
+`C:\Users\Mark\Documents\Codex\Codex_MagickBox\magick-box-rewrite-readiness-prototype`
+
+What was inspected:
+
+- Existing working-tree diff after the red-test checkpoint.
+- `scripts/smoke-local-icp-advanced.mjs`.
+- `.env.integrations.example`, `.gitignore`, `README.md`, media decision doc, ICP architecture review, eval checklist, full ICP goal, and handoff docs.
+- Existing generated local media artifacts under `storage/media`.
+
+What was created or changed:
+
+- Switched advanced smoke media flow from local/external media backend selection to `store_media_asset` on `magickbox_core`.
+- Added an `icp-media://` URI assertion and `icp-canister-media-store` manifest provider in the advanced smoke.
+- Removed the optional external object-storage dependency and helper modules:
+  - `@aws-sdk/client-s3` removed from `package.json` / `package-lock.json`;
+  - deleted `scripts/lib/media-backends.mjs`;
+  - deleted `scripts/lib/media-store.mjs`;
+  - deleted `storage/media/README.md`.
+- Removed media backend env placeholders from `.env.integrations.example`.
+- Removed local media artifact ignore entries and deleted the prior generated `storage/media` artifact directory.
+- Rewrote `docs/audits/magickbox-media-storage-decision.md` around ICP canister media storage and a dedicated ICP media/chunk canister scale path.
+- Updated README, ICP architecture review, AI provider options, eval checklist, full ICP goal, and handoff docs so current recommendations no longer route Magick Box storage to external object storage.
+
+Commands run and results:
+
+- `npm uninstall @aws-sdk/client-s3` -> passed; 47 packages removed; 0 vulnerabilities.
+- `Resolve-Path -LiteralPath storage\media` -> confirmed target stayed inside the isolated prototype workspace.
+- `Get-ChildItem -LiteralPath storage\media -Recurse | Select-Object -First 20 FullName` -> confirmed only prior generated local artifact files/directories.
+- `Remove-Item -LiteralPath '...\magick-box-rewrite-readiness-prototype\storage\media' -Recurse -Force` -> removed prior generated local media artifacts.
+- `rg -n "@aws-sdk|MAGICKBOX_S3|PutObjectCommand|S3-compatible|storage/media|media-store://sha256|content-addressed-local-media-store|media-backends|media-store\.mjs" package.json package-lock.json scripts src docs README.md .env.integrations.example .gitignore` -> showed only historical progress entries and test assertions before this checkpoint update.
+
+Decisions made:
+
+- Current prototype storage direction is ICP-only.
+- Small generated worker outputs are stored directly in the core canister for the proof.
+- Large/generated production media should use dedicated ICP media/chunk canisters, not external object storage.
+- External AI workers may produce output bytes, but they should not become the user asset system of record.
+
+Blockers or risks:
+
+- Core-canister blob storage is intentionally limited and not a production large-media architecture.
+- Dedicated ICP media/chunk canister design still needs a separate proof for chunking, certification, quotas, deletion/retention, cycle cost, and abuse controls.
+
+Next step:
+
+- Run tests/build, rebuild the Motoko canister, redeploy the local ICP canisters, rerun the local ICP and advanced smokes, then update verification evidence.
+
+## 2026-05-22T20:01:38+07:00 - Checkpoint 25: ICP Media Storage Verified Locally
+
+Current workspace/folder:
+
+`C:\Users\Mark\Documents\Codex\Codex_MagickBox\magick-box-rewrite-readiness-prototype`
+
+What was inspected:
+
+- Test failure from the first green attempt.
+- `magickbox_core` manifest acceptance behavior.
+- Local ICP deploy output and advanced smoke output.
+- Current docs and package/scripts for removed external storage references.
+
+What was created or changed:
+
+- Added canister-side enforcement that media manifests must use `icp-canister-media-store`.
+- Added canister-side enforcement that media manifests must use the `icp-media://` URI scheme.
+- Removed a stale generated `eslint-disable` line from `src/icp/generated/magickbox_core.did.ts`.
+- Updated handoff verification notes with 17 unit tests and the latest ICP media smoke evidence.
+
+Commands run and results:
+
+- `npm run test` -> initially failed because the canister source did not contain the required `icp-canister-media-store` contract marker.
+- `npm run test` after manifest enforcement -> passed, 5 files / 17 tests.
+- `npm run lint` -> passed after removing the stale generated disable directive.
+- `npm run build` -> passed.
+- `wsl.exe -e bash -lc '... icp build magickbox_core'` -> passed.
+- `wsl.exe -e bash -lc '... bash scripts/deploy-local-icp.sh'` -> passed; local gateway on port `8010`; core canister `tz2ag-zx777-77776-aaabq-cai`; frontend canister `t63gs-up777-77776-aaaba-cai`.
+- `wsl.exe -e bash -lc '... bash scripts/smoke-local-icp.sh'` -> passed.
+- `npm run smoke:icp:advanced` -> passed:
+  - payment intent `#1`;
+  - per-intent subaccount `4d42504159000000000000000000000000000000000000000000000000000001`;
+  - local ledger block `30`;
+  - worker jobs `#2`, `#3`, and `#4`;
+  - media assets `#1`, `#2`, and `#3` stored in `magickbox_core`;
+  - media manifests `#1`, `#2`, and `#3` anchored with `icp-media://...` URIs through `icp-canister-media-store`.
+- `npm run smoke:services` -> passed in optional mode; isolated FreeLLMAPI and MagickAI services skipped because env vars are not configured.
+- `npm run verify` -> passed: lint, 5 Vitest files / 17 tests, Vite build, and 12 Playwright tests.
+- `rg -n "@aws-sdk|MAGICKBOX_S3|PutObjectCommand|S3-compatible|storage/media|media-store://sha256|content-addressed-local-media-store|media-backends|media-store\.mjs" package.json package-lock.json scripts src README.md .env.integrations.example .gitignore docs\audits docs\evals docs\goals docs\handovers` -> found only negative test assertions, no current storage implementation or recommendation.
+
+Decisions made:
+
+- The current working prototype now treats ICP as the storage system of record for generated media.
+- External workers remain computation adapters only; storage is returned to ICP through `store_media_asset`.
+- The next storage step is a dedicated ICP media/chunk canister, not any external object-storage adapter.
+
+Blockers or risks:
+
+- Real image/video/music files will exceed the current 500,000-byte core-canister proof limit.
+- The dedicated media canister still needs a chunking and quota design before large generated assets are practical.
+- Live FreeLLMAPI/MagickAI services are still not connected; optional harness remains ready for isolated service env vars.
+
+Next step:
+
+- Design and implement the dedicated ICP media/chunk canister so large assets, thumbnails, and generated media derivatives can also stay on ICP.

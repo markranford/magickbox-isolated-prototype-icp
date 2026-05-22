@@ -35,6 +35,7 @@ ICP should own:
 - Subscription/top-up offer metadata.
 - Generation job records.
 - Conversation/project/collection metadata.
+- Generated media bytes, thumbnails, manifests, and public gallery asset state.
 - Public gallery metadata.
 - Append-only audit events.
 - Provider routing preferences and user-owned AI adapter choices.
@@ -46,7 +47,6 @@ Off-chain/external adapters should handle:
 - MagickAI as the rich Magick Friend/media provider SDK reference and possible worker service.
 - User-provided API keys or local AI endpoints, without storing secrets in canister state.
 - Ollama/local LLM integration through the user's machine or a user-managed endpoint.
-- Large media files, with content hashes/manifests anchored on ICP.
 - Stripe/fiat payments as secondary payment paths only.
 - Ad-watch verification, with canister credit grants only after a trusted verifier event.
 
@@ -88,8 +88,8 @@ First safe build slice:
 - Persistent local signed browser identity for the Codex in-app browser when signer popups are blocked.
 - Composer canister job creation path after Internet Identity or local browser identity auth.
 - Local browser identity auto-reconnect after direct route loads.
-- Core canister records for per-intent ICRC subaccount payment intents, claimed payment blocks, ad credit grants, authorized workers, worker runs, and media manifests.
-- Advanced local smoke that transfers local ICP to a per-intent subaccount, claims credits, grants ad credits, runs local Ollama, FreeLLMAPI-compatible, and MagickAI-compatible workers, completes the jobs, stores local content-addressed artifacts, and anchors media manifests.
+- Core canister records for per-intent ICRC subaccount payment intents, claimed payment blocks, ad credit grants, authorized workers, worker runs, media assets, and media manifests.
+- Advanced local smoke that transfers local ICP to a per-intent subaccount, claims credits, grants ad credits, runs local Ollama, FreeLLMAPI-compatible, and MagickAI-compatible workers, stores generated output bytes on ICP, completes the jobs, and anchors media manifests.
 - No mainnet deploy.
 - No production live login.
 - No production payment connection.

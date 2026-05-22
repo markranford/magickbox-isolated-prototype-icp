@@ -132,6 +132,19 @@ persistent actor MagickBoxCore {
     created_at : Int;
   };
 
+  type MediaAsset = {
+    id : Nat;
+    owner : Principal;
+    job_id : Nat;
+    stored_by : Principal;
+    uri : Text;
+    content_hash : Text;
+    mime_type : Text;
+    bytes : Nat;
+    content : Blob;
+    created_at : Int;
+  };
+
   type MediaManifest = {
     id : Nat;
     owner : Principal;
@@ -163,6 +176,7 @@ persistent actor MagickBoxCore {
   type WorkerGrantResult = { #ok : WorkerGrant; #err : Text };
   type WorkerRunResult = { #ok : WorkerRun; #err : Text };
   type AdCreditGrantResult = { #ok : AdCreditGrant; #err : Text };
+  type MediaAssetResult = { #ok : MediaAsset; #err : Text };
   type MediaManifestResult = { #ok : MediaManifest; #err : Text };
 
   var profiles : [Profile] = [];
@@ -173,6 +187,7 @@ persistent actor MagickBoxCore {
   var worker_grants : [WorkerGrant] = [];
   var worker_runs : [WorkerRun] = [];
   var ad_credit_grants : [AdCreditGrant] = [];
+  var media_assets : [MediaAsset] = [];
   var media_manifests : [MediaManifest] = [];
   var claimed_payment_blocks : [Nat] = [];
   var next_job_id : Nat = 1;
@@ -182,6 +197,7 @@ persistent actor MagickBoxCore {
   var next_worker_grant_id : Nat = 1;
   var next_worker_run_id : Nat = 1;
   var next_ad_credit_grant_id : Nat = 1;
+  var next_media_asset_id : Nat = 1;
   var next_media_manifest_id : Nat = 1;
 
   func now() : Int {
@@ -349,6 +365,14 @@ persistent actor MagickBoxCore {
       token_symbol = "ICP";
       fee_e8s = 10_000;
     };
+  };
+
+  func media_asset_uri(asset_id : Nat, content_hash : Text) : Text {
+    "icp-media://" # Principal.toText(Principal.fromActor(MagickBoxCore)) # "/media/" # Nat.toText(asset_id) # "#sha256=" # content_hash;
+  };
+
+  func media_storage_provider() : Text {
+    "icp-canister-media-store";
   };
 
   func credit_profile(owner : Principal, credits : Nat) : ?Profile {
@@ -891,6 +915,59 @@ persistent actor MagickBoxCore {
     complete_job_internal(caller, job_id, result_url, result_hash, "legacy external completion", "");
   };
 
+  public shared ({ caller }) func store_media_asset(
+    job_id : Nat,
+    content_hash : Text,
+    mime_type : Text,
+    content : Blob,
+  ) : async MediaAssetResult {
+    switch (require_authenticated(caller)) {
+      case (?err) { return #err(err) };
+      case null {};
+    };
+
+    let job_index = switch (find_job_index(job_id)) {
+      case (?index) { index };
+      case null { return #err("Job not found") };
+    };
+    let job = jobs[job_index];
+    if (not is_authorized_worker(job.owner, caller)) {
+      return #err("Only the job owner or an authorized worker can store media");
+    };
+    if (Text.size(content_hash) < 8 or Text.size(content_hash) > 128) {
+      return #err("Content hash must be between 8 and 128 characters");
+    };
+    if (Text.size(mime_type) == 0 or Text.size(mime_type) > 80) {
+      return #err("MIME type must be between 1 and 80 characters");
+    };
+
+    let bytes = Blob.toArray(content).size();
+    if (bytes == 0) {
+      return #err("Media content cannot be empty");
+    };
+    if (bytes > 500_000) {
+      return #err("Prototype ICP media asset limit is 500,000 bytes; use dedicated ICP chunk canisters for larger media");
+    };
+
+    let asset_id = next_media_asset_id;
+    let asset : MediaAsset = {
+      id = asset_id;
+      owner = job.owner;
+      job_id;
+      stored_by = caller;
+      uri = media_asset_uri(asset_id, content_hash);
+      content_hash;
+      mime_type;
+      bytes;
+      content;
+      created_at = now();
+    };
+    next_media_asset_id += 1;
+    media_assets := append_item<MediaAsset>(media_assets, asset);
+    record_audit(caller, "media_asset_stored_on_icp", Nat.toText(job_id), "asset=" # Nat.toText(asset.id) # ";hash=" # content_hash # ";bytes=" # Nat.toText(bytes));
+    #ok(asset);
+  };
+
   public shared ({ caller }) func attach_media_manifest(
     job_id : Nat,
     storage_provider : Text,
@@ -915,8 +992,14 @@ persistent actor MagickBoxCore {
     if (Text.size(storage_provider) == 0 or Text.size(storage_provider) > 80) {
       return #err("Storage provider must be between 1 and 80 characters");
     };
+    if (storage_provider != media_storage_provider()) {
+      return #err("Only icp-canister-media-store manifests are accepted");
+    };
     if (Text.size(uri) == 0 or Text.size(uri) > 500) {
       return #err("Media URI must be between 1 and 500 characters");
+    };
+    if (not Text.startsWith(uri, #text "icp-media://")) {
+      return #err("Media URI must use the icp-media:// scheme");
     };
     if (Text.size(content_hash) < 8 or Text.size(content_hash) > 128) {
       return #err("Content hash must be between 8 and 128 characters");
@@ -1045,6 +1128,25 @@ persistent actor MagickBoxCore {
       };
     };
     result;
+  };
+
+  public shared query ({ caller }) func list_my_media_assets() : async [MediaAsset] {
+    var result : [MediaAsset] = [];
+    for (asset in media_assets.vals()) {
+      if (Principal.equal(asset.owner, caller) or Principal.equal(asset.stored_by, caller)) {
+        result := append_item<MediaAsset>(result, asset);
+      };
+    };
+    result;
+  };
+
+  public shared query ({ caller }) func get_media_asset(asset_id : Nat) : async ?MediaAsset {
+    for (asset in media_assets.vals()) {
+      if (asset.id == asset_id and (Principal.equal(asset.owner, caller) or Principal.equal(asset.stored_by, caller))) {
+        return ?asset;
+      };
+    };
+    null;
   };
 
   public shared query ({ caller }) func list_my_media_manifests() : async [MediaManifest] {

@@ -68,7 +68,7 @@ Notable risks found:
 - Keep the existing isolated prototype and harden it instead of restarting.
 - Build frontend-first because observable risk is mostly UX, routing, app-shell organization, accessibility, performance, and deployment safety.
 - Treat ICP as the preferred target architecture.
-- Recommend a mostly ICP hybrid proof first: certified asset canister frontend, Internet Identity, canister-held product metadata and audit events, external AI workers/providers, off-chain large media, and isolated payment experiments.
+- Recommend a mostly ICP hybrid proof first: certified asset canister frontend, Internet Identity, canister-held product metadata, ICP media storage, audit events, external AI workers/providers, and isolated payment experiments.
 - Defer a full backend rewrite until API contracts, generation job state, data placement, auth, media storage, credits, and migration constraints are proven.
 - Include `public/.ic-assets.json5` so Vite builds carry ICP asset canister SPA routing and security policy into `dist/`.
 
@@ -95,7 +95,7 @@ Improved:
 
 Intentional deviations:
 
-- Production auth, fiat billing, production community data, and production media storage are not connected. Local ICP auth, credit accounting, per-intent subaccount payment claims, ad-credit grants, local Ollama, FreeLLMAPI-compatible, and MagickAI-compatible worker completion, and content-addressed media manifest anchoring are implemented in the isolated prototype.
+- Production auth, fiat billing, production community data, and production media storage are not connected. Local ICP auth, credit accounting, per-intent subaccount payment claims, ad-credit grants, local Ollama, FreeLLMAPI-compatible and MagickAI-compatible worker completion, ICP media asset storage, and media manifest anchoring are implemented in the isolated prototype.
 - The backend is not rewritten.
 - The prototype is Vite/React Router for evaluation speed; this is not a final production stack decision.
 - No production or shared preview deployment was created.
@@ -129,7 +129,7 @@ Latest full verification after the ICP packet hardening passed:
 | Check | Result | Evidence |
 | --- | --- | --- |
 | Lint | Pass | `npm run lint` |
-| Unit tests | Pass, 5 files / 16 tests | `npm run test` |
+| Unit tests | Pass, 5 files / 17 tests | `npm run test` |
 | Typecheck/build | Pass | `npm run build` |
 | Browser smoke | Pass, 8 Playwright tests | `npm run e2e` |
 | Desktop screenshot | Captured | `docs/artifacts/prototype/prototype-home-desktop.png` |
@@ -141,9 +141,9 @@ Latest full verification after the ICP packet hardening passed:
 | ICP asset policy | Pass | e2e verified `dist/.ic-assets.json5` contains raw-access, SPA aliasing, and CSP policy |
 | Local ICP payment binding | Pass | advanced smoke transferred `0.001` local ICP to a per-intent ICRC subaccount |
 | Worker adapters | Pass | advanced smoke completed local Ollama, FreeLLMAPI-compatible, and MagickAI-compatible worker jobs |
-| Media storage manifests | Pass | advanced smoke anchored `media-store://sha256/...` manifests and wrote local content-addressed artifacts |
+| Media storage manifests | Pass | advanced smoke anchored `icp-media://...` manifests through `icp-canister-media-store` |
 | Live service harness | Pass in optional mode | `npm run smoke:services` skipped unconfigured live services safely |
-| Durable media backend | Pass for code path and decision | S3-compatible backend added; not exercised without isolated bucket credentials |
+| ICP media backend | Pass for code path and decision | generated worker output bytes are stored in the ICP canister; larger media should move to dedicated ICP media/chunk canisters |
 
 The new e2e suite includes a check that `dist/.ic-assets.json5` carries:
 
@@ -187,13 +187,13 @@ Full ICP local handoff: `docs/handovers/magickbox-full-icp-local-deploy-handoff.
 - Reference assets were copied locally for parity; final production work should confirm asset ownership and design-source files.
 - The local ICP backend proof is implemented for profile, credits, jobs, payments, worker completion, media manifests, collections, and audit state, but it is not a production backend.
 - MagickAI bridge health located the read-only MagickAI repo, but the local Python environment is missing `pymongo`; install bridge dependencies in an isolated environment before running the real SDK smoke.
-- S3-compatible media storage code exists but was not exercised because no isolated object-storage bucket credentials were configured.
-- Fully on-chain AI inference, production media storage, and fiat billing remain high-risk and need separate proofs.
+- The current ICP media asset store is intentionally size-limited for the local proof; production media scale needs dedicated ICP media/chunk canisters.
+- Fully on-chain AI inference and fiat billing remain high-risk and need separate proofs.
 
 ## Recommended Next Steps
 
 1. Decide whether subscription payments need ICRC-2 transfer-from in addition to per-intent subaccounts.
 2. Run FreeLLMAPI and MagickAI through `npm run smoke:services:required` after configuring isolated service env vars.
-3. Configure isolated S3-compatible media storage and rerun `npm run smoke:icp:advanced` with `MAGICKBOX_MEDIA_BACKEND=s3`.
-4. Promote the proven local ICP slice to a new isolated preview only after an explicit checkpoint: asset canister, Internet Identity, core backend canister, local/test payment proof, worker callback, media manifests, collection save, append-only audit events.
+3. Add a dedicated ICP media/chunk canister for larger generated assets and rerun `npm run smoke:icp:advanced`.
+4. Promote the proven local ICP slice to a new isolated preview only after an explicit checkpoint: asset canister, Internet Identity, core backend canister, local/test payment proof, worker callback, ICP media storage, media manifests, collection save, append-only audit events.
 5. Run a separately authorized secrets/config audit on the existing repos before any production rewrite planning.

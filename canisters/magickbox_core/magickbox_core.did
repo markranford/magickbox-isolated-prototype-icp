@@ -102,6 +102,18 @@ type AdCreditGrant = record {
   credits : nat;
   created_at : int;
 };
+type MediaAsset = record {
+  id : nat;
+  owner : principal;
+  job_id : nat;
+  stored_by : principal;
+  uri : text;
+  content_hash : text;
+  mime_type : text;
+  bytes : nat;
+  content : blob;
+  created_at : int;
+};
 type MediaManifest = record {
   id : nat;
   owner : principal;
@@ -137,6 +149,7 @@ service : {
   authorize_worker : (principal, text) -> (variant { ok : WorkerGrant; err : text });
   complete_worker_job : (nat, text, text, text, text) -> (variant { ok : GenerationJob; err : text });
   complete_external_job : (nat, text, text) -> (variant { ok : GenerationJob; err : text });
+  store_media_asset : (nat, text, text, blob) -> (variant { ok : MediaAsset; err : text });
   attach_media_manifest : (nat, text, text, text, text, nat) -> (variant { ok : MediaManifest; err : text });
   save_to_collection : (nat, text, bool) -> (variant { ok : CollectionRecord; err : text });
   list_my_jobs : () -> (vec GenerationJob) query;
@@ -146,6 +159,8 @@ service : {
   list_my_worker_grants : () -> (vec WorkerGrant) query;
   list_my_worker_runs : () -> (vec WorkerRun) query;
   list_my_ad_credit_grants : () -> (vec AdCreditGrant) query;
+  list_my_media_assets : () -> (vec MediaAsset) query;
+  get_media_asset : (nat) -> (opt MediaAsset) query;
   list_my_media_manifests : () -> (vec MediaManifest) query;
   get_cycle_note : () -> (text) query;
 }

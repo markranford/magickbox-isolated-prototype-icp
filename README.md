@@ -39,13 +39,13 @@ http://tqzl2-p7777-77776-aaaaa-cai.localhost:8010/?id=tz2ag-zx777-77776-aaabq-ca
 
 The deploy helper creates/uses a local-only `magickbox-local-prototype` identity. Its seed is written under ignored `.icp/cache/local-secrets/` and must not be used for anything valuable.
 
-The advanced smoke uses the local ICP ledger plus local AI adapters. It creates an ICP payment intent, transfers `0.001` local ICP to that intent's ICRC subaccount, claims credits, grants ad-verifier credits, authorizes a separate worker principal, executes local Ollama, FreeLLMAPI-compatible, and MagickAI-compatible workers, completes the jobs on ICP, and anchors content-addressed media manifests.
+The advanced smoke uses the local ICP ledger plus local AI adapters. It creates an ICP payment intent, transfers `0.001` local ICP to that intent's ICRC subaccount, claims credits, grants ad-verifier credits, authorizes a separate worker principal, executes local Ollama, FreeLLMAPI-compatible, and MagickAI-compatible workers, stores generated worker output bytes in the ICP canister with `store_media_asset`, completes the jobs on ICP, and anchors ICP media manifests.
 
 `npm run smoke:services` is safe by default: it reports skipped live services unless isolated `FREELLMAPI_*` or `MAGICKAI_*` env vars are configured. Use `npm run smoke:services:required` after starting those services when you want missing live wiring to fail the run.
 
 Optional integration env names are listed in `.env.integrations.example`. Keep production credentials out of this prototype.
 
-Durable media storage defaults to the local content-addressed store. Set `MAGICKBOX_MEDIA_BACKEND=s3` plus the `MAGICKBOX_S3_*` env vars to upload generated worker artifacts to an isolated S3-compatible bucket while continuing to anchor hashes and manifests on ICP.
+Generated media storage for this prototype is ICP-only. Small worker outputs are stored directly in `magickbox_core` as `MediaAsset` blobs and referenced by `icp-media://...` URIs; larger production media should move to dedicated ICP media/chunk canisters rather than external object storage.
 
 ## Verify
 

@@ -22,8 +22,11 @@ describe("magickbox_core Candid contract", () => {
       "list_my_payment_intents",
       "grant_ad_credits",
       "list_my_ad_credit_grants",
+      "store_media_asset",
       "attach_media_manifest",
       "list_my_media_manifests",
+      "list_my_media_assets",
+      "get_media_asset",
       "get_payment_account",
     ];
 
@@ -38,6 +41,7 @@ describe("magickbox_core Candid contract", () => {
       "type WorkerRun",
       "type PaymentIntent",
       "type AdCreditGrant",
+      "type MediaAsset",
       "type MediaManifest",
     ];
 
@@ -54,5 +58,17 @@ describe("magickbox_core Candid contract", () => {
     expect(canisterSource).toContain("func account_for_payment_intent");
     expect(canisterSource).toContain("subaccount = account.subaccount");
     expect(canisterSource).not.toContain("claimed_payment_e8s + intent.amount_e8s");
+  });
+
+  it("stores generated media bytes directly on ICP before anchoring manifests", () => {
+    expect(candid).toContain("type MediaAsset");
+    expect(candid).toContain("content : blob");
+    expect(candid).toContain("store_media_asset :");
+    expect(candid).toContain("get_media_asset :");
+    expect(candid).toContain("list_my_media_assets :");
+    expect(canisterSource).toContain("type MediaAsset");
+    expect(canisterSource).toContain("var media_assets");
+    expect(canisterSource).toContain("icp-canister-media-store");
+    expect(canisterSource).toContain("icp-media://");
   });
 });

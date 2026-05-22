@@ -72,8 +72,8 @@ The local seed is stored only under ignored `.icp/cache/local-secrets/`. Do not 
 - Ad verifier credit grant records with duplicate proof protection.
 - User-authorized worker principal records.
 - Worker completion records with provider id, result hash, receipt, and output preview.
-- Media manifest records for off-chain/local artifacts anchored by content hash.
-- Content-addressed local media store for isolated worker outputs.
+- ICP media asset records storing small generated worker outputs as canister blobs.
+- Media manifest records for ICP media assets anchored by content hash.
 
 ## Off-ICP Boundaries
 
@@ -84,8 +84,7 @@ The local seed is stored only under ignored `.icp/cache/local-secrets/`. Do not 
 - Local Ollama stays user-local.
 - Stripe/fiat remains secondary and is not connected.
 - Advert verification is represented by canister credit grants in the local prototype; production still needs a trusted verifier principal/service.
-- Large media remains off-chain, with ICP media manifests and hashes anchored locally through `storage/media`.
-- S3-compatible object storage is selected as the next mostly ICP durable media backend; local content-addressed storage remains the no-secrets fallback.
+- Large generated media should move from the current small-blob proof into dedicated ICP media/chunk canisters.
 
 ## Commands
 
@@ -131,7 +130,7 @@ npm run smoke:services:required
 
 Latest completed checks:
 
-- `npm run verify` passed: lint, 5 Vitest files / 16 tests, Vite build, and 12 Playwright tests.
+- `npm run verify` passed: lint, 5 Vitest files / 17 tests, Vite build, and 12 Playwright tests.
 - `wsl ... icp build magickbox_core` passed.
 - `scripts/deploy-local-icp.sh` passed on port `8010`.
 - `scripts/smoke-local-icp.sh` passed.
@@ -162,16 +161,16 @@ Latest completed checks:
   - job listing;
   - audit event listing.
 - Latest advanced smoke proved:
-  - ICP payment intent `#3` for 100 credits and `100_000` e8s;
-  - per-intent subaccount `4d42504159000000000000000000000000000000000000000000000000000003`;
-  - local ledger transfer of `0.001` ICP to core canister `tz2ag-zx777-77776-aaabq-cai` with `--to-subaccount`, claimed at block `31`;
+  - ICP payment intent `#1` for 100 credits and `100_000` e8s;
+  - per-intent subaccount `4d42504159000000000000000000000000000000000000000000000000000001`;
+  - local ledger transfer of `0.001` ICP to core canister `tz2ag-zx777-77776-aaabq-cai` with `--to-subaccount`, claimed at block `30`;
   - ad verifier grant of 25 credits;
   - separate worker principal `qpkob-dcevx-4dmkl-ie5nc-2hkun-wqaia-vwwcq-n3gfy-rz3xt-djgfe-cae`;
-  - local Ollama model `glm4:9b` completed job `#5` with hash `1cb6531ff21e7b7c65d5d4be39a7d33c0be45829225496a79757d03db7730865`;
-  - FreeLLMAPI-compatible adapter completed job `#6` with hash `fbd2e1938765ba06342850ce65ef0d59717c0054170fffd6e8855547e3e83685`;
-  - MagickAI-compatible adapter completed job `#7` with hash `0242ace783591d455a9b50564fb165310d91285a3b2f1eaaf4d780ea91a7ff2a`;
-  - media manifests `#4`, `#5`, and `#6` anchored `media-store://sha256/...` URIs through the media backend selector;
-  - content-addressed artifacts written under ignored `storage/media/sha256/`.
+  - local Ollama model `glm4:9b` completed job `#2` with hash `a485b12be57454f7b2507f8b7a8ddfc8bf4c908ef2a741ddf5c39fe85704cc9b`;
+  - FreeLLMAPI-compatible adapter completed job `#3` with hash `fbd2e1938765ba06342850ce65ef0d59717c0054170fffd6e8855547e3e83685`;
+  - MagickAI-compatible adapter completed job `#4` with hash `7c0c590c8ba96c9f9299b554ee8c5e580043879de48c08a043b91efe050390ec`;
+  - media assets stored directly in `magickbox_core` with `icp-media://...` URIs;
+  - media manifests `#1`, `#2`, and `#3` anchored those ICP media URIs through `icp-canister-media-store`.
 
 ## Known Gaps
 
@@ -180,8 +179,7 @@ Latest completed checks:
 - Internet Identity is wired into the React runtime, but the Codex in-app browser blocks the signer popup. Use `Use local browser identity` in that browser, or open the same URL in a normal browser for II.
 - Local ICP/ICRC top-up proof now uses per-intent subaccounts. Production should decide whether to add ICRC-2 approve/transfer-from for wallet-mediated subscription or recurring payment flows.
 - MagickAI and FreeLLMAPI adapters are implemented as local worker boundaries; production use still needs real deployed worker services and secrets kept outside canister state.
-- The media manifest stores hashes and URI metadata only; large binary storage remains off-chain/user-local for this slice, with content-addressed local artifacts under `storage/media`.
-- S3-compatible media upload code exists but was not exercised because no isolated bucket credentials were configured.
+- The current media asset implementation is intentionally size-limited for the local proof; larger generated image/video/music assets need dedicated ICP media/chunk canisters with quota, lifecycle, certification, and cycle monitoring.
 - No isolated mainnet preview canister was created.
 
 ## Recommended Next Build Slice
@@ -189,7 +187,7 @@ Latest completed checks:
 1. Decide whether to supplement per-intent subaccounts with ICRC-2 transfer-from for subscription-style payments.
 2. Install MagickAI bridge dependencies in an isolated Python environment, then run `MAGICKAI_WORKER_COMMAND="python workers/magickai_worker_bridge.py" npm run smoke:services:required`.
 3. Run FreeLLMAPI in an isolated checkout/service, set `FREELLMAPI_BASE_URL` and `FREELLMAPI_API_KEY`, then capture routed-provider evidence with `npm run smoke:services:required`.
-4. Configure an isolated S3-compatible bucket or local MinIO instance and rerun `npm run smoke:icp:advanced` with `MAGICKBOX_MEDIA_BACKEND=s3`.
+4. Add a dedicated ICP media/chunk canister and migrate large generated media writes from the core proof store into that canister.
 5. Surface worker runs, media manifests, and claim/payment status in the app shell.
 6. Add collection save from a completed external-worker job.
 7. Manually exercise Internet Identity in a browser that permits signer popups.

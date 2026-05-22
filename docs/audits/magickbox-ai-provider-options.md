@@ -4,7 +4,7 @@ Date: 2026-05-22
 
 ## Recommendation
 
-ICP should own identity, account state, credits, generation job metadata, collections, provider preferences, and audit events. AI inference should run through explicit adapters because dynamic model execution, provider keys, streaming, large media, and local hardware access do not yet belong directly in standard canister state.
+ICP should own identity, account state, credits, generation job metadata, collections, provider preferences, media assets/manifests, and audit events. AI inference should run through explicit adapters because dynamic model execution, provider keys, streaming, and local hardware access do not yet belong directly in standard canister state. Large media should still stay on ICP, using dedicated media/chunk canisters rather than the app-state canister.
 
 The product should present these options as first-class choices instead of hiding them behind one opaque model selector.
 
@@ -12,7 +12,7 @@ The product should present these options as first-class choices instead of hidin
 
 | Option | Best for | ICP-owned state | Off-chain dependency | Prototype status |
 | --- | --- | --- | --- | --- |
-| MagickAI worker | Rich Magick Friend parity across chat, image, video, and music | job record, prompt hash, provider choice, result manifest, credit debit, audit event | Python SDK, AI provider keys, media storage | read-only reference |
+| MagickAI worker | Rich Magick Friend parity across chat, image, video, and music | job record, prompt hash, provider choice, media asset/manifest, credit debit, audit event | Python SDK and AI provider keys | read-only reference |
 | FreeLLMAPI | Free/low-cost OpenAI-compatible chat fallback | provider preference, usage summary, credit bypass/discount rule, audit event | user-managed proxy and provider keys | read-only reference |
 | Own API key | Users with OpenAI, Gemini, OpenRouter, Groq, or other subscriptions | provider preference and non-secret key reference | user key vault or browser/local storage; never raw key in canister state | UI option |
 | Local Ollama | Users who do not want paid inference | selected local model name, endpoint preference, opt-in audit event | local machine endpoint such as `http://127.0.0.1:11434` | UI option |
@@ -30,7 +30,7 @@ ICP fit:
 
 - Use the schemas and routing concepts as the worker contract.
 - Keep SDK execution off-chain at first.
-- Store job IDs, prompt hashes, result manifests, model/provider choices, credit debits, and audit events on ICP.
+- Store job IDs, prompt hashes, media assets/manifests, model/provider choices, credit debits, and audit events on ICP.
 - Do not store MagickAI provider secrets in canister state.
 
 ## Findings From `freellmapi`
@@ -88,7 +88,7 @@ Private prompts and uploaded assets should not be stored raw on ICP by default. 
 - `prompt_hash`
 - provider ID
 - job status
-- result URL/reference
+- ICP media URI/reference
 - result hash
 - audit metadata
 
@@ -98,5 +98,5 @@ Future work can add opt-in encrypted prompt storage or vetKD-backed encryption a
 
 - `scripts/smoke-worker-services.mjs` checks real isolated FreeLLMAPI and MagickAI connections without touching production.
 - `workers/magickai_worker_bridge.py` calls the real MagickAI SDK from `MAGICKAI_REPO_PATH` through `MagickAI.from_env()` and `universal_process(...)`.
-- `scripts/lib/media-backends.mjs` adds an S3-compatible object-storage backend for generated media while preserving the local content-addressed fallback.
-- `docs/audits/magickbox-media-storage-decision.md` records the media storage choice for the mostly ICP path.
+- `scripts/smoke-local-icp-advanced.mjs` stores generated worker output bytes in `magickbox_core` through `store_media_asset` before anchoring manifests.
+- `docs/audits/magickbox-media-storage-decision.md` records the ICP-only media storage choice and the dedicated ICP media/chunk canister scale path.

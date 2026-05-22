@@ -62,6 +62,18 @@ export interface GenerationJob {
   'result_url' : [] | [string],
   'prompt_preview' : string,
 }
+export interface MediaAsset {
+  'id' : bigint,
+  'uri' : string,
+  'content' : Uint8Array,
+  'owner' : Principal,
+  'content_hash' : string,
+  'mime_type' : string,
+  'created_at' : bigint,
+  'job_id' : bigint,
+  'stored_by' : Principal,
+  'bytes' : bigint,
+}
 export interface MediaManifest {
   'id' : bigint,
   'uri' : string,
@@ -169,6 +181,7 @@ export interface _SERVICE {
   >,
   'get_credit_options' : ActorMethod<[], Array<CreditOption>>,
   'get_cycle_note' : ActorMethod<[], string>,
+  'get_media_asset' : ActorMethod<[bigint], [] | [MediaAsset]>,
   'get_my_profile' : ActorMethod<[], [] | [Profile]>,
   'get_payment_account' : ActorMethod<[], PaymentAccount>,
   'get_payment_account_for_intent' : ActorMethod<
@@ -186,6 +199,7 @@ export interface _SERVICE {
   'list_my_ad_credit_grants' : ActorMethod<[], Array<AdCreditGrant>>,
   'list_my_collections' : ActorMethod<[], Array<CollectionRecord>>,
   'list_my_jobs' : ActorMethod<[], Array<GenerationJob>>,
+  'list_my_media_assets' : ActorMethod<[], Array<MediaAsset>>,
   'list_my_media_manifests' : ActorMethod<[], Array<MediaManifest>>,
   'list_my_payment_intents' : ActorMethod<[], Array<PaymentIntent>>,
   'list_my_worker_grants' : ActorMethod<[], Array<WorkerGrant>>,
@@ -198,6 +212,11 @@ export interface _SERVICE {
   'save_to_collection' : ActorMethod<
     [bigint, string, boolean],
     { 'ok' : CollectionRecord } |
+      { 'err' : string }
+  >,
+  'store_media_asset' : ActorMethod<
+    [bigint, string, string, Uint8Array],
+    { 'ok' : MediaAsset } |
       { 'err' : string }
   >,
 }
@@ -265,6 +284,18 @@ export const idlFactory: IDL.InterfaceFactory = ({ IDL }) => {
       'required' : IDL.Nat,
       'options' : IDL.Vec(CreditOption),
     }),
+  });
+  const MediaAsset = IDL.Record({
+    'id' : IDL.Nat,
+    'uri' : IDL.Text,
+    'content' : IDL.Vec(IDL.Nat8),
+    'owner' : IDL.Principal,
+    'content_hash' : IDL.Text,
+    'mime_type' : IDL.Text,
+    'created_at' : IDL.Int,
+    'job_id' : IDL.Nat,
+    'stored_by' : IDL.Principal,
+    'bytes' : IDL.Nat,
   });
   const Profile = IDL.Record({
     'updated_at' : IDL.Int,
@@ -365,6 +396,7 @@ export const idlFactory: IDL.InterfaceFactory = ({ IDL }) => {
       ),
     'get_credit_options' : IDL.Func([], [IDL.Vec(CreditOption)], ['query']),
     'get_cycle_note' : IDL.Func([], [IDL.Text], ['query']),
+    'get_media_asset' : IDL.Func([IDL.Nat], [IDL.Opt(MediaAsset)], ['query']),
     'get_my_profile' : IDL.Func([], [IDL.Opt(Profile)], ['query']),
     'get_payment_account' : IDL.Func([], [PaymentAccount], ['query']),
     'get_payment_account_for_intent' : IDL.Func(
@@ -390,6 +422,7 @@ export const idlFactory: IDL.InterfaceFactory = ({ IDL }) => {
         ['query'],
       ),
     'list_my_jobs' : IDL.Func([], [IDL.Vec(GenerationJob)], ['query']),
+    'list_my_media_assets' : IDL.Func([], [IDL.Vec(MediaAsset)], ['query']),
     'list_my_media_manifests' : IDL.Func(
         [],
         [IDL.Vec(MediaManifest)],
@@ -410,6 +443,11 @@ export const idlFactory: IDL.InterfaceFactory = ({ IDL }) => {
     'save_to_collection' : IDL.Func(
         [IDL.Nat, IDL.Text, IDL.Bool],
         [IDL.Variant({ 'ok' : CollectionRecord, 'err' : IDL.Text })],
+        [],
+      ),
+    'store_media_asset' : IDL.Func(
+        [IDL.Nat, IDL.Text, IDL.Text, IDL.Vec(IDL.Nat8)],
+        [IDL.Variant({ 'ok' : MediaAsset, 'err' : IDL.Text })],
         [],
       ),
   });

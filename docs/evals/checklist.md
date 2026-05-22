@@ -19,7 +19,7 @@
 - [x] MagickAI-compatible worker adapter smoke
 - [x] Live service smoke harness for isolated FreeLLMAPI/MagickAI services
 - [x] Media manifest anchoring smoke
-- [x] Content-addressed local media storage smoke
-- [x] S3-compatible durable media backend code path and decision doc
+- [x] ICP canister media asset storage smoke
+- [x] ICP media storage decision doc
 
 The checklist is updated in `docs/handovers/magickbox-isolated-prototype-handoff.md` after fresh verification.
