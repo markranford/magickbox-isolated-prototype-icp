@@ -468,3 +468,45 @@ Blockers or risks:
 Next step:
 
 - Commit this full ICP local slice and then start the next slice: generated bindings, Internet Identity, and real frontend calls to `magickbox_core`.
+
+## 2026-05-22T16:15:33+07:00 - Checkpoint 11: Full ICP Slice Committed Locally
+
+Current workspace/folder:
+
+`C:\Users\Mark\Documents\Codex\Codex_MagickBox\magick-box-rewrite-readiness-prototype`
+
+What was inspected:
+
+- Git diff hygiene.
+- Ignored local cache/seed/dependency directories.
+- Final local git status and log.
+
+What was created or changed:
+
+- Created local-only commit `c0a5c6b feat: add local ICP Magick Box prototype slice`.
+- Confirmed `.icp/`, `.mops/`, and `node_modules/` remain ignored/untracked.
+
+Commands run and results:
+
+- `git diff --check` -> no whitespace errors; Git emitted expected LF-to-CRLF warnings.
+- `git status --short --ignored .icp` -> `.icp/` ignored, including local canister cache and local seed.
+- `git add .gitignore README.md canisters docs icp.yaml mops.lock mops.toml scripts src tests` -> staged intended prototype files only.
+- `git commit -m "feat: add local ICP Magick Box prototype slice"` -> created commit `c0a5c6b`.
+- `git status --short --branch` -> clean `## main`.
+- `git log --oneline -5` -> latest commit is `c0a5c6b`.
+- `git remote -v` -> no remotes printed.
+
+Decisions made:
+
+- Keep the commit local only.
+- Do not push, create PRs, or configure remotes.
+- Keep local ICP cache and plaintext local seed ignored.
+
+Blockers or risks:
+
+- No active blocker.
+- The current frontend is deployed to ICP assets but still uses local/mock state until the next binding/auth slice.
+
+Next step:
+
+- Start generated bindings and Internet Identity wiring in the next implementation pass.
