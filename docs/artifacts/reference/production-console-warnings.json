@@ -1,0 +1,32 @@
+[
+  {
+    "level": "warn",
+    "message": "THREE.THREE.Clock: This module has been deprecated. Please use THREE.Timer instead.",
+    "timestamp": "2026-05-22T07:43:09.619Z",
+    "url": "https://magickbox.ai/_next/static/chunks/0ixbtjoi331_v.js"
+  },
+  {
+    "level": "warn",
+    "message": "THREE.THREE.Clock: This module has been deprecated. Please use THREE.Timer instead.",
+    "timestamp": "2026-05-22T07:44:13.701Z",
+    "url": "https://magickbox.ai/_next/static/chunks/0ixbtjoi331_v.js"
+  },
+  {
+    "level": "warn",
+    "message": "THREE.THREE.Clock: This module has been deprecated. Please use THREE.Timer instead.",
+    "timestamp": "2026-05-22T07:44:19.036Z",
+    "url": "https://magickbox.ai/_next/static/chunks/0ixbtjoi331_v.js"
+  },
+  {
+    "level": "warn",
+    "message": "THREE.THREE.Clock: This module has been deprecated. Please use THREE.Timer instead.",
+    "timestamp": "2026-05-22T07:44:22.258Z",
+    "url": "https://magickbox.ai/_next/static/chunks/0ixbtjoi331_v.js"
+  },
+  {
+    "level": "error",
+    "message": "TypeError: Cannot read properties of null (reading 'clientWidth')\n    at N (https://magickbox.ai/_next/static/chunks/0ixbtjoi331_v.js:568:2591)\n    at ResizeObserver.O (https://magickbox.ai/_next/static/chunks/0ixbtjoi331_v.js:568:2786)",
+    "timestamp": "2026-05-22T07:44:24.947Z",
+    "url": "https://magickbox.ai/_next/static/chunks/0ixbtjoi331_v.js"
+  }
+]
