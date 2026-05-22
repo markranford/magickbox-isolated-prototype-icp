@@ -136,3 +136,43 @@ Blockers or risks:
 Next step:
 
 - Final inspect git status and deliver handoff summary with paths, commands, verification, and remaining risks.
+
+## 2026-05-22T15:39:44+07:00 - Checkpoint 4: Local Commit Created
+
+Current workspace/folder:
+
+`C:\Users\Mark\Documents\Codex\Codex_MagickBox\magick-box-rewrite-readiness-prototype`
+
+What was inspected:
+
+- Final diff hygiene before committing.
+- Local git remote configuration.
+- Local git status after commit.
+
+What was created or changed:
+
+- Created local-only commit `09e393e docs: add ICP prototype goal and audit packet`.
+- Updated the handoff with the local git checkpoint.
+- Updated this progress log with the commit checkpoint.
+
+Commands run and results:
+
+- `git diff --check` -> no whitespace errors; Git emitted expected LF-to-CRLF working-copy warnings.
+- `git diff --stat` -> showed expected tracked source/doc updates before staging.
+- `git status --short --branch` -> showed only expected local prototype changes before commit, then clean `## main` after commit.
+- `git remote -v` -> no remotes printed.
+- `git add README.md docs public src tests; git commit -m "docs: add ICP prototype goal and audit packet"` -> created local commit `09e393e`.
+- `git rev-parse --short HEAD` -> `09e393e`.
+
+Decisions made:
+
+- Commit locally inside the isolated prototype repo for a stable checkpoint.
+- Do not push anywhere because no remote is configured and production/reference repos are read-only.
+
+Blockers or risks:
+
+- No blockers.
+
+Next step:
+
+- Commit this checkpoint note locally, confirm clean status, then provide the final summary.

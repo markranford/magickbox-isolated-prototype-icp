@@ -12,6 +12,10 @@ Local preview:
 
 The local Vite dev server was previously started on port `5173`. No external deployment was created.
 
+Main packet git checkpoint:
+
+`09e393e docs: add ICP prototype goal and audit packet`
+
 ## Safety Status
 
 - Existing GitHub repos were cloned read-only under `../_readonly_references`.
