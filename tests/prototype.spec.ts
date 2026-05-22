@@ -60,6 +60,16 @@ test("Launch Beta enters the app shell and chat controls respond locally", async
   await expect(page.getByRole("status")).toContainText("Music Creation queued locally");
 });
 
+test("evaluation route exposes route parity and ICP readiness", async ({ page }) => {
+  await page.goto("/evaluation");
+
+  await expect(page.getByRole("heading", { name: "Rewrite Readiness Evaluation" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "ICP Readiness" })).toBeVisible();
+  await expect(page.getByRole("cell", { name: "/", exact: true })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Certified frontend" })).toBeVisible();
+  await expect(page.getByText("Internet Identity")).toBeVisible();
+});
+
 test("built assets include ICP asset canister routing policy", async () => {
   const policy = await readFile("dist/.ic-assets.json5", "utf8");
 

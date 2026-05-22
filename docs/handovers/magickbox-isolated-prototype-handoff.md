@@ -131,12 +131,13 @@ Latest full verification after the ICP packet hardening passed:
 | Lint | Pass | `npm run lint` |
 | Unit tests | Pass, 1 file / 2 tests | `npm run test` |
 | Typecheck/build | Pass | `npm run build` |
-| Browser smoke | Pass, 6 Playwright tests | `npm run e2e` |
+| Browser smoke | Pass, 8 Playwright tests | `npm run e2e` |
 | Desktop screenshot | Captured | `docs/artifacts/prototype/prototype-home-desktop.png` |
 | Mobile screenshot | Captured | `docs/artifacts/prototype/prototype-home-mobile.png` |
 | Accessibility | Pass | Axe run in Playwright returned no violations |
 | Metadata/SEO | Pass | Build includes title, description, OG title, OG description, OG image |
 | Console health | Pass in clean Playwright context | Browser warning/error array was empty during e2e |
+| ICP evaluation route | Pass | e2e verified `/evaluation` exposes route parity and ICP readiness |
 | ICP asset policy | Pass | e2e verified `dist/.ic-assets.json5` contains raw-access, SPA aliasing, and CSP policy |
 
 The new e2e suite includes a check that `dist/.ic-assets.json5` carries:

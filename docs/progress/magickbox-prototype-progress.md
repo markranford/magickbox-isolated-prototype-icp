@@ -176,3 +176,46 @@ Blockers or risks:
 Next step:
 
 - Commit this checkpoint note locally, confirm clean status, then provide the final summary.
+
+## 2026-05-22T15:42:17+07:00 - Checkpoint 5: Evaluation Route E2E Added And Verified
+
+Current workspace/folder:
+
+`C:\Users\Mark\Documents\Codex\Codex_MagickBox\magick-box-rewrite-readiness-prototype`
+
+What was inspected:
+
+- In-app browser tooling availability.
+- Playwright failure output for the newly added `/evaluation` route check.
+- Final full verification output after fixing the test locator.
+
+What was created or changed:
+
+- Added an e2e check that `/evaluation` exposes route parity and ICP readiness.
+- Fixed the route-parity cell assertion to use exact matching for `/`.
+- Updated the handoff verification table from 6 to 8 Playwright tests and added the ICP evaluation route check.
+
+Commands run and results:
+
+- `npm run verify` -> initially failed only in the new evaluation route e2e check.
+- Root cause: `getByRole("cell", { name: "/" })` matched every route cell containing a slash, causing Playwright strict-mode ambiguity.
+- Fix: changed the locator to `getByRole("cell", { name: "/", exact: true })`.
+- `npm run verify` -> passed after the fix.
+- `npm run lint` -> passed.
+- `npm run test` -> passed, 1 Vitest file / 2 tests.
+- `npm run build` -> passed.
+- `npm run e2e` -> passed, 8 Playwright tests across desktop and mobile.
+
+Decisions made:
+
+- Prefer a durable e2e assertion for `/evaluation` over a one-off browser inspection because the discovered Browser/node runtime did not have Playwright available.
+- Keep the test focused on visible route parity and ICP readiness signals.
+
+Blockers or risks:
+
+- No active blockers.
+- The in-app Browser tool path was not usable through the surfaced node runtime because `playwright` was not available there; project-local Playwright verification covers the same route.
+
+Next step:
+
+- Commit this final test/docs update locally and confirm clean status.
