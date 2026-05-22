@@ -1,10 +1,22 @@
 import Array "mo:core/Array";
+import Blob "mo:core/Blob";
 import Nat "mo:core/Nat";
 import Principal "mo:core/Principal";
 import Text "mo:core/Text";
 import Time "mo:core/Time";
 
-persistent actor {
+persistent actor MagickBoxCore {
+  type Account = {
+    owner : Principal;
+    subaccount : ?Blob;
+  };
+
+  transient let ICP_LEDGER_ID : Principal = Principal.fromText("ryjl3-tyaaa-aaaaa-aaaba-cai");
+  transient let icp_ledger = actor ("ryjl3-tyaaa-aaaaa-aaaba-cai") : actor {
+    icrc1_balance_of : shared query (Account) -> async Nat;
+    icrc1_fee : shared query () -> async Nat;
+  };
+
   type CreditOption = {
     id : Text;
     title : Text;
@@ -66,6 +78,70 @@ persistent actor {
     created_at : Int;
   };
 
+  type PaymentAccount = {
+    owner : Principal;
+    subaccount : ?Blob;
+    ledger_id : Principal;
+    token_symbol : Text;
+    fee_e8s : Nat;
+  };
+
+  type PaymentIntent = {
+    id : Nat;
+    owner : Principal;
+    payment_principal : Principal;
+    amount_e8s : Nat;
+    credits : Nat;
+    status : Text;
+    ledger_block_index : ?Nat;
+    created_at : Int;
+    updated_at : Int;
+  };
+
+  type WorkerGrant = {
+    id : Nat;
+    owner : Principal;
+    worker : Principal;
+    worker_label : Text;
+    created_at : Int;
+    revoked_at : ?Int;
+  };
+
+  type WorkerRun = {
+    id : Nat;
+    job_id : Nat;
+    owner : Principal;
+    worker : Principal;
+    provider_id : Text;
+    result_url : Text;
+    result_hash : Text;
+    receipt : Text;
+    output_preview : Text;
+    created_at : Int;
+  };
+
+  type AdCreditGrant = {
+    id : Nat;
+    owner : Principal;
+    verifier : Text;
+    proof_id : Text;
+    credits : Nat;
+    created_at : Int;
+  };
+
+  type MediaManifest = {
+    id : Nat;
+    owner : Principal;
+    job_id : Nat;
+    attached_by : Principal;
+    storage_provider : Text;
+    uri : Text;
+    content_hash : Text;
+    mime_type : Text;
+    bytes : Nat;
+    created_at : Int;
+  };
+
   type CreateJobResult = {
     #ok : GenerationJob;
     #insufficient_credits : {
@@ -79,14 +155,31 @@ persistent actor {
   type ProfileResult = { #ok : Profile; #err : Text };
   type JobResult = { #ok : GenerationJob; #err : Text };
   type CollectionResult = { #ok : CollectionRecord; #err : Text };
+  type PaymentIntentResult = { #ok : PaymentIntent; #err : Text };
+  type WorkerGrantResult = { #ok : WorkerGrant; #err : Text };
+  type WorkerRunResult = { #ok : WorkerRun; #err : Text };
+  type AdCreditGrantResult = { #ok : AdCreditGrant; #err : Text };
+  type MediaManifestResult = { #ok : MediaManifest; #err : Text };
 
   var profiles : [Profile] = [];
   var jobs : [GenerationJob] = [];
   var collections : [CollectionRecord] = [];
   var audit_events : [AuditEvent] = [];
+  var payment_intents : [PaymentIntent] = [];
+  var worker_grants : [WorkerGrant] = [];
+  var worker_runs : [WorkerRun] = [];
+  var ad_credit_grants : [AdCreditGrant] = [];
+  var media_manifests : [MediaManifest] = [];
+  var claimed_payment_blocks : [Nat] = [];
+  var claimed_payment_e8s : Nat = 0;
   var next_job_id : Nat = 1;
   var next_collection_id : Nat = 1;
   var next_audit_id : Nat = 1;
+  var next_payment_intent_id : Nat = 1;
+  var next_worker_grant_id : Nat = 1;
+  var next_worker_run_id : Nat = 1;
+  var next_ad_credit_grant_id : Nat = 1;
+  var next_media_manifest_id : Nat = 1;
 
   func now() : Int {
     Time.now()
@@ -131,6 +224,52 @@ persistent actor {
     null
   };
 
+  func find_payment_intent_index(id : Nat) : ?Nat {
+    var i : Nat = 0;
+    for (intent in payment_intents.vals()) {
+      if (intent.id == id) {
+        return ?i;
+      };
+      i += 1;
+    };
+    null
+  };
+
+  func has_claimed_payment_block(block_index : Nat) : Bool {
+    for (claimed in claimed_payment_blocks.vals()) {
+      if (claimed == block_index) {
+        return true;
+      };
+    };
+    false
+  };
+
+  func ad_proof_already_used(verifier : Text, proof_id : Text) : Bool {
+    for (grant in ad_credit_grants.vals()) {
+      if (grant.verifier == verifier and grant.proof_id == proof_id) {
+        return true;
+      };
+    };
+    false
+  };
+
+  func is_authorized_worker(owner : Principal, worker : Principal) : Bool {
+    if (Principal.equal(owner, worker)) {
+      return true;
+    };
+
+    for (grant in worker_grants.vals()) {
+      if (
+        Principal.equal(grant.owner, owner) and
+        Principal.equal(grant.worker, worker) and
+        grant.revoked_at == null
+      ) {
+        return true;
+      };
+    };
+    false
+  };
+
   func replace_profile(index : Nat, profile : Profile) {
     profiles := Array.tabulate<Profile>(
       profiles.size(),
@@ -149,6 +288,45 @@ persistent actor {
     );
   };
 
+  func replace_payment_intent(index : Nat, intent : PaymentIntent) {
+    payment_intents := Array.tabulate<PaymentIntent>(
+      payment_intents.size(),
+      func(i : Nat) : PaymentIntent {
+        if (i == index) { intent } else { payment_intents[i] };
+      },
+    );
+  };
+
+  func payment_account() : PaymentAccount {
+    {
+      owner = Principal.fromActor(MagickBoxCore);
+      subaccount = null;
+      ledger_id = ICP_LEDGER_ID;
+      token_symbol = "ICP";
+      fee_e8s = 10_000;
+    };
+  };
+
+  func credit_profile(owner : Principal, credits : Nat) : ?Profile {
+    switch (find_profile_index(owner)) {
+      case (?index) {
+        let profile = profiles[index];
+        let timestamp = now();
+        let updated : Profile = {
+          owner = profile.owner;
+          display_name = profile.display_name;
+          email = profile.email;
+          credits = profile.credits + credits;
+          created_at = profile.created_at;
+          updated_at = timestamp;
+        };
+        replace_profile(index, updated);
+        ?updated;
+      };
+      case null { null };
+    };
+  };
+
   func record_audit(caller : Principal, action : Text, subject : Text, metadata : Text) {
     let event : AuditEvent = {
       id = next_audit_id;
@@ -160,6 +338,70 @@ persistent actor {
     };
     next_audit_id += 1;
     audit_events := append_item<AuditEvent>(audit_events, event);
+  };
+
+  func complete_job_internal(
+    caller : Principal,
+    job_id : Nat,
+    result_url : Text,
+    result_hash : Text,
+    receipt : Text,
+    output_preview : Text,
+  ) : JobResult {
+    let job_index = switch (find_job_index(job_id)) {
+      case (?index) { index };
+      case null { return #err("Job not found") };
+    };
+    let job = jobs[job_index];
+    if (not is_authorized_worker(job.owner, caller)) {
+      return #err("Only the job owner or an authorized worker can complete this job");
+    };
+    if (Text.size(result_url) == 0 or Text.size(result_url) > 500) {
+      return #err("Result URL must be between 1 and 500 characters");
+    };
+    if (Text.size(result_hash) < 8 or Text.size(result_hash) > 128) {
+      return #err("Result hash must be between 8 and 128 characters");
+    };
+    if (Text.size(receipt) > 2_000) {
+      return #err("Worker receipt must be 2,000 characters or less");
+    };
+    if (Text.size(output_preview) > 1_000) {
+      return #err("Output preview must be 1,000 characters or less");
+    };
+
+    let timestamp = now();
+    let updated : GenerationJob = {
+      id = job.id;
+      owner = job.owner;
+      mode = job.mode;
+      provider_id = job.provider_id;
+      prompt_preview = job.prompt_preview;
+      prompt_hash = job.prompt_hash;
+      status = "complete";
+      credit_cost = job.credit_cost;
+      result_url = ?result_url;
+      result_hash = ?result_hash;
+      created_at = job.created_at;
+      updated_at = timestamp;
+    };
+    replace_job(job_index, updated);
+
+    let run : WorkerRun = {
+      id = next_worker_run_id;
+      job_id;
+      owner = job.owner;
+      worker = caller;
+      provider_id = job.provider_id;
+      result_url;
+      result_hash;
+      receipt;
+      output_preview;
+      created_at = timestamp;
+    };
+    next_worker_run_id += 1;
+    worker_runs := append_item<WorkerRun>(worker_runs, run);
+    record_audit(caller, "generation_job_completed", Nat.toText(job_id), "external worker completion");
+    #ok(updated);
   };
 
   func cost_for_provider(provider_id : Text, requested_cost : Nat) : Nat {
@@ -274,6 +516,10 @@ persistent actor {
     ];
   };
 
+  public query func get_payment_account() : async PaymentAccount {
+    payment_account();
+  };
+
   public shared ({ caller }) func register_profile(display_name : Text, email : ?Text) : async ProfileResult {
     switch (require_authenticated(caller)) {
       case (?err) { return #err(err) };
@@ -321,6 +567,135 @@ persistent actor {
       case (?index) { ?profiles[index] };
       case null { null };
     };
+  };
+
+  public shared ({ caller }) func create_icp_payment_intent(credits : Nat, amount_e8s : Nat) : async PaymentIntentResult {
+    switch (require_authenticated(caller)) {
+      case (?err) { return #err(err) };
+      case null {};
+    };
+
+    if (credits == 0 or credits > 100_000) {
+      return #err("Credit amount must be between 1 and 100,000");
+    };
+    if (amount_e8s < 10_000) {
+      return #err("ICP payment amount must cover at least the local ledger fee");
+    };
+    switch (find_profile_index(caller)) {
+      case (?_) {};
+      case null { return #err("Profile must be registered before creating payment intents") };
+    };
+
+    let timestamp = now();
+    let intent : PaymentIntent = {
+      id = next_payment_intent_id;
+      owner = caller;
+      payment_principal = payment_account().owner;
+      amount_e8s;
+      credits;
+      status = "pending";
+      ledger_block_index = null;
+      created_at = timestamp;
+      updated_at = timestamp;
+    };
+    next_payment_intent_id += 1;
+    payment_intents := append_item<PaymentIntent>(payment_intents, intent);
+    record_audit(caller, "icp_payment_intent_created", Nat.toText(intent.id), "amount_e8s=" # Nat.toText(amount_e8s) # ";credits=" # Nat.toText(credits));
+    #ok(intent);
+  };
+
+  public shared ({ caller }) func claim_icp_payment(intent_id : Nat, ledger_block_index : Nat) : async PaymentIntentResult {
+    switch (require_authenticated(caller)) {
+      case (?err) { return #err(err) };
+      case null {};
+    };
+
+    if (has_claimed_payment_block(ledger_block_index)) {
+      return #err("Ledger block index has already been claimed");
+    };
+
+    let intent_index = switch (find_payment_intent_index(intent_id)) {
+      case (?index) { index };
+      case null { return #err("Payment intent not found") };
+    };
+    let intent = payment_intents[intent_index];
+    if (not Principal.equal(intent.owner, caller)) {
+      return #err("Only the payment intent owner can claim this transfer");
+    };
+    if (intent.status != "pending") {
+      return #err("Payment intent is not pending");
+    };
+
+    let account = payment_account();
+    let observed_balance = await icp_ledger.icrc1_balance_of({
+      owner = account.owner;
+      subaccount = account.subaccount;
+    });
+    let required_balance = claimed_payment_e8s + intent.amount_e8s;
+    if (observed_balance < required_balance) {
+      return #err("ICP ledger balance has not reached the expected paid amount");
+    };
+
+    switch (credit_profile(caller, intent.credits)) {
+      case (?_) {};
+      case null { return #err("Profile must be registered before claiming payment") };
+    };
+
+    let timestamp = now();
+    let updated : PaymentIntent = {
+      id = intent.id;
+      owner = intent.owner;
+      payment_principal = intent.payment_principal;
+      amount_e8s = intent.amount_e8s;
+      credits = intent.credits;
+      status = "claimed";
+      ledger_block_index = ?ledger_block_index;
+      created_at = intent.created_at;
+      updated_at = timestamp;
+    };
+    replace_payment_intent(intent_index, updated);
+    claimed_payment_e8s += intent.amount_e8s;
+    claimed_payment_blocks := append_item<Nat>(claimed_payment_blocks, ledger_block_index);
+    record_audit(caller, "icp_payment_claimed", Nat.toText(intent.id), "block=" # Nat.toText(ledger_block_index) # ";credits=" # Nat.toText(intent.credits));
+    #ok(updated);
+  };
+
+  public shared ({ caller }) func grant_ad_credits(verifier : Text, proof_id : Text, credits : Nat) : async AdCreditGrantResult {
+    switch (require_authenticated(caller)) {
+      case (?err) { return #err(err) };
+      case null {};
+    };
+
+    if (Text.size(verifier) == 0 or Text.size(verifier) > 80) {
+      return #err("Ad verifier must be between 1 and 80 characters");
+    };
+    if (Text.size(proof_id) < 8 or Text.size(proof_id) > 128) {
+      return #err("Ad proof id must be between 8 and 128 characters");
+    };
+    if (credits == 0 or credits > 250) {
+      return #err("Ad credit grant must be between 1 and 250 credits");
+    };
+    if (ad_proof_already_used(verifier, proof_id)) {
+      return #err("Ad proof has already been credited");
+    };
+
+    switch (credit_profile(caller, credits)) {
+      case (?_) {};
+      case null { return #err("Profile must be registered before claiming ad credits") };
+    };
+
+    let grant : AdCreditGrant = {
+      id = next_ad_credit_grant_id;
+      owner = caller;
+      verifier;
+      proof_id;
+      credits;
+      created_at = now();
+    };
+    next_ad_credit_grant_id += 1;
+    ad_credit_grants := append_item<AdCreditGrant>(ad_credit_grants, grant);
+    record_audit(caller, "ad_credits_granted", proof_id, "verifier=" # verifier # ";credits=" # Nat.toText(credits));
+    #ok(grant);
   };
 
   public shared ({ caller }) func create_generation_job(
@@ -399,7 +774,65 @@ persistent actor {
     #ok(job);
   };
 
+  public shared ({ caller }) func authorize_worker(worker : Principal, worker_label : Text) : async WorkerGrantResult {
+    switch (require_authenticated(caller)) {
+      case (?err) { return #err(err) };
+      case null {};
+    };
+
+    if (Principal.isAnonymous(worker)) {
+      return #err("Worker principal cannot be anonymous");
+    };
+    if (Text.size(worker_label) == 0 or Text.size(worker_label) > 80) {
+      return #err("Worker label must be between 1 and 80 characters");
+    };
+
+    let grant : WorkerGrant = {
+      id = next_worker_grant_id;
+      owner = caller;
+      worker;
+      worker_label;
+      created_at = now();
+      revoked_at = null;
+    };
+    next_worker_grant_id += 1;
+    worker_grants := append_item<WorkerGrant>(worker_grants, grant);
+    record_audit(caller, "worker_authorized", Principal.toText(worker), "label=" # worker_label);
+    #ok(grant);
+  };
+
+  public shared ({ caller }) func complete_worker_job(
+    job_id : Nat,
+    result_url : Text,
+    result_hash : Text,
+    receipt : Text,
+    output_preview : Text,
+  ) : async JobResult {
+    switch (require_authenticated(caller)) {
+      case (?err) { return #err(err) };
+      case null {};
+    };
+
+    complete_job_internal(caller, job_id, result_url, result_hash, receipt, output_preview);
+  };
+
   public shared ({ caller }) func complete_external_job(job_id : Nat, result_url : Text, result_hash : Text) : async JobResult {
+    switch (require_authenticated(caller)) {
+      case (?err) { return #err(err) };
+      case null {};
+    };
+
+    complete_job_internal(caller, job_id, result_url, result_hash, "legacy external completion", "");
+  };
+
+  public shared ({ caller }) func attach_media_manifest(
+    job_id : Nat,
+    storage_provider : Text,
+    uri : Text,
+    content_hash : Text,
+    mime_type : Text,
+    bytes : Nat,
+  ) : async MediaManifestResult {
     switch (require_authenticated(caller)) {
       case (?err) { return #err(err) };
       case null {};
@@ -410,33 +843,38 @@ persistent actor {
       case null { return #err("Job not found") };
     };
     let job = jobs[job_index];
-    if (not Principal.equal(job.owner, caller)) {
-      return #err("Only the job owner can complete the mock job");
+    if (not is_authorized_worker(job.owner, caller)) {
+      return #err("Only the job owner or an authorized worker can attach media");
     };
-    if (Text.size(result_url) == 0 or Text.size(result_url) > 500) {
-      return #err("Result URL must be between 1 and 500 characters");
+    if (Text.size(storage_provider) == 0 or Text.size(storage_provider) > 80) {
+      return #err("Storage provider must be between 1 and 80 characters");
     };
-    if (Text.size(result_hash) < 8 or Text.size(result_hash) > 128) {
-      return #err("Result hash must be between 8 and 128 characters");
+    if (Text.size(uri) == 0 or Text.size(uri) > 500) {
+      return #err("Media URI must be between 1 and 500 characters");
+    };
+    if (Text.size(content_hash) < 8 or Text.size(content_hash) > 128) {
+      return #err("Content hash must be between 8 and 128 characters");
+    };
+    if (Text.size(mime_type) == 0 or Text.size(mime_type) > 80) {
+      return #err("MIME type must be between 1 and 80 characters");
     };
 
-    let updated : GenerationJob = {
-      id = job.id;
+    let manifest : MediaManifest = {
+      id = next_media_manifest_id;
       owner = job.owner;
-      mode = job.mode;
-      provider_id = job.provider_id;
-      prompt_preview = job.prompt_preview;
-      prompt_hash = job.prompt_hash;
-      status = "complete";
-      credit_cost = job.credit_cost;
-      result_url = ?result_url;
-      result_hash = ?result_hash;
-      created_at = job.created_at;
-      updated_at = now();
+      job_id;
+      attached_by = caller;
+      storage_provider;
+      uri;
+      content_hash;
+      mime_type;
+      bytes;
+      created_at = now();
     };
-    replace_job(job_index, updated);
-    record_audit(caller, "generation_job_completed", Nat.toText(job_id), "external worker completion");
-    #ok(updated);
+    next_media_manifest_id += 1;
+    media_manifests := append_item<MediaManifest>(media_manifests, manifest);
+    record_audit(caller, "media_manifest_attached", Nat.toText(job_id), "provider=" # storage_provider # ";hash=" # content_hash);
+    #ok(manifest);
   };
 
   public shared ({ caller }) func save_to_collection(job_id : Nat, name : Text, is_public : Bool) : async CollectionResult {
@@ -498,6 +936,56 @@ persistent actor {
     for (event in audit_events.vals()) {
       if (Principal.equal(event.caller, caller)) {
         result := append_item<AuditEvent>(result, event);
+      };
+    };
+    result;
+  };
+
+  public shared query ({ caller }) func list_my_payment_intents() : async [PaymentIntent] {
+    var result : [PaymentIntent] = [];
+    for (intent in payment_intents.vals()) {
+      if (Principal.equal(intent.owner, caller)) {
+        result := append_item<PaymentIntent>(result, intent);
+      };
+    };
+    result;
+  };
+
+  public shared query ({ caller }) func list_my_worker_grants() : async [WorkerGrant] {
+    var result : [WorkerGrant] = [];
+    for (grant in worker_grants.vals()) {
+      if (Principal.equal(grant.owner, caller) or Principal.equal(grant.worker, caller)) {
+        result := append_item<WorkerGrant>(result, grant);
+      };
+    };
+    result;
+  };
+
+  public shared query ({ caller }) func list_my_worker_runs() : async [WorkerRun] {
+    var result : [WorkerRun] = [];
+    for (run in worker_runs.vals()) {
+      if (Principal.equal(run.owner, caller) or Principal.equal(run.worker, caller)) {
+        result := append_item<WorkerRun>(result, run);
+      };
+    };
+    result;
+  };
+
+  public shared query ({ caller }) func list_my_ad_credit_grants() : async [AdCreditGrant] {
+    var result : [AdCreditGrant] = [];
+    for (grant in ad_credit_grants.vals()) {
+      if (Principal.equal(grant.owner, caller)) {
+        result := append_item<AdCreditGrant>(result, grant);
+      };
+    };
+    result;
+  };
+
+  public shared query ({ caller }) func list_my_media_manifests() : async [MediaManifest] {
+    var result : [MediaManifest] = [];
+    for (manifest in media_manifests.vals()) {
+      if (Principal.equal(manifest.owner, caller) or Principal.equal(manifest.attached_by, caller)) {
+        result := append_item<MediaManifest>(result, manifest);
       };
     };
     result;

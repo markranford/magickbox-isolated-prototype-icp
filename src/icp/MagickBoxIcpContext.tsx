@@ -11,16 +11,22 @@ import {
 import type { AuthClient } from "@icp-sdk/auth/client";
 import type {
   CreateJobResult,
+  AdCreditGrant,
   CreditOption,
   GenerationJob,
+  PaymentAccount,
+  PaymentIntent,
   Profile,
   ProviderOption,
 } from "./generated/magickbox_core.did";
 import {
   canUseIcpRuntime,
+  clearLocalBrowserIdentityActive,
   createAuthClient,
   createCoreActor,
   getOrCreateLocalBrowserIdentity,
+  hasActiveLocalBrowserIdentity,
+  markLocalBrowserIdentityActive,
   promptHash,
   resolveIcpRuntime,
   signInWithInternetIdentity,
@@ -62,10 +68,21 @@ export type CreateGenerationOutcome =
   | { kind: "auth_required"; message: string }
   | { kind: "err"; message: string };
 
+export type PaymentIntentOutcome =
+  | { kind: "ok"; intent: PaymentIntent }
+  | { kind: "auth_required"; message: string }
+  | { kind: "err"; message: string };
+
+export type AdCreditOutcome =
+  | { kind: "ok"; grant: AdCreditGrant }
+  | { kind: "auth_required"; message: string }
+  | { kind: "err"; message: string };
+
 type MagickBoxIcpState = {
   actor: CoreActor | null;
   authClient: AuthClient | null;
   profile: Profile | null;
+  paymentAccount: PaymentAccount | null;
   jobs: GenerationJob[];
   providerOptions: UiProviderOption[];
   creditOptions: UiCreditOption[];
@@ -86,6 +103,15 @@ type MagickBoxIcpState = {
     prompt: string;
     creditCost: number;
   }) => Promise<CreateGenerationOutcome>;
+  createIcpPaymentIntent: (params: {
+    credits: number;
+    amountE8s: number;
+  }) => Promise<PaymentIntentOutcome>;
+  grantAdCredits: (params: {
+    verifier: string;
+    proofId: string;
+    credits: number;
+  }) => Promise<AdCreditOutcome>;
   refreshAccount: () => Promise<void>;
 };
 
@@ -181,6 +207,7 @@ export function MagickBoxIcpProvider({ children }: { children: ReactNode }) {
   const [actor, setActor] = useState<CoreActor | null>(null);
   const [authClient, setAuthClient] = useState<AuthClient | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
+  const [paymentAccount, setPaymentAccount] = useState<PaymentAccount | null>(null);
   const [jobs, setJobs] = useState<GenerationJob[]>([]);
   const [providerOptions, setProviderOptions] = useState<UiProviderOption[]>(
     icpProviderOptions.map(mapStaticProviderOption),
@@ -232,9 +259,10 @@ export function MagickBoxIcpProvider({ children }: { children: ReactNode }) {
 
       try {
         const anonymousActor = await createCoreActor();
-        const [providers, credits] = await Promise.all([
+        const [providers, credits, account] = await Promise.all([
           anonymousActor.get_provider_options(),
           anonymousActor.get_credit_options(),
+          anonymousActor.get_payment_account(),
         ]);
         const nextAuthClient = createAuthClient();
 
@@ -247,6 +275,7 @@ export function MagickBoxIcpProvider({ children }: { children: ReactNode }) {
         setAuthClient(nextAuthClient);
         setProviderOptions(providers.map(mapProviderOption));
         setCreditOptions(credits.map(mapCreditOption));
+        setPaymentAccount(account);
 
         if (nextAuthClient.isAuthenticated()) {
           const identity = await nextAuthClient.getIdentity();
@@ -265,6 +294,26 @@ export function MagickBoxIcpProvider({ children }: { children: ReactNode }) {
           setAuthMethod("internet_identity");
           setStatus("authenticated");
           setStatusMessage("Internet Identity connected to local ICP");
+          return;
+        }
+
+        if (hasActiveLocalBrowserIdentity()) {
+          const identity = getOrCreateLocalBrowserIdentity();
+          const localActor = await createCoreActor(identity);
+          const nextProfile = await ensureProfile(localActor);
+          const nextJobs = await localActor.list_my_jobs();
+
+          if (cancelled) {
+            return;
+          }
+
+          setActor(localActor);
+          setProfile(nextProfile);
+          setJobs(nextJobs);
+          setPrincipalText(identity.getPrincipal().toText());
+          setAuthMethod("local_browser");
+          setStatus("authenticated");
+          setStatusMessage("Local browser identity connected to ICP");
           return;
         }
 
@@ -305,9 +354,10 @@ export function MagickBoxIcpProvider({ children }: { children: ReactNode }) {
       const authenticatedActor = await createCoreActor(identity);
       const nextProfile = await ensureProfile(authenticatedActor);
       const nextJobs = await authenticatedActor.list_my_jobs();
-      const [providers, credits] = await Promise.all([
+      const [providers, credits, account] = await Promise.all([
         authenticatedActor.get_provider_options(),
         authenticatedActor.get_credit_options(),
+        authenticatedActor.get_payment_account(),
       ]);
 
       setRuntimeMode("icp");
@@ -317,8 +367,10 @@ export function MagickBoxIcpProvider({ children }: { children: ReactNode }) {
       setJobs(nextJobs);
       setProviderOptions(providers.map(mapProviderOption));
       setCreditOptions(credits.map(mapCreditOption));
+      setPaymentAccount(account);
       setPrincipalText(identity.getPrincipal().toText());
       setAuthMethod("internet_identity");
+      clearLocalBrowserIdentityActive();
       setStatus("authenticated");
       setStatusMessage("Internet Identity connected to local ICP");
     } catch (error) {
@@ -347,12 +399,14 @@ export function MagickBoxIcpProvider({ children }: { children: ReactNode }) {
     setIsBusy(true);
     try {
       const identity = getOrCreateLocalBrowserIdentity();
+      markLocalBrowserIdentityActive();
       const localActor = await createCoreActor(identity);
       const nextProfile = await ensureProfile(localActor);
       const nextJobs = await localActor.list_my_jobs();
-      const [providers, credits] = await Promise.all([
+      const [providers, credits, account] = await Promise.all([
         localActor.get_provider_options(),
         localActor.get_credit_options(),
+        localActor.get_payment_account(),
       ]);
 
       setRuntimeMode("icp");
@@ -361,6 +415,7 @@ export function MagickBoxIcpProvider({ children }: { children: ReactNode }) {
       setJobs(nextJobs);
       setProviderOptions(providers.map(mapProviderOption));
       setCreditOptions(credits.map(mapCreditOption));
+      setPaymentAccount(account);
       setPrincipalText(identity.getPrincipal().toText());
       setAuthMethod("local_browser");
       setStatus("authenticated");
@@ -377,11 +432,13 @@ export function MagickBoxIcpProvider({ children }: { children: ReactNode }) {
     setIsBusy(true);
     try {
       await authClient?.signOut();
+      clearLocalBrowserIdentityActive();
       const anonymousActor = canUseIcpRuntime(resolveIcpRuntime()) ? await createCoreActor() : null;
 
       setActor(anonymousActor);
       setProfile(null);
       setJobs([]);
+      setPaymentAccount(null);
       setPrincipalText(null);
       setAuthMethod(null);
       setStatus(anonymousActor ? "anonymous" : "unavailable");
@@ -456,11 +513,111 @@ export function MagickBoxIcpProvider({ children }: { children: ReactNode }) {
     [actor, runtimeMode, status],
   );
 
+  const createIcpPaymentIntent = useCallback(
+    async ({
+      credits,
+      amountE8s,
+    }: {
+      credits: number;
+      amountE8s: number;
+    }): Promise<PaymentIntentOutcome> => {
+      if (runtimeMode !== "icp" || !actor) {
+        return {
+          kind: "auth_required",
+          message: "Open the local ICP asset canister to create a real payment intent",
+        };
+      }
+
+      if (status !== "authenticated") {
+        return {
+          kind: "auth_required",
+          message: "Sign in with Internet Identity or local browser identity to create a payment intent",
+        };
+      }
+
+      setIsBusy(true);
+      try {
+        await ensureProfile(actor);
+        const result = await actor.create_icp_payment_intent(BigInt(credits), BigInt(amountE8s));
+
+        if ("err" in result) {
+          return { kind: "err", message: result.err };
+        }
+
+        const account = await actor.get_payment_account();
+        setPaymentAccount(account);
+        return { kind: "ok", intent: result.ok };
+      } catch (error) {
+        return {
+          kind: "err",
+          message: error instanceof Error ? error.message : "ICP payment intent failed",
+        };
+      } finally {
+        setIsBusy(false);
+      }
+    },
+    [actor, runtimeMode, status],
+  );
+
+  const grantAdCredits = useCallback(
+    async ({
+      verifier,
+      proofId,
+      credits,
+    }: {
+      verifier: string;
+      proofId: string;
+      credits: number;
+    }): Promise<AdCreditOutcome> => {
+      if (runtimeMode !== "icp" || !actor) {
+        return {
+          kind: "auth_required",
+          message: "Open the local ICP asset canister to claim ad verifier credits",
+        };
+      }
+
+      if (status !== "authenticated") {
+        return {
+          kind: "auth_required",
+          message: "Sign in with Internet Identity or local browser identity to claim ad credits",
+        };
+      }
+
+      setIsBusy(true);
+      try {
+        await ensureProfile(actor);
+        const result = await actor.grant_ad_credits(verifier, proofId, BigInt(credits));
+
+        if ("err" in result) {
+          return { kind: "err", message: result.err };
+        }
+
+        const [nextProfile, nextJobs] = await Promise.all([
+          actor.get_my_profile(),
+          actor.list_my_jobs(),
+        ]);
+        setProfile(firstOrNull(nextProfile));
+        setJobs(nextJobs);
+
+        return { kind: "ok", grant: result.ok };
+      } catch (error) {
+        return {
+          kind: "err",
+          message: error instanceof Error ? error.message : "Ad credit claim failed",
+        };
+      } finally {
+        setIsBusy(false);
+      }
+    },
+    [actor, runtimeMode, status],
+  );
+
   const value = useMemo<MagickBoxIcpState>(
     () => ({
       actor,
       authClient,
       profile,
+      paymentAccount,
       jobs,
       providerOptions,
       creditOptions,
@@ -476,12 +633,15 @@ export function MagickBoxIcpProvider({ children }: { children: ReactNode }) {
       signInWithLocalIdentity,
       signOut,
       createGenerationJob,
+      createIcpPaymentIntent,
+      grantAdCredits,
       refreshAccount,
     }),
     [
       actor,
       authClient,
       profile,
+      paymentAccount,
       jobs,
       providerOptions,
       creditOptions,
@@ -496,6 +656,8 @@ export function MagickBoxIcpProvider({ children }: { children: ReactNode }) {
       signInWithLocalIdentity,
       signOut,
       createGenerationJob,
+      createIcpPaymentIntent,
+      grantAdCredits,
       refreshAccount,
     ],
   );

@@ -6,6 +6,14 @@ import type { ActorMethod } from '@icp-sdk/core/agent';
 import type { Principal } from '@icp-sdk/core/principal';
 import { IDL } from '@icp-sdk/core/candid';
 
+export interface AdCreditGrant {
+  'id' : bigint,
+  'verifier' : string,
+  'credits' : bigint,
+  'proof_id' : string,
+  'owner' : Principal,
+  'created_at' : bigint,
+}
 export interface AuditEvent {
   'id' : bigint,
   'action' : string,
@@ -54,6 +62,36 @@ export interface GenerationJob {
   'result_url' : [] | [string],
   'prompt_preview' : string,
 }
+export interface MediaManifest {
+  'id' : bigint,
+  'uri' : string,
+  'owner' : Principal,
+  'attached_by' : Principal,
+  'content_hash' : string,
+  'mime_type' : string,
+  'created_at' : bigint,
+  'storage_provider' : string,
+  'job_id' : bigint,
+  'bytes' : bigint,
+}
+export interface PaymentAccount {
+  'token_symbol' : string,
+  'owner' : Principal,
+  'subaccount' : [] | [Uint8Array],
+  'fee_e8s' : bigint,
+  'ledger_id' : Principal,
+}
+export interface PaymentIntent {
+  'id' : bigint,
+  'status' : string,
+  'updated_at' : bigint,
+  'credits' : bigint,
+  'owner' : Principal,
+  'created_at' : bigint,
+  'amount_e8s' : bigint,
+  'ledger_block_index' : [] | [bigint],
+  'payment_principal' : Principal,
+}
 export interface Profile {
   'updated_at' : bigint,
   'credits' : bigint,
@@ -72,9 +110,49 @@ export interface ProviderOption {
 }
 export type ResultText = { 'ok' : string } |
   { 'err' : string };
+export interface WorkerGrant {
+  'id' : bigint,
+  'owner' : Principal,
+  'created_at' : bigint,
+  'revoked_at' : [] | [bigint],
+  'worker_label' : string,
+  'worker' : Principal,
+}
+export interface WorkerRun {
+  'id' : bigint,
+  'result_hash' : string,
+  'receipt' : string,
+  'owner' : Principal,
+  'provider_id' : string,
+  'output_preview' : string,
+  'created_at' : bigint,
+  'job_id' : bigint,
+  'result_url' : string,
+  'worker' : Principal,
+}
 export interface _SERVICE {
+  'attach_media_manifest' : ActorMethod<
+    [bigint, string, string, string, string, bigint],
+    { 'ok' : MediaManifest } |
+      { 'err' : string }
+  >,
+  'authorize_worker' : ActorMethod<
+    [Principal, string],
+    { 'ok' : WorkerGrant } |
+      { 'err' : string }
+  >,
+  'claim_icp_payment' : ActorMethod<
+    [bigint, bigint],
+    { 'ok' : PaymentIntent } |
+      { 'err' : string }
+  >,
   'complete_external_job' : ActorMethod<
     [bigint, string, string],
+    { 'ok' : GenerationJob } |
+      { 'err' : string }
+  >,
+  'complete_worker_job' : ActorMethod<
+    [bigint, string, string, string, string],
     { 'ok' : GenerationJob } |
       { 'err' : string }
   >,
@@ -82,13 +160,29 @@ export interface _SERVICE {
     [string, string, string, string, bigint],
     CreateJobResult
   >,
+  'create_icp_payment_intent' : ActorMethod<
+    [bigint, bigint],
+    { 'ok' : PaymentIntent } |
+      { 'err' : string }
+  >,
   'get_credit_options' : ActorMethod<[], Array<CreditOption>>,
   'get_cycle_note' : ActorMethod<[], string>,
   'get_my_profile' : ActorMethod<[], [] | [Profile]>,
+  'get_payment_account' : ActorMethod<[], PaymentAccount>,
   'get_provider_options' : ActorMethod<[], Array<ProviderOption>>,
+  'grant_ad_credits' : ActorMethod<
+    [string, string, bigint],
+    { 'ok' : AdCreditGrant } |
+      { 'err' : string }
+  >,
   'list_audit_events' : ActorMethod<[], Array<AuditEvent>>,
+  'list_my_ad_credit_grants' : ActorMethod<[], Array<AdCreditGrant>>,
   'list_my_collections' : ActorMethod<[], Array<CollectionRecord>>,
   'list_my_jobs' : ActorMethod<[], Array<GenerationJob>>,
+  'list_my_media_manifests' : ActorMethod<[], Array<MediaManifest>>,
+  'list_my_payment_intents' : ActorMethod<[], Array<PaymentIntent>>,
+  'list_my_worker_grants' : ActorMethod<[], Array<WorkerGrant>>,
+  'list_my_worker_runs' : ActorMethod<[], Array<WorkerRun>>,
   'register_profile' : ActorMethod<
     [string, [] | [string]],
     { 'ok' : Profile } |
@@ -101,6 +195,37 @@ export interface _SERVICE {
   >,
 }
 export const idlFactory: IDL.InterfaceFactory = ({ IDL }) => {
+  const MediaManifest = IDL.Record({
+    'id' : IDL.Nat,
+    'uri' : IDL.Text,
+    'owner' : IDL.Principal,
+    'attached_by' : IDL.Principal,
+    'content_hash' : IDL.Text,
+    'mime_type' : IDL.Text,
+    'created_at' : IDL.Int,
+    'storage_provider' : IDL.Text,
+    'job_id' : IDL.Nat,
+    'bytes' : IDL.Nat,
+  });
+  const WorkerGrant = IDL.Record({
+    'id' : IDL.Nat,
+    'owner' : IDL.Principal,
+    'created_at' : IDL.Int,
+    'revoked_at' : IDL.Opt(IDL.Int),
+    'worker_label' : IDL.Text,
+    'worker' : IDL.Principal,
+  });
+  const PaymentIntent = IDL.Record({
+    'id' : IDL.Nat,
+    'status' : IDL.Text,
+    'updated_at' : IDL.Int,
+    'credits' : IDL.Nat,
+    'owner' : IDL.Principal,
+    'created_at' : IDL.Int,
+    'amount_e8s' : IDL.Nat,
+    'ledger_block_index' : IDL.Opt(IDL.Nat),
+    'payment_principal' : IDL.Principal,
+  });
   const GenerationJob = IDL.Record({
     'id' : IDL.Nat,
     'status' : IDL.Text,
@@ -140,6 +265,13 @@ export const idlFactory: IDL.InterfaceFactory = ({ IDL }) => {
     'email' : IDL.Opt(IDL.Text),
     'display_name' : IDL.Text,
   });
+  const PaymentAccount = IDL.Record({
+    'token_symbol' : IDL.Text,
+    'owner' : IDL.Principal,
+    'subaccount' : IDL.Opt(IDL.Vec(IDL.Nat8)),
+    'fee_e8s' : IDL.Nat,
+    'ledger_id' : IDL.Principal,
+  });
   const ProviderOption = IDL.Record({
     'id' : IDL.Text,
     'title' : IDL.Text,
@@ -147,6 +279,14 @@ export const idlFactory: IDL.InterfaceFactory = ({ IDL }) => {
     'description' : IDL.Text,
     'credit_cost' : IDL.Nat,
     'on_icp_owned_state' : IDL.Bool,
+  });
+  const AdCreditGrant = IDL.Record({
+    'id' : IDL.Nat,
+    'verifier' : IDL.Text,
+    'credits' : IDL.Nat,
+    'proof_id' : IDL.Text,
+    'owner' : IDL.Principal,
+    'created_at' : IDL.Int,
   });
   const AuditEvent = IDL.Record({
     'id' : IDL.Nat,
@@ -165,10 +305,42 @@ export const idlFactory: IDL.InterfaceFactory = ({ IDL }) => {
     'name' : IDL.Text,
     'created_at' : IDL.Int,
   });
+  const WorkerRun = IDL.Record({
+    'id' : IDL.Nat,
+    'result_hash' : IDL.Text,
+    'receipt' : IDL.Text,
+    'owner' : IDL.Principal,
+    'provider_id' : IDL.Text,
+    'output_preview' : IDL.Text,
+    'created_at' : IDL.Int,
+    'job_id' : IDL.Nat,
+    'result_url' : IDL.Text,
+    'worker' : IDL.Principal,
+  });
   
   return IDL.Service({
+    'attach_media_manifest' : IDL.Func(
+        [IDL.Nat, IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDL.Nat],
+        [IDL.Variant({ 'ok' : MediaManifest, 'err' : IDL.Text })],
+        [],
+      ),
+    'authorize_worker' : IDL.Func(
+        [IDL.Principal, IDL.Text],
+        [IDL.Variant({ 'ok' : WorkerGrant, 'err' : IDL.Text })],
+        [],
+      ),
+    'claim_icp_payment' : IDL.Func(
+        [IDL.Nat, IDL.Nat],
+        [IDL.Variant({ 'ok' : PaymentIntent, 'err' : IDL.Text })],
+        [],
+      ),
     'complete_external_job' : IDL.Func(
         [IDL.Nat, IDL.Text, IDL.Text],
+        [IDL.Variant({ 'ok' : GenerationJob, 'err' : IDL.Text })],
+        [],
+      ),
+    'complete_worker_job' : IDL.Func(
+        [IDL.Nat, IDL.Text, IDL.Text, IDL.Text, IDL.Text],
         [IDL.Variant({ 'ok' : GenerationJob, 'err' : IDL.Text })],
         [],
       ),
@@ -177,17 +349,45 @@ export const idlFactory: IDL.InterfaceFactory = ({ IDL }) => {
         [CreateJobResult],
         [],
       ),
+    'create_icp_payment_intent' : IDL.Func(
+        [IDL.Nat, IDL.Nat],
+        [IDL.Variant({ 'ok' : PaymentIntent, 'err' : IDL.Text })],
+        [],
+      ),
     'get_credit_options' : IDL.Func([], [IDL.Vec(CreditOption)], ['query']),
     'get_cycle_note' : IDL.Func([], [IDL.Text], ['query']),
     'get_my_profile' : IDL.Func([], [IDL.Opt(Profile)], ['query']),
+    'get_payment_account' : IDL.Func([], [PaymentAccount], ['query']),
     'get_provider_options' : IDL.Func([], [IDL.Vec(ProviderOption)], ['query']),
+    'grant_ad_credits' : IDL.Func(
+        [IDL.Text, IDL.Text, IDL.Nat],
+        [IDL.Variant({ 'ok' : AdCreditGrant, 'err' : IDL.Text })],
+        [],
+      ),
     'list_audit_events' : IDL.Func([], [IDL.Vec(AuditEvent)], ['query']),
+    'list_my_ad_credit_grants' : IDL.Func(
+        [],
+        [IDL.Vec(AdCreditGrant)],
+        ['query'],
+      ),
     'list_my_collections' : IDL.Func(
         [],
         [IDL.Vec(CollectionRecord)],
         ['query'],
       ),
     'list_my_jobs' : IDL.Func([], [IDL.Vec(GenerationJob)], ['query']),
+    'list_my_media_manifests' : IDL.Func(
+        [],
+        [IDL.Vec(MediaManifest)],
+        ['query'],
+      ),
+    'list_my_payment_intents' : IDL.Func(
+        [],
+        [IDL.Vec(PaymentIntent)],
+        ['query'],
+      ),
+    'list_my_worker_grants' : IDL.Func([], [IDL.Vec(WorkerGrant)], ['query']),
+    'list_my_worker_runs' : IDL.Func([], [IDL.Vec(WorkerRun)], ['query']),
     'register_profile' : IDL.Func(
         [IDL.Text, IDL.Opt(IDL.Text)],
         [IDL.Variant({ 'ok' : Profile, 'err' : IDL.Text })],

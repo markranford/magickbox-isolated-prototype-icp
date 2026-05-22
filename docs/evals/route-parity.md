@@ -5,9 +5,9 @@
 | `/` landing page | Preserves logo, nav labels, hero headline/subcopy, mode buttons, composer, features, gallery, pricing, about, and contact form | `docs/artifacts/prototype/prototype-home-desktop.png` |
 | `Launch Beta` | Navigates to `/home/explore?category=latest`, matching observed production behavior | Playwright route smoke |
 | `/home/explore` | App shell with Create, Explore, Collections, Subscriptions, Settings, Sign in; Explore heading; Latest/Trending tabs | Playwright route smoke |
-| `/home/magick-chat` | Magick Friend composer, mode buttons, prompt tools, provider selector, ICP status strip, and canister job creation when authenticated | Unit, Playwright, and local asset-canister smoke |
+| `/home/magick-chat` | Magick Friend composer, mode buttons, prompt tools, provider selector, ICP status strip, canister job creation, ad-credit grant recovery, and local worker completion evidence | Unit, Playwright, local asset-canister smoke, and advanced ICP smoke |
 | `/home/collections` | Collections route with explicit privacy/publishing state | Manual/browser smoke |
-| `/home/subscriptions` | Canister credit recovery paths for ICP top-up, subscription, ad credit, FreeLLMAPI, own provider, and local Ollama | Manual/browser smoke |
+| `/home/subscriptions` | Canister credit recovery paths for ICP top-up, subscription, ad credit, FreeLLMAPI, own provider, and local Ollama; ICP top-up creates a real payment intent | Manual/browser smoke and `local-icp-payment-intent-ui.png` |
 | `/auth/sign-in` | Internet Identity and local signed browser identity; no credential fields | Unit and Playwright interaction tests |
 
 Intentional differences:

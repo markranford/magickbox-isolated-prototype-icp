@@ -1,8 +1,11 @@
 import { describe, expect, it } from "vitest";
 import {
   canUseIcpRuntime,
+  clearLocalBrowserIdentityActive,
   getIdentityProviderUrl,
   getOrCreateLocalBrowserIdentity,
+  hasActiveLocalBrowserIdentity,
+  markLocalBrowserIdentityActive,
   promptHash,
   resolveIcpRuntime,
 } from "./magickboxClient";
@@ -34,5 +37,16 @@ describe("Magick Box ICP client adapter", () => {
 
     expect(first.getPrincipal().toText()).toBe(second.getPrincipal().toText());
     expect(first.getPrincipal().isAnonymous()).toBe(false);
+  });
+
+  it("stores whether the local browser identity should reconnect after reloads", () => {
+    clearLocalBrowserIdentityActive();
+    expect(hasActiveLocalBrowserIdentity()).toBe(false);
+
+    markLocalBrowserIdentityActive();
+    expect(hasActiveLocalBrowserIdentity()).toBe(true);
+
+    clearLocalBrowserIdentityActive();
+    expect(hasActiveLocalBrowserIdentity()).toBe(false);
   });
 });

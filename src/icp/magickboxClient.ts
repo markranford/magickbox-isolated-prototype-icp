@@ -28,6 +28,7 @@ export type IcpRuntime = {
 
 const eightHoursInNanoseconds = BigInt(8) * BigInt(3_600_000_000_000);
 const localIdentityStorageKey = "magickbox.localBrowserIdentity.v1";
+const localIdentityActiveStorageKey = "magickbox.localBrowserIdentity.active.v1";
 
 function currentOrigin() {
   if (typeof window === "undefined") {
@@ -120,6 +121,18 @@ export function getOrCreateLocalBrowserIdentity() {
   globalThis.localStorage?.setItem(localIdentityStorageKey, JSON.stringify(identity.toJSON()));
 
   return identity;
+}
+
+export function markLocalBrowserIdentityActive() {
+  globalThis.localStorage?.setItem(localIdentityActiveStorageKey, "true");
+}
+
+export function clearLocalBrowserIdentityActive() {
+  globalThis.localStorage?.removeItem(localIdentityActiveStorageKey);
+}
+
+export function hasActiveLocalBrowserIdentity() {
+  return globalThis.localStorage?.getItem(localIdentityActiveStorageKey) === "true";
 }
 
 export async function signInWithInternetIdentity(authClient: AuthClient) {

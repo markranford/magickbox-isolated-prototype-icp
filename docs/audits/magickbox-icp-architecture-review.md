@@ -94,6 +94,7 @@ Prototype choice:
 
 - Use Internet Identity only for the isolated proof path.
 - Current local implementation: React detects the ICP asset canister `ic_env`, exposes Internet Identity sign-in/sign-out, and can write profile/job state to `magickbox_core` after auth.
+- The Codex in-app browser can use a persistent local signed browser identity when II signer popups are blocked; that identity now reconnects after direct route loads.
 - No production OAuth provider is connected.
 
 ## Storage Options
@@ -134,6 +135,13 @@ Payments:
 - ICP/ICRC payments can make Magick Keys or credits transparent and programmable.
 - Fiat/card billing, refunds, fraud, tax, subscriptions, and customer support may require Stripe or another off-chain system.
 - Prototype payments should use a local/test ledger proof before any mainnet spend or production billing is connected.
+
+Current local payment proof:
+
+- `magickbox_core` creates ICP payment intent records.
+- `scripts/smoke-local-icp-advanced.mjs` transfers `0.001` local ICP through the local ledger to the core canister account.
+- `claim_icp_payment` verifies the core canister ledger balance has increased enough, de-duplicates claimed block indexes, and credits the caller.
+- This is enough for isolated local proof. A production version should use per-intent subaccounts or ICRC-2 approve/transfer-from verification rather than a shared default canister account.
 
 Analytics:
 
@@ -197,15 +205,16 @@ The current isolated prototype now includes the narrow vertical slice foundation
 3. A `magickbox_core` canister stores profile, credits, provider options, credit recovery options, generation jobs, collections, and audit events.
 4. The frontend reads the asset canister `ic_env`, builds an authenticated actor, registers a profile, and creates generation jobs after auth.
 5. Canister smoke tests prove insufficient-credit recovery and FreeLLMAPI zero-credit job creation.
-6. Browser smoke confirms the asset-served frontend detects ICP mode and loads provider options from the core canister with no console errors.
+6. Advanced local smoke proves a local ICP transfer, payment claim, ad credit grant, worker authorization, local Ollama worker execution, worker completion callback, and media manifest anchoring.
+7. Browser smoke confirms the asset-served frontend detects ICP mode, restores local browser identity, creates payment intents, grants ad credits, and records no console errors.
 
 Next proof steps:
 
 1. Manually complete the local Internet Identity passkey flow and capture the authenticated composer state.
-2. Add local ICRC/ICP payment intent records and a local/test-ledger top-up proof.
-3. Add an external worker callback that marks a job complete with a result hash and media URL.
-4. Surface job status and save-to-collection from the authenticated frontend.
-5. Add upgrade/stable-state checks for profile, job, and audit records.
+2. Replace the shared default payment account with per-intent subaccounts or an ICRC-2 approve/transfer-from path.
+3. Expand worker adapters for MagickAI and FreeLLMAPI using the same authorized-worker completion contract.
+4. Surface completed worker runs, media manifests, and collection save from the authenticated frontend.
+5. Add upgrade/stable-state checks for profile, job, payment, worker, ad, media, and audit records.
 
 Success criteria:
 

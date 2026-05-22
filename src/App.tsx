@@ -49,6 +49,16 @@ type CreditRecoveryState = {
   options: UiCreditOption[];
 };
 
+function formatIcp(amountE8s: number) {
+  return (amountE8s / 100_000_000).toFixed(4).replace(/0+$/, "").replace(/\.$/, "");
+}
+
+function paymentPackageFor(optionId: string) {
+  return optionId === "icp_subscription"
+    ? { credits: 500, amountE8s: 500_000 }
+    : { credits: 100, amountE8s: 100_000 };
+}
+
 function Logo() {
   return (
     <Link className="logo" to="/" aria-label="Magick Box home">
@@ -128,6 +138,7 @@ function Composer({
   const [submitted, setSubmitted] = useState<string | null>(null);
   const [recovery, setRecovery] = useState<CreditRecoveryState | null>(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [adProofCounter, setAdProofCounter] = useState(0);
   const providerOptions = icp.providerOptions;
   const provider =
     providerOptions.find((item) => item.id === providerId) ?? providerOptions[0];
@@ -175,15 +186,44 @@ function Composer({
     setSubmitted("Open the local ICP asset canister to create a real ICP job");
   };
 
-  const chooseRecovery = (option: UiCreditOption) => {
+  const chooseRecovery = async (option: UiCreditOption) => {
     if (!recovery) {
       return;
     }
     if (["freellmapi", "own_api_key", "local_ollama"].includes(option.id)) {
       setProviderId(option.id);
       setSubmitted(`${option.label} selected. Submit again to create a zero-credit ICP job.`);
+    } else if (option.id === "icp_topup" || option.id === "icp_subscription") {
+      const paymentPackage = paymentPackageFor(option.id);
+      const result = await icp.createIcpPaymentIntent(paymentPackage);
+
+      if (result.kind === "ok") {
+        const principal = icp.paymentAccount?.owner.toText() ?? result.intent.payment_principal.toText();
+        setSubmitted(
+          `Payment intent #${Number(result.intent.id)} created for ${paymentPackage.credits} credits. Transfer ${formatIcp(
+            paymentPackage.amountE8s,
+          )} ICP to ${principal}, then claim the intent from the local ICP payment smoke script.`,
+        );
+      } else {
+        setSubmitted(result.message);
+      }
+    } else if (option.id === "watch_ad") {
+      const nextProofCounter = adProofCounter + 1;
+      setAdProofCounter(nextProofCounter);
+      const proofId = `local-ad-proof-${nextProofCounter}-${recovery.required}`;
+      const result = await icp.grantAdCredits({
+        verifier: "local-ad-verifier",
+        proofId,
+        credits: 25,
+      });
+
+      if (result.kind === "ok") {
+        setSubmitted(`Ad verifier grant #${Number(result.grant.id)} added 25 credits on ICP.`);
+      } else {
+        setSubmitted(result.message);
+      }
     } else {
-      setSubmitted(`${option.label} requires the ICP payment/ad verifier canister in the next slice.`);
+      setSubmitted(`${option.label} stays external; choose its provider route and submit a zero-credit ICP job.`);
     }
     setRecovery(null);
   };
@@ -287,7 +327,7 @@ function Composer({
           </div>
           <div className="credit-recovery-grid">
             {recovery.options.map((option) => (
-              <button key={option.id} type="button" onClick={() => chooseRecovery(option)}>
+              <button key={option.id} type="button" onClick={() => void chooseRecovery(option)}>
                 <strong>{option.label}</strong>
                 <span>{option.description}</span>
               </button>
@@ -436,6 +476,7 @@ function LandingPage() {
 
 function AppShell({ children }: { children: ReactNode }) {
   const [mobileOpen, setMobileOpen] = useState(false);
+  const icp = useMagickBoxIcp();
 
   return (
     <div className="app-shell">
@@ -465,10 +506,24 @@ function AppShell({ children }: { children: ReactNode }) {
             );
           })}
         </nav>
-        <Link className="signin-link" to="/auth/sign-in" onClick={() => setMobileOpen(false)}>
-          <LogIn size={18} aria-hidden="true" />
-          Sign in
-        </Link>
+        {icp.isAuthenticated ? (
+          <button
+            className="signin-link sidebar-action"
+            type="button"
+            onClick={() => {
+              setMobileOpen(false);
+              void icp.signOut();
+            }}
+          >
+            <LogIn size={18} aria-hidden="true" />
+            Sign out
+          </button>
+        ) : (
+          <Link className="signin-link" to="/auth/sign-in" onClick={() => setMobileOpen(false)}>
+            <LogIn size={18} aria-hidden="true" />
+            Sign in
+          </Link>
+        )}
       </aside>
       <div className="app-content">{children}</div>
     </div>
@@ -578,6 +633,44 @@ function CollectionsPage() {
 function SubscriptionsPage() {
   const icp = useMagickBoxIcp();
   const [notice, setNotice] = useState("ICP credit paths are loaded from the core canister when served by ICP assets.");
+  const [adProofCounter, setAdProofCounter] = useState(0);
+
+  const selectPath = async (option: UiCreditOption) => {
+    if (option.id === "icp_topup" || option.id === "icp_subscription") {
+      const paymentPackage = paymentPackageFor(option.id);
+      const result = await icp.createIcpPaymentIntent(paymentPackage);
+
+      if (result.kind === "ok") {
+        const principal = icp.paymentAccount?.owner.toText() ?? result.intent.payment_principal.toText();
+        setNotice(
+          `Payment intent #${Number(result.intent.id)} is ready: transfer ${formatIcp(
+            paymentPackage.amountE8s,
+          )} ICP to ${principal}, then claim it with the local payment smoke script.`,
+        );
+      } else {
+        setNotice(result.message);
+      }
+      return;
+    }
+
+    if (option.id === "watch_ad") {
+      const nextProofCounter = adProofCounter + 1;
+      setAdProofCounter(nextProofCounter);
+      const result = await icp.grantAdCredits({
+        verifier: "local-ad-verifier",
+        proofId: `subscription-ad-proof-${nextProofCounter}`,
+        credits: 25,
+      });
+      setNotice(
+        result.kind === "ok"
+          ? `Ad verifier grant #${Number(result.grant.id)} added 25 credits on ICP.`
+          : result.message,
+      );
+      return;
+    }
+
+    setNotice(`${option.label} is available through the provider selector in Create.`);
+  };
 
   return (
     <AppShell>
@@ -596,13 +689,7 @@ function SubscriptionsPage() {
               <p>{option.description}</p>
               <button
                 type="button"
-                onClick={() => {
-                  setNotice(
-                    option.requiresPayment
-                      ? `${option.label} needs the ICP/ICRC payment canister deployment next.`
-                      : `${option.label} is available through the provider selector in Create.`,
-                  );
-                }}
+                onClick={() => void selectPath(option)}
               >
                 Select path
               </button>

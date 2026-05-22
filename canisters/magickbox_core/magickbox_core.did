@@ -54,6 +54,64 @@ type AuditEvent = record {
   metadata : text;
   created_at : int;
 };
+type PaymentAccount = record {
+  owner : principal;
+  subaccount : opt blob;
+  ledger_id : principal;
+  token_symbol : text;
+  fee_e8s : nat;
+};
+type PaymentIntent = record {
+  id : nat;
+  owner : principal;
+  payment_principal : principal;
+  amount_e8s : nat;
+  credits : nat;
+  status : text;
+  ledger_block_index : opt nat;
+  created_at : int;
+  updated_at : int;
+};
+type WorkerGrant = record {
+  id : nat;
+  owner : principal;
+  worker : principal;
+  worker_label : text;
+  created_at : int;
+  revoked_at : opt int;
+};
+type WorkerRun = record {
+  id : nat;
+  job_id : nat;
+  owner : principal;
+  worker : principal;
+  provider_id : text;
+  result_url : text;
+  result_hash : text;
+  receipt : text;
+  output_preview : text;
+  created_at : int;
+};
+type AdCreditGrant = record {
+  id : nat;
+  owner : principal;
+  verifier : text;
+  proof_id : text;
+  credits : nat;
+  created_at : int;
+};
+type MediaManifest = record {
+  id : nat;
+  owner : principal;
+  job_id : nat;
+  attached_by : principal;
+  storage_provider : text;
+  uri : text;
+  content_hash : text;
+  mime_type : text;
+  bytes : nat;
+  created_at : int;
+};
 type CreateJobResult = variant {
   ok : GenerationJob;
   insufficient_credits : record {
@@ -68,11 +126,23 @@ service : {
   get_my_profile : () -> (opt Profile) query;
   get_credit_options : () -> (vec CreditOption) query;
   get_provider_options : () -> (vec ProviderOption) query;
+  get_payment_account : () -> (PaymentAccount) query;
+  create_icp_payment_intent : (nat, nat) -> (variant { ok : PaymentIntent; err : text });
+  claim_icp_payment : (nat, nat) -> (variant { ok : PaymentIntent; err : text });
+  grant_ad_credits : (text, text, nat) -> (variant { ok : AdCreditGrant; err : text });
   create_generation_job : (text, text, text, text, nat) -> (CreateJobResult);
+  authorize_worker : (principal, text) -> (variant { ok : WorkerGrant; err : text });
+  complete_worker_job : (nat, text, text, text, text) -> (variant { ok : GenerationJob; err : text });
   complete_external_job : (nat, text, text) -> (variant { ok : GenerationJob; err : text });
+  attach_media_manifest : (nat, text, text, text, text, nat) -> (variant { ok : MediaManifest; err : text });
   save_to_collection : (nat, text, bool) -> (variant { ok : CollectionRecord; err : text });
   list_my_jobs : () -> (vec GenerationJob) query;
   list_my_collections : () -> (vec CollectionRecord) query;
   list_audit_events : () -> (vec AuditEvent) query;
+  list_my_payment_intents : () -> (vec PaymentIntent) query;
+  list_my_worker_grants : () -> (vec WorkerGrant) query;
+  list_my_worker_runs : () -> (vec WorkerRun) query;
+  list_my_ad_credit_grants : () -> (vec AdCreditGrant) query;
+  list_my_media_manifests : () -> (vec MediaManifest) query;
   get_cycle_note : () -> (text) query;
 }

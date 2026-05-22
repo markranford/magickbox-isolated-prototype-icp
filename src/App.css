@@ -859,6 +859,14 @@ textarea:focus-visible {
   margin-top: auto;
 }
 
+.sidebar-action {
+  width: 100%;
+  border: 0;
+  background: transparent;
+  font: inherit;
+  cursor: pointer;
+}
+
 .app-content {
   min-width: 0;
   padding: 38px;

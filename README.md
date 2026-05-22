@@ -25,6 +25,7 @@ Run ICP commands through WSL from this repository:
 npm run build
 wsl -- bash -lc 'cd /mnt/c/Users/Mark/Documents/Codex/Codex_MagickBox/magick-box-rewrite-readiness-prototype && bash scripts/deploy-local-icp.sh'
 wsl -- bash -lc 'cd /mnt/c/Users/Mark/Documents/Codex/Codex_MagickBox/magick-box-rewrite-readiness-prototype && bash scripts/smoke-local-icp.sh'
+npm run smoke:icp:advanced
 ```
 
 Local ICP URLs:
@@ -32,10 +33,12 @@ Local ICP URLs:
 ```text
 http://frontend.local.localhost:8010/
 http://frontend.local.localhost:8010/home/magick-chat
-http://tqzl2-p7777-77776-aaaaa-cai.localhost:8010/?id=t63gs-up777-77776-aaaba-cai
+http://tqzl2-p7777-77776-aaaaa-cai.localhost:8010/?id=tz2ag-zx777-77776-aaabq-cai
 ```
 
 The deploy helper creates/uses a local-only `magickbox-local-prototype` identity. Its seed is written under ignored `.icp/cache/local-secrets/` and must not be used for anything valuable.
+
+The advanced smoke uses the local ICP ledger plus local Ollama. It creates an ICP payment intent, transfers `0.001` local ICP to the core canister account, claims credits, grants ad-verifier credits, authorizes a separate worker principal, executes an Ollama worker, completes the job on ICP, and anchors a media manifest.
 
 ## Verify
 

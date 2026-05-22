@@ -724,3 +724,148 @@ Blockers or risks:
 Next step:
 
 - Commit this slice locally, then build the next real canister slice: ICRC/ICP payment intent/test-ledger top-up or external AI worker callback.
+
+## 2026-05-22T18:33:47+07:00 - Checkpoint 16: Real Local ICP Payment, Worker, Ad Credit, And Media Manifest Slice
+
+Current workspace/folder:
+
+`C:\Users\Mark\Documents\Codex\Codex_MagickBox\magick-box-rewrite-readiness-prototype`
+
+What was inspected:
+
+- Existing `magickbox_core` Motoko contract, Candid interface, generated TypeScript binding, React ICP context, recovery UI, deploy script, smoke script, and current local ICP gateway state.
+- Local `icp token` command support and local ledger balance, confirming the local ICP ledger is available.
+- Local Ollama availability and installed model list; the advanced smoke used `glm4:9b`.
+
+What was created or changed:
+
+- Added Candid contract tests for payment, worker, ad credit, and media manifest methods.
+- Extended `magickbox_core` with:
+  - ICP payment account and payment intent records;
+  - local ledger balance-based `claim_icp_payment`;
+  - duplicate claimed block tracking;
+  - ad credit grant records and duplicate proof protection;
+  - user-authorized worker grants;
+  - worker completion records with receipt/output preview;
+  - media manifest records anchored by URI, MIME type, byte count, and content hash.
+- Regenerated `src/icp/generated/magickbox_core.did.ts`.
+- Added `scripts/smoke-local-icp-advanced.mjs`.
+- Added `npm run smoke:icp:advanced`.
+- Updated the React ICP context with payment intent creation and ad credit grant calls.
+- Updated the recovery panel and subscriptions route so they call canister methods instead of saying those are future slices.
+- Made the local signed browser identity reconnect after hard reload/direct route loads.
+- Added browser screenshots:
+  - `docs/artifacts/prototype/local-icp-payment-intent-ui.png`
+  - `docs/artifacts/prototype/local-icp-ad-credit-ui.png`
+- Added local Ollama worker artifact:
+  - `docs/artifacts/prototype/local-ollama-worker-job-2.txt`
+- Updated README, goal, ICP architecture review, route parity, and local deploy handoff docs.
+
+Commands run and results:
+
+- `npm run test -- src/icp/canisterContract.test.ts` before implementation -> failed as expected because new methods/types were missing.
+- `wsl ... icp build magickbox_core` after Motoko changes -> initially failed because `label` is a reserved Motoko field name; renamed to `worker_label`.
+- `wsl ... icp build magickbox_core` after fix -> passed.
+- `npx icp-bindgen --did-file canisters\magickbox_core\magickbox_core.did --out-dir src\icp\generated --declarations-typescript --declarations-flat --actor-disabled --force` -> regenerated bindings.
+- `npm run test` -> passed, 3 files / 9 tests before local identity reconnect; later 3 files / 10 tests after reconnect test.
+- `npm run lint` -> initially failed on `Date.now()` React purity checks; replaced proof timestamps with state counters.
+- `npm run lint` -> passed.
+- `npm run build` -> passed.
+- `wsl ... bash scripts/deploy-local-icp.sh` -> passed on port `8010`.
+- `wsl ... bash scripts/smoke-local-icp.sh` -> passed.
+- `npm run smoke:icp:advanced` -> passed:
+  - created payment intent `#1` for 100 credits and `100_000` e8s;
+  - transferred `0.001` local ICP to the core canister account;
+  - claimed ledger block `30`;
+  - granted 25 ad credits;
+  - authorized worker principal `qpkob-dcevx-4dmkl-ie5nc-2hkun-wqaia-vwwcq-n3gfy-rz3xt-djgfe-cae`;
+  - executed local Ollama model `glm4:9b`;
+  - completed worker job `#2`;
+  - anchored media manifest `#1`.
+- Browser smoke against `http://frontend.local.localhost:8010/home/subscriptions` -> payment intent `#2` created from the UI after local identity auth and hard navigation; no console warnings/errors.
+- Browser smoke against `http://frontend.local.localhost:8010/home/magick-chat` -> ad verifier grant `#2` added 25 credits from the recovery panel; no console warnings/errors.
+- `npm run verify` -> passed: lint, 3 Vitest files / 10 tests, Vite build, and 12 Playwright tests.
+
+Current local canister IDs:
+
+- Frontend asset canister: `tz2ag-zx777-77776-aaabq-cai`.
+- Core canister: `t63gs-up777-77776-aaaba-cai`.
+- Candid UI: `http://tqzl2-p7777-77776-aaaaa-cai.localhost:8010/?id=t63gs-up777-77776-aaaba-cai`.
+
+Decisions made:
+
+- Keep all deployment local only; no mainnet deploy, production login, Caffeine.ai action, production repo action, or production service configuration.
+- Use the local ICP ledger for an actual transfer proof, but keep production payment design open for per-intent subaccounts or ICRC-2 transfer-from.
+- Use a separate local worker principal for job completion instead of letting anonymous callers complete work.
+- Keep raw AI output/media off-canister; anchor hash, URI, byte count, MIME type, worker receipt, and ownership on ICP.
+- Treat local ad credit grants as a canister proof of the credit path, not as a production-grade ad fraud/verifier solution.
+
+Blockers or risks:
+
+- Payment claim currently verifies aggregate core-canister ledger balance and claimed block indexes; production should use per-intent subaccounts or ICRC-2 approve/transfer-from to bind a transfer to an intent more tightly.
+- MagickAI and FreeLLMAPI workers are not implemented yet; only local Ollama was executed through the worker contract.
+- Media manifests are anchored, but durable object/media storage is still external/local.
+- Internet Identity still needs manual validation in a browser that allows signer popups.
+- Local identity and local ledger identities are prototype-only and must not be reused for valuable accounts.
+
+Next step:
+
+- Commit this slice locally, then implement MagickAI/FreeLLMAPI worker adapters or the stronger per-intent ICRC payment path.
+
+## 2026-05-22T18:39:00+07:00 - Checkpoint 17: Final Asset Refresh And Sidebar Auth Polish
+
+Current workspace/folder:
+
+`C:\Users\Mark\Documents\Codex\Codex_MagickBox\magick-box-rewrite-readiness-prototype`
+
+What was inspected:
+
+- Browser screenshots from the payment-intent and ad-credit flows.
+- App shell sidebar behavior after local identity auth.
+- Latest local deploy output and smoke outputs after rebuilding the frontend assets.
+
+What was created or changed:
+
+- Updated the app shell sidebar to show `Sign out` when the ICP context is authenticated.
+- Added sidebar button styling for the sign-out action.
+- Rebuilt and redeployed the local ICP asset canister after the sidebar polish.
+- Refreshed browser screenshots so they reflect the current app shell and current core canister ID.
+- Updated current local canister IDs in README and handoff docs.
+
+Commands run and results:
+
+- `npm run lint` -> passed.
+- `npm run test` -> passed, 3 Vitest files / 10 tests.
+- `npm run build` -> passed.
+- `wsl ... bash scripts/deploy-local-icp.sh` -> passed on port `8010`.
+- `wsl ... bash scripts/smoke-local-icp.sh` -> passed.
+- `npm run smoke:icp:advanced` -> passed:
+  - payment intent `#1`;
+  - local ICP transfer block `30`;
+  - local Ollama `glm4:9b` worker job `#2`;
+  - result hash `a8d570f0366be2738a6244560bcc58356457d6431f6c32add2f0e8b73ae9cf6a`;
+  - media manifest `#1`.
+- Browser smoke for `/home/subscriptions` -> payment intent `#2` created in UI for core canister `tz2ag-zx777-77776-aaabq-cai`; no console warnings/errors.
+- Browser smoke for `/home/magick-chat` -> ad verifier grant `#2` added 25 credits and sidebar showed `Sign out`; no console warnings/errors.
+- Final `npm run verify` -> passed: lint, 3 Vitest files / 10 tests, Vite build, and 12 Playwright tests.
+- Final `wsl ... icp build magickbox_core` -> passed.
+
+Current local canister IDs:
+
+- Frontend asset canister: `t63gs-up777-77776-aaaba-cai`.
+- Core canister: `tz2ag-zx777-77776-aaabq-cai`.
+- Candid UI: `http://tqzl2-p7777-77776-aaaaa-cai.localhost:8010/?id=tz2ag-zx777-77776-aaabq-cai`.
+
+Decisions made:
+
+- Keep the local deploy helper as the source of truth for current local IDs because it recreates the isolated local network.
+- Keep the sidebar auth state tied to the ICP context instead of route-specific sign-in assumptions.
+
+Blockers or risks:
+
+- None for the local advanced proof slice.
+- Current local canister IDs can change on the next local network reset.
+
+Next step:
+
+- Commit this slice locally, then proceed to MagickAI/FreeLLMAPI workers or stronger ICRC payment binding.

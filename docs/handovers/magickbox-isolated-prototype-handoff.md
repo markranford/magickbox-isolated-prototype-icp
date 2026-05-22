@@ -22,7 +22,7 @@ Main packet git checkpoint:
 - Reference clone push URLs were locally set to `DISABLED`.
 - The prototype repo has no configured remotes.
 - No production website, DNS, auth provider, analytics account, billing provider, database, deployment target, secret, branch, PR, or remote config was modified.
-- The prototype has no production API calls. All creation, auth, billing, queue, and community behavior is local mock state.
+- The prototype has no production API calls. Current creation, auth, credits, ICP payment proof, ad credits, worker completion, media manifests, queue, and community behavior is isolated local ICP or local-browser/local-worker state.
 - No ICP mainnet or preview deployment was created in this pass.
 
 ## Durable Packet
@@ -95,7 +95,7 @@ Improved:
 
 Intentional deviations:
 
-- Auth, billing, generation, community data, and worker behavior are mocks.
+- Production auth, fiat billing, MagickAI/FreeLLMAPI workers, production community data, and production media storage are not connected. Local ICP auth, credit accounting, payment-intent claims, ad-credit grants, local Ollama worker completion, and media manifest anchoring are implemented in the isolated prototype.
 - The backend is not rewritten.
 - The prototype is Vite/React Router for evaluation speed; this is not a final production stack decision.
 - No production or shared preview deployment was created.
@@ -186,6 +186,6 @@ Full ICP local handoff: `docs/handovers/magickbox-full-icp-local-deploy-handoff.
 
 1. Run fresh verification after this ICP hardening pass.
 2. Open the local prototype and `/evaluation` route in a browser to inspect the new ICP readiness panel.
-3. Build the smallest ICP proof slice in a new isolated preview: asset canister, Internet Identity, minimal backend canister, generation job record, local/mock worker callback, collection save, append-only audit events.
+3. Promote the proven local ICP slice to a new isolated preview only after an explicit checkpoint: asset canister, Internet Identity, core backend canister, local/test payment proof, worker callback, media manifests, collection save, append-only audit events.
 4. Define the shared generation job contract before backend migration.
 5. Run a separately authorized secrets/config audit on the existing repos before any production rewrite planning.

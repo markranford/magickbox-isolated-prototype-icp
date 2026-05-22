@@ -1,6 +1,6 @@
 # /goal Magick Box Mostly-On-ICP Deployment Prototype
 
-Last updated: 2026-05-22T17:20:00+07:00
+Last updated: 2026-05-22T18:33:47+07:00
 
 ## Mission
 
@@ -87,6 +87,9 @@ First safe build slice:
 - React Internet Identity entry points.
 - Persistent local signed browser identity for the Codex in-app browser when signer popups are blocked.
 - Composer canister job creation path after Internet Identity or local browser identity auth.
+- Local browser identity auto-reconnect after direct route loads.
+- Core canister records for ICP payment intents, claimed payment blocks, ad credit grants, authorized workers, worker runs, and media manifests.
+- Advanced local smoke that transfers local ICP to the core canister account, claims credits, grants ad credits, runs a local Ollama worker, completes the job, and anchors a media manifest.
 - No mainnet deploy.
 - No production live login.
 - No production payment connection.

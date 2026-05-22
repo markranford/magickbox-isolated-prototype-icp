@@ -320,7 +320,7 @@ export const architectureDecisions = [
   "The landing route preserves observed public copy, sections, and Launch Beta behavior.",
   "The app shell preserves the observed Explore entry point and major navigation labels.",
   "The Vite build includes an ICP asset canister policy for certified serving and SPA fallback.",
-  "AI execution, payments, ads, and media storage stay behind explicit adapter boundaries instead of hidden placeholders.",
+  "AI execution, payments, ads, and media storage now have explicit local ICP adapter proofs instead of hidden placeholders.",
 ];
 
 export const routeParity = [
@@ -353,12 +353,12 @@ export const icpReadiness = [
     area: "AI inference",
     recommendation:
       "Keep dynamic model inference in external workers/providers first; store job state, hashes, ownership, and result metadata on ICP.",
-    prototype: "Creation writes canister job records; worker execution is the next explicit adapter deployment.",
+    prototype: "Creation writes canister job records; an authorized local Ollama worker can complete jobs with receipt and result hash.",
   },
   {
     area: "Payments and media",
     recommendation:
       "Evaluate ICRC-compatible credits for ICP-native payments while keeping Stripe and large media off-chain until product constraints are proven.",
-    prototype: "Credit recovery options are canister data; ICP payment transfer and media manifests are next canister slices.",
+    prototype: "Local ICP payment intent/claim, ad credit grants, and media manifests are implemented in the core canister smoke path.",
   },
 ];
