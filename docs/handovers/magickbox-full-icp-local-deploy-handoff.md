@@ -311,35 +311,36 @@ Latest completed checks:
 
 - Frontend: `http://frontend.local.localhost:8010/`
 - Admin: `http://frontend.local.localhost:8010/home/admin`
-- Core canister: `tz2ag-zx777-77776-aaabq-cai`
+- Core canister: `tm5rl-y7777-77776-aaaca-cai`
 - Media canister: `t63gs-up777-77776-aaaba-cai`
-- Frontend canister: `tm5rl-y7777-77776-aaaca-cai`
+- Frontend canister: `tz2ag-zx777-77776-aaabq-cai`
 
 ### Superadmin Flow
 
-1. Open `http://frontend.local.localhost:8010/home/admin` in a normal browser that permits Internet Identity popups.
-2. Sign in with Internet Identity.
-3. Enter the bootstrap setup code.
-4. Claim superadmin.
-5. Confirm role changes to `Superadmin`.
+1. Deploy the isolated canisters with the intended controller identity. The core canister seeds that install caller as the first superadmin.
+2. Open `http://frontend.local.localhost:8010/home/admin` in a normal browser that permits Internet Identity popups.
+3. Sign in with Internet Identity and copy the II principal shown on the admin page.
+4. From the seeded superadmin/controller identity, add that II principal with `add_superadmin`.
+5. Refresh the admin page and confirm the role changes to `Superadmin`.
 6. Click `Create funding wallet`.
 7. Fund the displayed system funding wallet owner and subaccount.
 8. Refresh the dashboard to verify the wallet balance.
 
-The local canister proof used a local test identity to claim superadmin and create funding wallet `#1` with subaccount `4d4246554e440000000000000000000000000000000000000000000000000001`, then the stack was freshly redeployed so `bootstrap_available = true` and `superadmin_count = 0` for Mark's II claim.
+The latest local deploy seeded WSL identity `sprint0-admin` as superadmin. `get_superadmin_status` now reports `bootstrap_available = false`, `superadmin_count = 1`, and `is_superadmin = true` for principal `naoif-lcgk2-yvt4u-7thw4-ah4xc-vptgh-fj4ij-mwctk-zmghe-bbcok-rae`.
 
 ### Verification
 
-- `npm run test -- src/icp/canisterContract.test.ts src/icp/magickboxClient.test.ts` passed, 13 tests.
-- `npm run e2e -- --grep "admin route" --project=chromium-desktop` passed.
-- `wsl ... icp build magickbox_core` passed.
-- Local canister superadmin/funding-wallet proof passed and returned the dedicated `MBFUND` subaccount.
-- `npm run verify` passed: lint, 7 Vitest files / 27 tests, build, and 14 Playwright tests.
-- Fresh redeploy after proof passed.
-- `get_superadmin_status` after fresh redeploy confirmed `bootstrap_available = true`, `superadmin_count = 0`.
-- `npm run smoke:icp:ui` passed after fresh redeploy.
+- `npm run lint` passed.
+- `npm run test` passed, 7 files / 31 tests.
+- `npm run build` passed with the existing Vite chunk-size warning.
+- `npm run e2e` passed, 14 Playwright tests.
+- `wsl ... icp build` passed for all canisters.
+- `wsl ... icp deploy -e local --yes` passed and redeployed the isolated local ICP stack.
+- `get_superadmin_status` after redeploy confirmed public bootstrap is closed and the install caller is superadmin.
+- `npm run smoke:icp:advanced` passed with `MAGICKBOX_OWNER_IDENTITY=sprint0-admin`, including per-intent local ICP transfer, payment claim, ad verifier credits, worker authorization, local Ollama, FreeLLMAPI-compatible, MagickAI-compatible adapters, and ICP media canister manifests.
+- `npm run smoke:icp:ui` passed and captured `docs/artifacts/prototype/local-icp-ui-worker-generation.png`.
 - Admin screenshot evidence: `docs/artifacts/prototype/system-funding-wallet-admin-local-2026-05-23.png`.
 
 ### Mainnet Warning
 
-The local bootstrap code is suitable for the isolated prototype proof. Before mainnet, replace it with a deployment-specific secret or controller-driven admin seeding so the first public visitor cannot race the superadmin claim.
+Public superadmin bootstrap is now disabled before mainnet. The remaining mainnet blocker is funding the dedicated isolated deploy identity with ICP/cycles, then deploying only after explicit approval with both primary and backup controllers set.

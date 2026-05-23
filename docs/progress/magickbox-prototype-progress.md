@@ -2533,3 +2533,60 @@ Blockers or risks:
 Next step:
 
 - Confirm the working tree is clean and finalize the handoff to Mark with the live URL, commit IDs, verification results, and remaining ICP authority gap.
+
+## 2026-05-23T14:14:02+07:00 - Checkpoint 52: Direct ICP Superadmin Hardening And Local Redeploy
+
+Current workspace/folder:
+
+`C:\Users\Mark\Documents\Codex\Codex_MagickBox\magick-box-rewrite-readiness-prototype`
+
+What was inspected:
+
+- `canisters/magickbox_core/main.mo` superadmin/bootstrap implementation.
+- `scripts/preflight-mainnet-icp.mjs` and `scripts/deploy-mainnet-icp.mjs`.
+- `src/icp/canisterContract.test.ts`.
+- Local ICP network state, WSL `icp` tooling, local canister mappings, and current mainnet isolated identities/controllers.
+
+What was created or changed:
+
+- Converted `magickbox_core` from a singleton persistent actor to an install-caller-seeded persistent actor class.
+- Removed the hardcoded local superadmin bootstrap code path.
+- Kept `bootstrap_superadmin` as a compatibility method, but it now returns a disabled public-bootstrap error.
+- Added a controller/installer rescue rule so the install or upgrade caller can recover a zero-admin prototype canister without reopening public bootstrap.
+- Added preflight and deploy guards that block if unsafe public superadmin bootstrap markers return to the core canister.
+- Updated contract tests to enforce no hardcoded bootstrap code and require install-caller seeding.
+- Updated handoff docs with the new local canister IDs and the controller-seeded superadmin flow.
+
+Commands run and results:
+
+- `npm run test -- src/icp/canisterContract.test.ts` -> passed, 7 tests.
+- `wsl ... icp build magickbox_core` -> passed after switching self-principal references to actor-class `self`.
+- `npm run test` -> passed, 7 files / 31 tests.
+- `wsl ... icp build` -> passed for all canisters.
+- `npm run lint` -> passed.
+- `npm run build` -> passed with the existing Vite chunk-size warning.
+- `MAGICKBOX_MAINNET_IDENTITY=magickbox-mainnet-isolated ... npm run preflight:mainnet` -> code/safety checks passed, no production touchpoints, no unsafe bootstrap code; failed safely on `0 cycles` with warning for `0 ICP`.
+- `MAGICKBOX_MAINNET_DRY_RUN=1 ... npm run deploy:mainnet:icp` -> passed dry-run and printed the isolated mainnet deploy command without deploying.
+- `icp network start local -d` through Windows CLI -> hit a stale `8010` descriptor/lock issue.
+- `wsl ... icp network stop local` then `wsl ... icp network start local -d` -> local network restarted successfully on port `8010`.
+- `wsl ... icp deploy -e local --yes` -> local isolated canisters redeployed successfully.
+- `wsl ... icp canister call magickbox_core get_superadmin_status '()' -e local` -> confirmed `bootstrap_available = false`, `superadmin_count = 1`, and `is_superadmin = true` for `sprint0-admin`.
+- `MAGICKBOX_OWNER_IDENTITY=sprint0-admin npm run smoke:icp:advanced` -> passed per-intent local ICP payment, claim, ad verifier credits, worker authorization, local Ollama, FreeLLMAPI-compatible, MagickAI-compatible worker execution, ICP media storage, and manifests.
+- `npm run smoke:icp:ui` -> passed and captured `docs/artifacts/prototype/local-icp-ui-worker-generation.png`.
+- `npm run e2e` -> passed, 14 Playwright tests.
+
+Decisions made:
+
+- Use deploy/install caller seeding for first superadmin instead of a public claim code.
+- Keep Caffeine as an isolated preview/control-center path, but make direct ICP canisters the authority for real owner, funding, payment, worker, and media state.
+- Mark's II principal should be added by the seeded controller/superadmin identity before the system wallet is funded on mainnet.
+
+Blockers or risks:
+
+- Direct isolated ICP mainnet deployment remains blocked because `magickbox-mainnet-isolated` has `0 ICP` and `0 cycles`.
+- Windows `icp network start local -d` still has a stale descriptor bug for port `8010`; WSL `icp` works and was used for local deploy/smoke.
+- No mainnet deploy, ICP spend, production service, production repo, DNS, auth, analytics, billing, database, secret, or live user path was touched.
+
+Next step:
+
+- Fund the dedicated isolated mainnet identity, mint/receive cycles, rerun `npm run preflight:mainnet`, then run the guarded direct ICP mainnet deploy only after explicit approval and with both primary and backup controllers set.

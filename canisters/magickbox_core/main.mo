@@ -6,7 +6,7 @@ import Principal "mo:core/Principal";
 import Text "mo:core/Text";
 import Time "mo:core/Time";
 
-persistent actor MagickBoxCore {
+shared ({ caller = installer }) persistent actor class MagickBoxCore() = self {
   type Account = {
     owner : Principal;
     subaccount : ?Blob;
@@ -247,7 +247,8 @@ persistent actor MagickBoxCore {
   var ad_credit_grants : [AdCreditGrant] = [];
   var media_assets : [MediaAsset] = [];
   var media_manifests : [MediaManifest] = [];
-  var super_admins : [Principal] = [];
+  // Seed the first admin from the install caller so public bootstrap codes are never needed.
+  var super_admins : [Principal] = if (Principal.isAnonymous(installer)) { [] } else { [installer] };
   var system_funding_wallets : [SystemFundingWallet] = [];
   var claimed_payment_blocks : [Nat] = [];
   var next_job_id : Nat = 1;
@@ -282,13 +283,24 @@ persistent actor MagickBoxCore {
     null
   };
 
-  func is_superadmin(caller : Principal) : Bool {
+  func is_listed_superadmin(caller : Principal) : Bool {
     for (admin in super_admins.vals()) {
       if (Principal.equal(admin, caller)) {
         return true;
       };
     };
     false
+  };
+
+  func is_superadmin(caller : Principal) : Bool {
+    if (
+      super_admins.size() == 0 and
+      not Principal.isAnonymous(installer) and
+      Principal.equal(installer, caller)
+    ) {
+      return true;
+    };
+    is_listed_superadmin(caller);
   };
 
   func require_superadmin(caller : Principal) : ?Text {
@@ -303,7 +315,7 @@ persistent actor MagickBoxCore {
   };
 
   func add_superadmin_internal(admin : Principal) : Bool {
-    if (Principal.isAnonymous(admin) or is_superadmin(admin)) {
+    if (Principal.isAnonymous(admin) or is_listed_superadmin(admin)) {
       return false;
     };
     super_admins := append_item<Principal>(super_admins, admin);
@@ -423,7 +435,7 @@ persistent actor MagickBoxCore {
 
   func payment_account() : PaymentAccount {
     {
-      owner = Principal.fromActor(MagickBoxCore);
+      owner = Principal.fromActor(self);
       subaccount = null;
       ledger_id = ICP_LEDGER_ID;
       token_symbol = "ICP";
@@ -445,7 +457,7 @@ persistent actor MagickBoxCore {
 
   func account_for_system_funding_wallet(wallet_id : Nat) : PaymentAccount {
     {
-      owner = Principal.fromActor(MagickBoxCore);
+      owner = Principal.fromActor(self);
       subaccount = ?subaccount_for_system_funding_wallet(wallet_id);
       ledger_id = ICP_LEDGER_ID;
       token_symbol = "ICP";
@@ -488,7 +500,7 @@ persistent actor MagickBoxCore {
       caller;
       is_superadmin = is_superadmin(caller);
       superadmin_count = super_admins.size();
-      bootstrap_available = super_admins.size() == 0;
+      bootstrap_available = false;
       system_wallet_owner = payment_account().owner;
       ledger_id = ICP_LEDGER_ID;
     };
@@ -628,7 +640,7 @@ persistent actor MagickBoxCore {
 
   func account_for_payment_intent(intent_id : Nat) : PaymentAccount {
     {
-      owner = Principal.fromActor(MagickBoxCore);
+      owner = Principal.fromActor(self);
       subaccount = ?subaccount_for_payment_intent(intent_id);
       ledger_id = ICP_LEDGER_ID;
       token_symbol = "ICP";
@@ -637,7 +649,7 @@ persistent actor MagickBoxCore {
   };
 
   func media_asset_uri(asset_id : Nat, content_hash : Text) : Text {
-    "icp-media://" # Principal.toText(Principal.fromActor(MagickBoxCore)) # "/media/" # Nat.toText(asset_id) # "#sha256=" # content_hash;
+    "icp-media://" # Principal.toText(Principal.fromActor(self)) # "/media/" # Nat.toText(asset_id) # "#sha256=" # content_hash;
   };
 
   func media_storage_provider() : Text {
@@ -759,20 +771,12 @@ persistent actor MagickBoxCore {
     superadmin_status(caller);
   };
 
-  public shared ({ caller }) func bootstrap_superadmin(setup_code : Text) : async SuperAdminStatusResult {
+  public shared ({ caller }) func bootstrap_superadmin(_setup_code : Text) : async SuperAdminStatusResult {
     switch (require_authenticated(caller)) {
       case (?err) { return #err(err) };
       case null {};
     };
-    if (super_admins.size() != 0) {
-      return #err("Superadmin has already been bootstrapped");
-    };
-    if (setup_code != "MAGICKBOX-LOCAL-SUPERADMIN-2026") {
-      return #err("Invalid superadmin bootstrap code");
-    };
-    ignore add_superadmin_internal(caller);
-    record_audit(caller, "superadmin_bootstrapped", Principal.toText(caller), "initial II/local principal bound as superadmin");
-    #ok(superadmin_status(caller));
+    #err("Public superadmin bootstrap is disabled. Deploy with the isolated controller identity, then add II principals from an existing superadmin.");
   };
 
   public shared ({ caller }) func add_superadmin(new_admin : Principal) : async SuperAdminStatusResult {

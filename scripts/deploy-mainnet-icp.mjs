@@ -1,6 +1,6 @@
 #!/usr/bin/env node
 import { spawnSync } from "node:child_process";
-import { mkdirSync, writeFileSync } from "node:fs";
+import { mkdirSync, readFileSync, writeFileSync } from "node:fs";
 import { dirname, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 
@@ -67,8 +67,32 @@ function assertReadyToDeploy() {
   }
 }
 
+function assertNoUnsafeBootstrapCode() {
+  const source = readFileSync(resolve(root, "canisters", "magickbox_core", "main.mo"), "utf8");
+  const unsafeMarkers = [
+    "MAGICKBOX-LOCAL-SUPERADMIN-2026",
+    "Invalid superadmin bootstrap code",
+  ].filter((marker) => source.includes(marker));
+
+  if (unsafeMarkers.length > 0) {
+    console.log(
+      JSON.stringify(
+        {
+          status: "blocked",
+          reason: "unsafe_public_superadmin_bootstrap_code_present",
+          unsafeMarkers,
+        },
+        null,
+        2,
+      ),
+    );
+    process.exit(1);
+  }
+}
+
 function main() {
   assertReadyToDeploy();
+  assertNoUnsafeBootstrapCode();
 
   const deployArgs = [
     "deploy",

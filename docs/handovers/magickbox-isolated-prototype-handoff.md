@@ -215,8 +215,8 @@ Full ICP local handoff: `docs/handovers/magickbox-full-icp-local-deploy-handoff.
 
 - Local ICP frontend: `http://frontend.local.localhost:8010/`
 - Core canister: `tm5rl-y7777-77776-aaaca-cai`
-- Media canister: `tz2ag-zx777-77776-aaabq-cai`
-- Frontend canister: `t63gs-up777-77776-aaaba-cai`
+- Media canister: `t63gs-up777-77776-aaaba-cai`
+- Frontend canister: `tz2ag-zx777-77776-aaabq-cai`
 - Live Caffeine control center: `https://magickbox-icp-e68.caffeine.xyz/`
 
 Newly completed:
@@ -229,13 +229,16 @@ Newly completed:
 
 Latest verification:
 
-- Current local verification passed: `npm run lint`, `npm run test` with 7 files / 31 tests, `npm run build`, and `npm run e2e` with 14 Playwright checks.
-- `npm run smoke:icp:advanced` passed.
+- Current local verification passed: `npm run lint`, `npm run test` with 7 files / 31 tests, `npm run build`, `wsl ... icp build`, and `npm run e2e` with 14 Playwright checks.
+- `wsl ... icp deploy -e local --yes` passed after switching core superadmin setup to install-caller seeding.
+- `get_superadmin_status` reports public bootstrap closed, one seeded superadmin, and superadmin access for WSL identity `sprint0-admin`.
+- `npm run smoke:icp:advanced` passed with `MAGICKBOX_OWNER_IDENTITY=sprint0-admin`.
 - `npm run smoke:icp:ui` passed.
 - Caffeine draft v3 smoke passed for `/`, `/home/magick-chat`, and `/home/admin`; draft console showed only Caffeine's own `draft-editor:error disallowed origin` message.
 - Caffeine live v3 smoke passed for `/`, `/home/magick-chat`, and `/home/admin`; no console warnings or errors.
-- `npm run preflight:mainnet` failed safely because the selected mainnet identity has `0 ICP`, `0 cycles`, and no dedicated `MAGICKBOX_MAINNET_IDENTITY`.
+- `npm run preflight:mainnet` with the dedicated isolated identity and backup controller passed code/safety checks, then failed safely because the selected mainnet identity has `0 ICP` and `0 cycles`.
+- `MAGICKBOX_MAINNET_DRY_RUN=1 npm run deploy:mainnet:icp` passed and printed the exact isolated deploy command without deploying.
 
 Remaining blocker for true mainnet ICP canisters:
 
-- Fund a dedicated isolated identity, set `MAGICKBOX_MAINNET_IDENTITY`, define primary and backup controllers, then run the new-canister mainnet deploy. Do not reuse production Magick Box infrastructure.
+- Fund the dedicated isolated identity `magickbox-mainnet-isolated`, mint/receive cycles, then run the guarded new-canister mainnet deploy only after explicit approval. Do not reuse production Magick Box infrastructure.
