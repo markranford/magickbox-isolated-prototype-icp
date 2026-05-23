@@ -2631,3 +2631,109 @@ Blockers or risks:
 Next step:
 
 - After the transfer lands, run `icp cycles mint --cycles 10t -n ic --identity magickbox-mainnet-isolated`, rerun `npm run preflight:mainnet`, then deploy with the guarded direct ICP command.
+
+## 2026-05-23T16:59:19+07:00 - Checkpoint 54: Caffeine Mainnet Preview Connected To Real Backend
+
+Current workspace/folder:
+
+`C:\Users\Mark\Documents\Codex\Codex_MagickBox\magick-box-rewrite-readiness-prototype`
+
+What was inspected:
+
+- Canonical repo status on `main` at `33ad850`.
+- Caffeine bridge repo generated from `tmp\caffeine-upload-33ad850-20260523T094527\magickbox-on-icp-caffeine`.
+- Live Caffeine deployment at `https://magickbox-icp-e68.caffeine.xyz/`.
+- Live Caffeine `/env.json`.
+- Live backend canister `itg54-4qaaa-aaaam-qiziq-cai`.
+- Live frontend certified asset canister headers for `i2fwa-kyaaa-aaaam-qizja-cai`.
+- Durable goal, progress, and handoff docs.
+
+What was created or changed:
+
+- Updated the canonical frontend ICP client to detect Caffeine-hosted origins and load backend canister config from Caffeine `/env.json`.
+- Added `scripts/write-caffeine-env.mjs` so Caffeine builds write a runtime `public/env.json`.
+- Updated the Caffeine bundle generator to include the runtime env writer, canister contract sources, and a frontend `prebuild` step.
+- Removed the Caffeine core-infrastructure package dependency from the generated bridge because it used incompatible ICP SDK agent versions for this app.
+- Changed the isolated Caffeine backend bootstrap from permanently disabled to a one-time first authenticated owner claim when `super_admins.size() == 0`.
+- Updated contract/client tests for the Caffeine runtime and one-time isolated superadmin claim.
+- Updated `docs/goals/magickbox-full-icp-deployment.goal.md` with the live Caffeine v7 state.
+- Updated `docs/evals/magickbox-icp-delivery-gap-check.md` so the remaining-delivery table reflects the live Caffeine v7 canisters and the current owner-claim/funding gap.
+- Updated this progress log and prepared the handoff update.
+
+Commands run and results:
+
+- `npm run test -- src/icp/magickboxClient.test.ts` -> passed, 9 tests.
+- `npm run test -- src/icp/canisterContract.test.ts src/icp/magickboxClient.test.ts` -> passed, 16 tests.
+- `npm run lint` -> passed.
+- `npm run build` -> passed with the existing Vite chunk-size warning.
+- `npm run caffeine:bundle` -> passed and produced `tmp\magickbox-on-icp-caffeine-33ad850-20260523T094527.zip`.
+- Bridge repo verification in `tmp\caffeine-github-export-20260523`: `npm install; npm run test -- src/icp/canisterContract.test.ts src/icp/magickboxClient.test.ts; npm run lint; npm run build` -> passed.
+- Bridge repo `git push origin main` -> pushed isolated Caffeine bridge commit `1f9ff33`.
+- Caffeine UI import and live publish -> published live Caffeine version 7.
+- `Invoke-WebRequest https://magickbox-icp-e68.caffeine.xyz/env.json` -> returned HTTP 200 with backend canister `itg54-4qaaa-aaaam-qiziq-cai`, host `https://icp-api.io`, and Caffeine project ID `019e5022-fe7e-74c9-9428-b475f02043dc`.
+- `Invoke-WebRequest -Method Head https://magickbox-icp-e68.caffeine.xyz/env.json` -> returned certified IC asset headers for frontend canister `i2fwa-kyaaa-aaaam-qizja-cai`.
+- `icp canister call itg54-4qaaa-aaaam-qiziq-cai get_superadmin_status '()' -e ic` -> returned `bootstrap_available = true`, `superadmin_count = 0`, and system wallet owner `principal "itg54-4qaaa-aaaam-qiziq-cai"`.
+- `icp canister status itg54-4qaaa-aaaam-qiziq-cai -e ic` -> confirmed the backend canister is running on mainnet.
+- Live backend Candid smoke with a local non-admin identity -> registered a profile, created generation job `1`, completed the external job, stored media asset `1` on ICP with `icp-media://itg54-4qaaa-aaaam-qiziq-cai/media/1#sha256=smokehash1234567890`, and listed the asset.
+- Browser smoke against `https://magickbox-icp-e68.caffeine.xyz` -> `envStatus: 200`, `allRoutes200: true`, `noPageErrors: true`, `noAppConsoleErrors: true`, `adminPublicLocked: true`, and `noRuntimeUnavailableText: true`.
+
+Decisions made:
+
+- Continue using Caffeine as a fast isolated mainnet preview/development accelerator while keeping the canonical local/GitHub source as the source of truth.
+- Allow one-time authenticated first-owner superadmin claim only for the isolated Caffeine preview because Caffeine installed the backend with no Mark-owned II principal pre-bound.
+- Do not claim superadmin with Codex or a local CLI identity; Mark should claim with his II.
+- Keep Magick Box app media on ICP. Do not use AWS/S3. Caffeine's platform `storage_gateway_url` may exist in `/env.json`, but the Magick Box media path under test is the core canister `icp-media://...` path.
+
+Blockers or risks:
+
+- Mark has not yet claimed the one-time superadmin role on the live Caffeine deployment.
+- The one-time claim should happen before the URL is shared broadly; otherwise the first authenticated claimant could take the isolated preview owner role.
+- Direct non-Caffeine mainnet deployment from `magickbox-mainnet-isolated` remains blocked by `0 ICP` and `0 cycles`.
+- Caffeine is live and useful, but final production-grade authority should still be a reviewed isolated ICP deployment with explicit controller, funding, backup controller, and wallet policy.
+- No production services, reference repos, production DNS, production auth, analytics, billing, databases, secrets, or live users were touched.
+
+Next step:
+
+- Mark should open `https://magickbox-icp-e68.caffeine.xyz/home/admin`, sign in with Internet Identity, enter an 8-128 character setup phrase, claim superadmin, then create/fund the system wallet from the admin dashboard.
+
+## 2026-05-23T17:03:11+07:00 - Checkpoint 55: Fresh Verification Before Canonical Push
+
+Current workspace/folder:
+
+`C:\Users\Mark\Documents\Codex\Codex_MagickBox\magick-box-rewrite-readiness-prototype`
+
+What was inspected:
+
+- Current canonical repo diff and untracked Caffeine evidence artifacts.
+- Live Caffeine `/env.json`.
+- Live backend superadmin status.
+- Public Caffeine routes on desktop and mobile.
+
+What was created or changed:
+
+- No app code changed after Checkpoint 54.
+- Added this verification checkpoint to the durable progress log before committing/pushing the canonical repo.
+
+Commands run and results:
+
+- `npm run lint` -> passed.
+- `npm run test` -> passed, 7 files / 32 tests.
+- `npm run build` -> passed with the existing Vite chunk-size warning.
+- `npm run caffeine:bundle` -> passed; generated `tmp\magickbox-on-icp-caffeine-33ad850-20260523T100143.zip`, 16,638,094 bytes, below the Caffeine upload limit.
+- `Invoke-WebRequest https://magickbox-icp-e68.caffeine.xyz/env.json` -> HTTP 200, backend canister `itg54-4qaaa-aaaam-qiziq-cai`, backend host `https://icp-api.io`.
+- `icp canister call itg54-4qaaa-aaaam-qiziq-cai get_superadmin_status '()' -e ic` -> `bootstrap_available = true`, `superadmin_count = 0`, `is_superadmin = false` for the local CLI caller, and system wallet owner `principal "itg54-4qaaa-aaaam-qiziq-cai"`.
+- `npm run e2e` -> passed, 14 Playwright tests.
+- Inline Playwright live-route smoke for `https://magickbox-icp-e68.caffeine.xyz` -> checked 12 desktop/mobile route cases across `/`, `/home/magick-chat`, `/home/admin`, `/home/settings`, `/home/subscriptions`, and `/evaluation`; all returned HTTP 200, no runtime-unavailable state, no app console errors, no page errors, and signed-out admin stayed locked.
+
+Decisions made:
+
+- Commit only the scoped source/docs changes and the current v7 Caffeine evidence set referenced by the handoff, leaving older exploratory artifacts untracked.
+
+Blockers or risks:
+
+- Mark still needs to claim the one-time superadmin role with II on the live Caffeine app.
+- Direct non-Caffeine mainnet deployment remains blocked by the unfunded isolated identity.
+
+Next step:
+
+- Commit and push the scoped canonical repo changes to `origin/main`, then finalize the user handoff.

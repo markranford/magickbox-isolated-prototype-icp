@@ -40,6 +40,16 @@ type ViteCanisterEnv = {
   readonly VITE_CAFFEINE_BACKEND_CANISTER_ID?: string;
 };
 
+type CaffeineEnvJson = {
+  readonly backend_canister_id?: string;
+  readonly backend_host?: string;
+};
+
+type CaffeineBackendRuntime = {
+  canisterId: string;
+  host: string;
+};
+
 const eightHoursInNanoseconds = BigInt(8) * BigInt(3_600_000_000_000);
 const localIdentityStorageKey = "magickbox.localBrowserIdentity.v1";
 const localIdentityActiveStorageKey = "magickbox.localBrowserIdentity.active.v1";
@@ -50,6 +60,16 @@ function currentOrigin() {
   }
 
   return window.location.origin;
+}
+
+export function isCaffeineHostedOrigin(origin = currentOrigin()) {
+  try {
+    const { hostname } = new URL(origin);
+
+    return hostname === "caffeine.xyz" || hostname.endsWith(".caffeine.xyz");
+  } catch {
+    return false;
+  }
 }
 
 function localIdentityProvider() {
@@ -98,7 +118,9 @@ export function resolveIcpRuntime(): IcpRuntime {
   const host = env ? currentOrigin() : viteHost ?? currentOrigin();
   const reason = env
     ? "ic_env detected from the ICP asset canister"
-    : "no ic_env cookie found; canister writes require the ICP asset canister unless Vite ICP env is supplied";
+    : isCaffeineHostedOrigin(host)
+      ? "Caffeine-hosted ICP frontend detected; backend canister config will be loaded from Caffeine env.json"
+      : "no ic_env cookie found; canister writes require the ICP asset canister unless Vite ICP env is supplied";
 
   return {
     canisterId,
@@ -111,7 +133,7 @@ export function resolveIcpRuntime(): IcpRuntime {
 }
 
 export function canUseIcpRuntime(runtime: IcpRuntime) {
-  return Boolean(runtime.canisterId);
+  return Boolean(runtime.canisterId) || isCaffeineHostedOrigin(runtime.host);
 }
 
 export function buildHttpAgentOptions(runtime: IcpRuntime, identity?: Identity) {
@@ -125,6 +147,10 @@ export function buildHttpAgentOptions(runtime: IcpRuntime, identity?: Identity) 
 export async function createCoreActor(identity?: Identity): Promise<CoreActor> {
   const runtime = resolveIcpRuntime();
 
+  if (!runtime.canisterId && isCaffeineHostedOrigin(runtime.host)) {
+    return createCaffeineCoreActor(identity);
+  }
+
   if (!runtime.canisterId) {
     throw new Error(runtime.reason);
   }
@@ -135,6 +161,50 @@ export async function createCoreActor(identity?: Identity): Promise<CoreActor> {
     agent,
     canisterId: runtime.canisterId,
   });
+}
+
+async function createCaffeineCoreActor(identity?: Identity): Promise<CoreActor> {
+  const caffeineRuntime = await loadCaffeineBackendRuntime();
+  const agent = await HttpAgent.create({
+    host: caffeineRuntime.host,
+    identity,
+  });
+
+  return Actor.createActor<_SERVICE>(idlFactory, {
+    agent,
+    canisterId: caffeineRuntime.canisterId,
+  });
+}
+
+async function loadCaffeineBackendRuntime(): Promise<CaffeineBackendRuntime> {
+  const response = await fetch("/env.json", {
+    cache: "no-store",
+    headers: { Accept: "application/json" },
+  });
+
+  if (!response.ok) {
+    throw new Error(`Caffeine backend config request failed with ${response.status}`);
+  }
+
+  const config = (await response.json()) as CaffeineEnvJson;
+  const canisterId = normalizeCaffeineEnvValue(config.backend_canister_id);
+
+  if (!canisterId) {
+    throw new Error("Caffeine backend canister id is unavailable from env.json");
+  }
+
+  return {
+    canisterId,
+    host: normalizeCaffeineEnvValue(config.backend_host) ?? "https://icp-api.io",
+  };
+}
+
+function normalizeCaffeineEnvValue(value?: string) {
+  if (!value || value === "undefined") {
+    return undefined;
+  }
+
+  return value;
 }
 
 export async function createMediaActor(identity?: Identity): Promise<MediaActor> {

@@ -123,7 +123,8 @@ describe("magickbox_core Candid contract", () => {
     expect(canisterSource).toContain("caller = installer");
     expect(canisterSource).toContain("is_listed_superadmin");
     expect(canisterSource).toContain("super_admins.size() == 0");
-    expect(canisterSource).toContain("Public superadmin bootstrap is disabled");
+    expect(canisterSource).toContain("superadmin_bootstrap_claimed");
+    expect(canisterSource).toContain("first authenticated owner claim for isolated Caffeine preview");
     expect(canisterSource).not.toContain("MAGICKBOX-LOCAL-SUPERADMIN-2026");
     expect(canisterSource).not.toContain("Invalid superadmin bootstrap code");
     expect(canisterSource).toContain("icrc1_balance_of");

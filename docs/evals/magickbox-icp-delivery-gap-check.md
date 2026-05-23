@@ -2,7 +2,7 @@
 
 Date: 2026-05-22T20:27:11+07:00
 
-Latest update: 2026-05-23T07:50:24+07:00
+Latest update: 2026-05-23T16:59:19+07:00
 
 ## Delivered On Local ICP
 
@@ -15,7 +15,8 @@ Latest update: 2026-05-23T07:50:24+07:00
 - ICP media manifests are restricted to `icp-canister-media-store` and `icp-media://` URIs.
 - Dedicated `magickbox_media` canister now stores browser-generated worker output bytes through `create_asset`, `put_chunk`, and `commit_asset`.
 - The browser app flow now signs in with local browser identity, executes the local worker service, uploads generated output to `magickbox_media`, attaches a manifest to `magickbox_core`, and displays a completed job.
-- A separate Caffeine control-center app is live at `https://magickbox-icp-e68.caffeine.xyz/`; it is a non-authoritative control plane, not the authoritative ICP canister app.
+- A separate Caffeine app is live at `https://magickbox-icp-e68.caffeine.xyz/`; version 7 serves certified frontend assets from Caffeine asset canister `i2fwa-kyaaa-aaaam-qizja-cai` and connects to backend/core canister `itg54-4qaaa-aaaam-qiziq-cai` through `/env.json`.
+- Live Caffeine v7 backend smoke registered a profile, created/completed a generation job, stored media bytes on ICP, and listed the resulting `icp-media://...` asset.
 
 ## Media Asset Copy Status
 
@@ -31,14 +32,14 @@ Latest update: 2026-05-23T07:50:24+07:00
 
 | Area | Current status | Needed for ICP delivery |
 | --- | --- | --- |
-| Mainnet ICP canisters | Local ICP canisters only; direct mainnet preflight is blocked by 0 ICP/0 cycles and no dedicated `MAGICKBOX_MAINNET_IDENTITY`. | Fund a dedicated isolated identity, set backup controller policy, then deploy new isolated mainnet canisters. |
-| Isolated web preview | Caffeine control-center app is live at `https://magickbox-icp-e68.caffeine.xyz/`; it is not authoritative state. | Wire the Caffeine app to isolated mainnet ICP canisters after funding, or replace it with the certified asset canister URL. |
+| Mainnet ICP canisters | Caffeine mainnet preview has a live certified asset canister and backend canister; direct non-Caffeine mainnet preflight remains blocked by 0 ICP/0 cycles on `magickbox-mainnet-isolated`. | Claim owner on Caffeine with Mark's II, then separately fund the dedicated isolated identity if a direct non-Caffeine deployment is still required. |
+| Isolated web preview | Caffeine v7 is live at `https://magickbox-icp-e68.caffeine.xyz/` and loads real backend config from `/env.json`. | Mark must claim the one-time superadmin role with II before funding or broad sharing. |
 | Full live account exploration | Public routes inspected; logged-in production account was not used. | User-assisted login in a browser and read-only route capture, without changing production data. |
-| Large media storage | Dedicated local `magickbox_media` chunk canister stores generated text outputs; copied public media is static asset-canister content. | Extend the media canister with production quotas, lifecycle, certification, cycle monitoring, and larger image/video/music validation. |
+| Large media storage | Local `magickbox_media` chunk canister stores browser-generated output; Caffeine live backend stores small media bytes in `magickbox_core` and returns `icp-media://...` URIs. Copied public media is static asset-canister content. | Move large generated image/video/music assets into dedicated ICP media/chunk canisters with quotas, lifecycle, certification, cycle monitoring, and validation. |
 | AI inference | External/local worker adapters are used; model execution is not on ICP. | Decide whether AI remains worker-based or add an ICP-native inference proof if feasible. |
 | FreeLLMAPI live service | Harness exists but optional smoke skips without isolated env vars. | Run isolated FreeLLMAPI and capture `npm run smoke:services:required` evidence. |
 | MagickAI live service | Bridge exists; real SDK execution still needs isolated Python dependencies and credentials outside canister state. | Build isolated worker service or command environment and run required smoke. |
-| ICP payments production readiness | Local ledger proof only; no mainnet spend or production credits. | Production-grade ICRC ledger selection, per-intent accounting, optional ICRC-2 transfer-from, refunds/settlement, and operations runbook. |
+| ICP payments production readiness | Local ledger proof exists; Caffeine live backend exposes system wallet/admin status but Mark has not claimed superadmin or funded the system wallet yet. No mainnet spend was made by Codex. | Mark claims superadmin with II, creates/funds the system wallet, then payment flows need production-grade ICRC ledger selection, per-intent accounting, optional ICRC-2 transfer-from, refunds/settlement, and operations runbook. |
 | Subscriptions | UI/payment intent proof exists; recurring subscriptions are not implemented. | ICRC-2 or equivalent recurring/subscription authorization design. |
 | Ad verifier | Local canister grant proof only. | Trusted verifier principal/service, anti-replay policy, rate limits, and audit review. |
 | User projects/conversations | Metadata/job scaffolding exists; full production conversation/project data model is not complete. | Complete canister schemas, privacy/encryption design, migration plan, and upgrade checks. |
@@ -49,4 +50,4 @@ Latest update: 2026-05-23T07:50:24+07:00
 
 ## Current Recommendation
 
-The next delivery slice should be an isolated mainnet canister deployment after funding and controller policy are ready: certified assets, `magickbox_core`, `magickbox_media`, II login, local/remote worker callback, and ICP media manifest verification. Caffeine can remain a separate control-center wrapper, but authoritative app state should stay in ICP canisters.
+The immediate next delivery slice is Mark claiming the one-time superadmin role on `https://magickbox-icp-e68.caffeine.xyz/home/admin` with Internet Identity, then creating and funding the displayed system wallet. After that, harden the Caffeine preview with backup admin/controller policy and move large generated media into dedicated ICP media/chunk canisters. A direct non-Caffeine mainnet deployment remains valuable for final authority, but it is still blocked until the isolated deploy identity has ICP/cycles.

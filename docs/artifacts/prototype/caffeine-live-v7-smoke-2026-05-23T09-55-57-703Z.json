@@ -1,0 +1,163 @@
+{
+  "base": "https://magickbox-icp-e68.caffeine.xyz",
+  "stamp": "2026-05-23T09-55-57-703Z",
+  "envStatus": 200,
+  "envJson": {
+    "backend_canister_id": "itg54-4qaaa-aaaam-qiziq-cai",
+    "backend_host": "https://icp-api.io",
+    "ii_derivation_origin": "https://magickbox-icp-e68.caffeine.xyz",
+    "project_id": "019e5022-fe7e-74c9-9428-b475f02043dc",
+    "storage_gateway_url": "https://blob.caffeine.ai"
+  },
+  "allRoutes200": true,
+  "noPageErrors": true,
+  "noAppConsoleErrors": true,
+  "adminPublicLocked": true,
+  "noRuntimeUnavailableText": true,
+  "results": [
+    {
+      "viewport": "desktop",
+      "route": "/",
+      "status": 200,
+      "title": "Magick Box Rewrite Readiness Prototype",
+      "hasMagickBox": false,
+      "showsRuntimeUnavailable": false,
+      "signedOutAdminLocked": null,
+      "consoleMessages": [],
+      "pageErrors": [],
+      "screenshot": "docs\\artifacts\\prototype\\caffeine-live-v7-desktop-root-2026-05-23T09-55-57-703Z.png"
+    },
+    {
+      "viewport": "desktop",
+      "route": "/home/magick-chat",
+      "status": 200,
+      "title": "Magick Box Rewrite Readiness Prototype",
+      "hasMagickBox": false,
+      "showsRuntimeUnavailable": false,
+      "signedOutAdminLocked": null,
+      "consoleMessages": [],
+      "pageErrors": [],
+      "screenshot": "docs\\artifacts\\prototype\\caffeine-live-v7-desktop-home-magick-chat-2026-05-23T09-55-57-703Z.png"
+    },
+    {
+      "viewport": "desktop",
+      "route": "/home/admin",
+      "status": 200,
+      "title": "Magick Box Rewrite Readiness Prototype",
+      "hasMagickBox": false,
+      "showsRuntimeUnavailable": false,
+      "signedOutAdminLocked": true,
+      "consoleMessages": [],
+      "pageErrors": [],
+      "screenshot": "docs\\artifacts\\prototype\\caffeine-live-v7-desktop-home-admin-2026-05-23T09-55-57-703Z.png"
+    },
+    {
+      "viewport": "desktop",
+      "route": "/home/settings",
+      "status": 200,
+      "title": "Magick Box Rewrite Readiness Prototype",
+      "hasMagickBox": true,
+      "showsRuntimeUnavailable": false,
+      "signedOutAdminLocked": null,
+      "consoleMessages": [],
+      "pageErrors": [],
+      "screenshot": "docs\\artifacts\\prototype\\caffeine-live-v7-desktop-home-settings-2026-05-23T09-55-57-703Z.png"
+    },
+    {
+      "viewport": "desktop",
+      "route": "/home/subscriptions",
+      "status": 200,
+      "title": "Magick Box Rewrite Readiness Prototype",
+      "hasMagickBox": false,
+      "showsRuntimeUnavailable": false,
+      "signedOutAdminLocked": null,
+      "consoleMessages": [],
+      "pageErrors": [],
+      "screenshot": "docs\\artifacts\\prototype\\caffeine-live-v7-desktop-home-subscriptions-2026-05-23T09-55-57-703Z.png"
+    },
+    {
+      "viewport": "desktop",
+      "route": "/evaluation",
+      "status": 200,
+      "title": "Magick Box Rewrite Readiness Prototype",
+      "hasMagickBox": true,
+      "showsRuntimeUnavailable": false,
+      "signedOutAdminLocked": null,
+      "consoleMessages": [],
+      "pageErrors": [],
+      "screenshot": "docs\\artifacts\\prototype\\caffeine-live-v7-desktop-evaluation-2026-05-23T09-55-57-703Z.png"
+    },
+    {
+      "viewport": "mobile",
+      "route": "/",
+      "status": 200,
+      "title": "Magick Box Rewrite Readiness Prototype",
+      "hasMagickBox": false,
+      "showsRuntimeUnavailable": false,
+      "signedOutAdminLocked": null,
+      "consoleMessages": [],
+      "pageErrors": [],
+      "screenshot": "docs\\artifacts\\prototype\\caffeine-live-v7-mobile-root-2026-05-23T09-55-57-703Z.png"
+    },
+    {
+      "viewport": "mobile",
+      "route": "/home/magick-chat",
+      "status": 200,
+      "title": "Magick Box Rewrite Readiness Prototype",
+      "hasMagickBox": false,
+      "showsRuntimeUnavailable": false,
+      "signedOutAdminLocked": null,
+      "consoleMessages": [],
+      "pageErrors": [],
+      "screenshot": "docs\\artifacts\\prototype\\caffeine-live-v7-mobile-home-magick-chat-2026-05-23T09-55-57-703Z.png"
+    },
+    {
+      "viewport": "mobile",
+      "route": "/home/admin",
+      "status": 200,
+      "title": "Magick Box Rewrite Readiness Prototype",
+      "hasMagickBox": false,
+      "showsRuntimeUnavailable": false,
+      "signedOutAdminLocked": true,
+      "consoleMessages": [],
+      "pageErrors": [],
+      "screenshot": "docs\\artifacts\\prototype\\caffeine-live-v7-mobile-home-admin-2026-05-23T09-55-57-703Z.png"
+    },
+    {
+      "viewport": "mobile",
+      "route": "/home/settings",
+      "status": 200,
+      "title": "Magick Box Rewrite Readiness Prototype",
+      "hasMagickBox": true,
+      "showsRuntimeUnavailable": false,
+      "signedOutAdminLocked": null,
+      "consoleMessages": [],
+      "pageErrors": [],
+      "screenshot": "docs\\artifacts\\prototype\\caffeine-live-v7-mobile-home-settings-2026-05-23T09-55-57-703Z.png"
+    },
+    {
+      "viewport": "mobile",
+      "route": "/home/subscriptions",
+      "status": 200,
+      "title": "Magick Box Rewrite Readiness Prototype",
+      "hasMagickBox": false,
+      "showsRuntimeUnavailable": false,
+      "signedOutAdminLocked": null,
+      "consoleMessages": [],
+      "pageErrors": [],
+      "screenshot": "docs\\artifacts\\prototype\\caffeine-live-v7-mobile-home-subscriptions-2026-05-23T09-55-57-703Z.png"
+    },
+    {
+      "viewport": "mobile",
+      "route": "/evaluation",
+      "status": 200,
+      "title": "Magick Box Rewrite Readiness Prototype",
+      "hasMagickBox": true,
+      "showsRuntimeUnavailable": false,
+      "signedOutAdminLocked": null,
+      "consoleMessages": [],
+      "pageErrors": [],
+      "screenshot": "docs\\artifacts\\prototype\\caffeine-live-v7-mobile-evaluation-2026-05-23T09-55-57-703Z.png"
+    }
+  ]
+}

@@ -130,9 +130,7 @@ async function main() {
         devDependencies: {
           sharp: "^0.34.4",
         },
-        dependencies: {
-          "@caffeineai/core-infrastructure": "^0.3.0",
-        },
+        dependencies: {},
       },
       null,
       2,
@@ -148,7 +146,7 @@ async function main() {
   );
   await writeFile(
     join(projectRoot, ".gitignore"),
-    ["node_modules/", "dist/", ".mops/", ".icp/", "*.log", ""].join("\n"),
+    ["node_modules/", "dist/", ".mops/", ".icp/", "*.log", "src/frontend/public/env.json", ""].join("\n"),
   );
   await writeFile(
     join(projectRoot, "mops.toml"),
@@ -242,6 +240,12 @@ async function main() {
     ].join("\n"),
   );
   await cp(join(root, "src"), join(frontendRoot, "src"), { recursive: true });
+  await mkdir(join(frontendRoot, "scripts"), { recursive: true });
+  await copyFile(
+    join(root, "scripts", "write-caffeine-env.mjs"),
+    join(frontendRoot, "scripts", "write-caffeine-env.mjs"),
+  );
+  await cp(join(root, "canisters"), join(frontendRoot, "canisters"), { recursive: true });
   const referencedAssetCount = await copyReferencedPublicAssets();
 
   for (const file of frontendFiles) {
@@ -252,6 +256,7 @@ async function main() {
   const frontendPackage = JSON.parse(await readFile(frontendPackagePath, "utf8"));
   frontendPackage.scripts = {
     ...frontendPackage.scripts,
+    prebuild: frontendPackage.scripts?.prebuild ?? "node scripts/write-caffeine-env.mjs",
     typecheck: frontendPackage.scripts?.typecheck ?? "tsc -b",
     check: frontendPackage.scripts?.check ?? "eslint .",
     fix: frontendPackage.scripts?.fix ?? "eslint . --fix",

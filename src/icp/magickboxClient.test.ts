@@ -7,6 +7,7 @@ import {
   getIdentityProviderUrl,
   getOrCreateLocalBrowserIdentity,
   hasActiveLocalBrowserIdentity,
+  isCaffeineHostedOrigin,
   markLocalBrowserIdentityActive,
   promptHash,
   resolveCanisterIds,
@@ -33,6 +34,20 @@ describe("Magick Box ICP client adapter", () => {
 
     expect(ids.canisterId).toBe("aaaaa-aa");
     expect(ids.mediaCanisterId).toBeNull();
+  });
+
+  it("treats isolated Caffeine domains as eligible for Caffeine backend config", () => {
+    expect(isCaffeineHostedOrigin("https://magickbox-icp-e68.caffeine.xyz")).toBe(true);
+    expect(
+      canUseIcpRuntime({
+        canisterId: null,
+        mediaCanisterId: null,
+        host: "https://magickbox-icp-e68.caffeine.xyz",
+        identityProvider: "https://id.ai",
+        reason: "Caffeine hosted runtime",
+      }),
+    ).toBe(true);
+    expect(isCaffeineHostedOrigin("https://www.magickbox.ai")).toBe(false);
   });
 
   it("does not require a local root key for mainnet agent options", () => {

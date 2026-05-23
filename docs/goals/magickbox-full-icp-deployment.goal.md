@@ -1,6 +1,6 @@
 # /goal Magick Box Mostly-On-ICP Deployment Prototype
 
-Last updated: 2026-05-23T11:27:47+07:00
+Last updated: 2026-05-23T16:59:19+07:00
 
 ## Mission
 
@@ -122,6 +122,36 @@ First safe build slice:
 - No production payment connection.
 - Caffeine.ai account use is approved for a separate isolated app only.
 - No API keys stored in canister state.
+
+## Current Caffeine Mainnet Preview State
+
+As of 2026-05-23T16:59:19+07:00, the isolated Caffeine deployment is live at:
+
+`https://magickbox-icp-e68.caffeine.xyz/`
+
+This is a separate Caffeine/ICP preview deployment, not the production Magick Box website.
+
+Known live Caffeine canisters:
+
+- Frontend certified asset canister: `i2fwa-kyaaa-aaaam-qizja-cai`
+- Backend/core canister: `itg54-4qaaa-aaaam-qiziq-cai`
+- Caffeine `/env.json` backend host: `https://icp-api.io`
+
+Current behavior:
+
+- The live Caffeine frontend loads backend canister config from `/env.json`.
+- The live backend reports `bootstrap_available = true`, `superadmin_count = 0`, and `system_wallet_owner = principal "itg54-4qaaa-aaaam-qiziq-cai"`.
+- Mark should claim the first superadmin with his Internet Identity from the live admin route before sharing the URL broadly.
+- The one-time claim requires an authenticated non-anonymous principal and an 8-128 character setup phrase.
+- Codex must not claim the one-time superadmin role with a local or automation identity.
+- Media generated through the app path should be stored on ICP using the `icp-media://...` core canister media path; AWS/S3 is not part of the desired architecture.
+
+Fresh Caffeine v7 checks recorded:
+
+- `/env.json` returned HTTP 200 with the backend canister ID above.
+- Browser smoke covered `/`, `/home/magick-chat`, `/home/admin`, `/home/settings`, `/home/subscriptions`, and `/evaluation` on desktop and mobile.
+- Browser smoke found no page errors, no app console errors, no runtime-unavailable copy, and a locked signed-out admin route.
+- CLI smoke against the live backend registered a profile, created and completed a generation job, stored media bytes on ICP, and listed the stored media asset.
 
 ## Stop Conditions
 

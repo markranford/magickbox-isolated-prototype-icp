@@ -242,3 +242,63 @@ Latest verification:
 Remaining blocker for true mainnet ICP canisters:
 
 - Fund the dedicated isolated identity `magickbox-mainnet-isolated`, mint/receive cycles, then run the guarded new-canister mainnet deploy only after explicit approval. Do not reuse production Magick Box infrastructure.
+
+## 2026-05-23 Caffeine Mainnet Preview v7 Update
+
+Live isolated Caffeine URL:
+
+`https://magickbox-icp-e68.caffeine.xyz/`
+
+This is now more than a static control center. Caffeine version 7 serves the reviewed isolated frontend with a runtime `/env.json` and connects to a real isolated backend canister on ICP mainnet.
+
+Live canisters:
+
+- Frontend certified asset canister: `i2fwa-kyaaa-aaaam-qizja-cai`
+- Backend/core canister: `itg54-4qaaa-aaaam-qiziq-cai`
+- Backend host: `https://icp-api.io`
+
+Source of truth:
+
+- Canonical isolated repo: `https://github.com/markranford/magickbox-isolated-prototype-icp`
+- Caffeine bridge repo: `https://github.com/markranford/codex-magickbox-icp-caffeine-20260523`
+- Latest Caffeine bridge commit imported and published: `1f9ff33`
+
+Current superadmin status:
+
+- `bootstrap_available = true`
+- `superadmin_count = 0`
+- `system_wallet_owner = principal "itg54-4qaaa-aaaam-qiziq-cai"`
+
+Mark's next owner step:
+
+1. Open `https://magickbox-icp-e68.caffeine.xyz/home/admin`.
+2. Sign in with Internet Identity.
+3. Enter an 8-128 character setup phrase.
+4. Claim superadmin.
+5. Create the system funding wallet from the admin dashboard.
+6. Fund the displayed system wallet address only after confirming the live URL and canister IDs above.
+
+Important: Codex did not claim the one-time superadmin role. The first authenticated owner claim is intentionally left for Mark's II principal. Claim it before sharing the URL broadly.
+
+Fresh v7 evidence:
+
+- `/env.json` returned HTTP 200 with backend canister `itg54-4qaaa-aaaam-qiziq-cai`.
+- Certified asset response headers identify frontend canister `i2fwa-kyaaa-aaaam-qizja-cai`.
+- Live route smoke covered `/`, `/home/magick-chat`, `/home/admin`, `/home/settings`, `/home/subscriptions`, and `/evaluation` on desktop and mobile.
+- Browser smoke found no page errors, no app console errors, no runtime-unavailable state, and a locked signed-out admin route.
+- Live backend Candid smoke registered a profile, created and completed a generation job, stored media bytes on ICP, and listed the resulting `icp-media://...` asset.
+
+Artifacts:
+
+- `docs/artifacts/prototype/caffeine-live-v7-smoke-2026-05-23T09-55-57-703Z.json`
+- `docs/artifacts/prototype/caffeine-live-v7-desktop-home-admin-2026-05-23T09-55-57-703Z.png`
+- `docs/artifacts/prototype/caffeine-live-v7-mobile-home-admin-2026-05-23T09-55-57-703Z.png`
+- Additional v7 desktop/mobile route screenshots live beside those files.
+
+Remaining hardening:
+
+- Mark must claim the owner role with II and confirm the dashboard's system wallet flow.
+- Add a second Mark-controlled backup admin or controller policy before material funds are kept in the preview.
+- Keep direct non-Caffeine mainnet deployment blocked until `magickbox-mainnet-isolated` has ICP/cycles and explicit deploy approval.
+- Move large media from the core canister proof path into dedicated ICP media/chunk canisters before real public scale.
+- Wire real isolated MagickAI/FreeLLMAPI worker endpoints only after their service URLs, auth boundaries, and cost controls are agreed.

@@ -500,7 +500,7 @@ shared ({ caller = installer }) persistent actor class MagickBoxCore() = self {
       caller;
       is_superadmin = is_superadmin(caller);
       superadmin_count = super_admins.size();
-      bootstrap_available = false;
+      bootstrap_available = super_admins.size() == 0;
       system_wallet_owner = payment_account().owner;
       ledger_id = ICP_LEDGER_ID;
     };
@@ -771,12 +771,20 @@ shared ({ caller = installer }) persistent actor class MagickBoxCore() = self {
     superadmin_status(caller);
   };
 
-  public shared ({ caller }) func bootstrap_superadmin(_setup_code : Text) : async SuperAdminStatusResult {
+  public shared ({ caller }) func bootstrap_superadmin(setup_code : Text) : async SuperAdminStatusResult {
     switch (require_authenticated(caller)) {
       case (?err) { return #err(err) };
       case null {};
     };
-    #err("Public superadmin bootstrap is disabled. Deploy with the isolated controller identity, then add II principals from an existing superadmin.");
+    if (super_admins.size() > 0) {
+      return #err("Superadmin bootstrap is closed because an owner is already bound");
+    };
+    if (Text.size(setup_code) < 8 or Text.size(setup_code) > 128) {
+      return #err("Use an 8-128 character setup phrase to claim this isolated preview owner role");
+    };
+    ignore add_superadmin_internal(caller);
+    record_audit(caller, "superadmin_bootstrap_claimed", Principal.toText(caller), "first authenticated owner claim for isolated Caffeine preview");
+    #ok(superadmin_status(caller));
   };
 
   public shared ({ caller }) func add_superadmin(new_admin : Principal) : async SuperAdminStatusResult {
