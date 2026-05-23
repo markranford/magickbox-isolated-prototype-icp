@@ -2528,8 +2528,8 @@ Decisions made:
 
 Blockers or risks:
 
-- The progress log entry itself was added after the commit and needs a follow-up docs-only commit so the log captures the final push.
+- No blockers for the Caffeine v3 publish checkpoint. Direct isolated ICP mainnet canisters remain the next authority step.
 
 Next step:
 
-- Commit this final progress-log entry and confirm the working tree is clean.
+- Confirm the working tree is clean and finalize the handoff to Mark with the live URL, commit IDs, verification results, and remaining ICP authority gap.
