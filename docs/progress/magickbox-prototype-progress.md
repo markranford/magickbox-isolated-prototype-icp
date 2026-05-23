@@ -2499,3 +2499,37 @@ Blockers or risks:
 Next step:
 
 - Commit and push the canonical isolated repo changes, then finalize this checkpoint with the live URL and exact verification status.
+
+## 2026-05-23T13:40:49+07:00 - Checkpoint 51: Canonical Isolated Repo Pushed
+
+Current workspace/folder:
+
+`C:\Users\Mark\Documents\Codex\Codex_MagickBox\magick-box-rewrite-readiness-prototype`
+
+What was inspected:
+
+- Staged canonical repo changes for the Caffeine v3 publish and admin gate hardening.
+
+What was created or changed:
+
+- Committed the canonical isolated prototype repo.
+- Pushed the canonical isolated prototype repo to `origin/main`.
+
+Commands run and results:
+
+- `git add ...` -> staged app/admin gate changes, tests, Caffeine bundle script, progress/handoff docs, and Caffeine screenshot evidence.
+- `git status --short` -> confirmed staged app/docs/screenshots.
+- `git commit -m "feat: publish hardened Caffeine ICP preview"` -> created commit `ab85f9d`.
+- `git push origin main` -> pushed `e6ffe8b..ab85f9d` to `https://github.com/markranford/magickbox-isolated-prototype-icp.git`.
+
+Decisions made:
+
+- The canonical repo now records the same Caffeine v3 safety state that was imported and published through Caffeine.
+
+Blockers or risks:
+
+- The progress log entry itself was added after the commit and needs a follow-up docs-only commit so the log captures the final push.
+
+Next step:
+
+- Commit this final progress-log entry and confirm the working tree is clean.
