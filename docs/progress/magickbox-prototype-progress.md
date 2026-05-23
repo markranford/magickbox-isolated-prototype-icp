@@ -2193,3 +2193,51 @@ Blockers or risks:
 Next step:
 
 - Either require Caffeine support/manual source replacement to make the published domain match the generated Version 5 code, or move to the guarded real ICP mainnet deploy path using a privately controlled funded identity, backup controller principal, and isolated canisters.
+
+## 2026-05-23T11:27:47+07:00 - Checkpoint 45: Hybrid Caffeine/GitHub/ICP Workflow Made Canonical
+
+Current workspace/folder:
+
+`C:\Users\Mark\Documents\Codex\Codex_MagickBox\magick-box-rewrite-readiness-prototype`
+
+What was inspected:
+
+- Existing full ICP goal document.
+- Existing Caffeine prompts and Caffeine status handoff.
+- Git status, local commit history, GitHub remote configuration, and GitHub CLI authentication.
+- Mainnet preflight/deploy scripts.
+- Candidate secret/provenance risks before publishing the isolated prototype source.
+
+What was created or changed:
+
+- Added a durable memory note for all future ICP development work: use Caffeine as preview/dev accelerator, GitHub/local source as the canonical blueprint, and directly controlled ICP canisters as the final authority.
+- Updated `docs/goals/magickbox-full-icp-deployment.goal.md` with the hybrid development rule.
+- Added `docs/handovers/icp-hybrid-caffeine-github-workflow.md`.
+- Added `docs/handovers/caffeine-github-import-prompt.md`.
+- Committed the current isolated prototype state.
+- Created and pushed a new private GitHub repository: `https://github.com/markranford/magickbox-isolated-prototype-icp`.
+
+Commands run and results:
+
+- `gh auth status` -> authenticated to GitHub as `markranford`.
+- `rg ... "caffeineAdminToken|gho_|sk-|BEGIN .*PRIVATE|mnemonic|seed phrase|..."` -> no real secrets found; matches were expected guard strings or SVG false positives.
+- `npm run verify` -> passed: lint, 7 Vitest files / 27 tests, production build, and 14 Playwright tests.
+- `gh repo view markranford/magickbox-isolated-prototype-icp` -> not found before creation.
+- `git add -A && git commit -m "feat: establish isolated ICP prototype source of truth"` -> committed as `ecc222f`.
+- `gh repo create markranford/magickbox-isolated-prototype-icp --private --description ... --source . --remote origin --push` -> created private repo and pushed `main`.
+
+Decisions made:
+
+- The canonical source for Caffeine import/export is now the new private GitHub repo, not a Caffeine-generated transient branch.
+- Caffeine should be re-seeded from GitHub instead of trusted in-place when its generated/status view disagrees with the public deployed DOM.
+- Direct ICP mainnet remains the final serious deployment path once identity, cycles, controller policy, and explicit approval are ready.
+
+Blockers or risks:
+
+- The existing Caffeine live URL still fails the demo superadmin guard and remains preview-only.
+- The GitHub canonical repo is private; Caffeine import may require Mark's Caffeine/GitHub connection to have access to private repositories.
+- Mainnet ICP deploy remains blocked until a funded isolated identity and backup controller policy are configured.
+
+Next step:
+
+- In Caffeine, create or refresh a separate app from `https://github.com/markranford/magickbox-isolated-prototype-icp` using `docs/handovers/caffeine-github-import-prompt.md`, then independently smoke-test the live preview before any superadmin or funding action.
