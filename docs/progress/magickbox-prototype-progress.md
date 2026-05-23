@@ -2820,3 +2820,45 @@ Blockers or risks:
 Next step:
 
 - Commit the canonical source/test fix, import bridge commit `61a12aa` into Caffeine, publish the new isolated live version, and verify the live sign-in endpoint before asking Mark to retry.
+
+## 2026-05-23T18:32:47+07:00 - Checkpoint 58: MagickBoxV3 Naming And Live Pointer Correction
+
+Current workspace/folder:
+
+`C:\Users\Mark\Documents\Codex\Codex_MagickBox\magick-box-rewrite-readiness-prototype`
+
+What was inspected:
+
+- Target isolated live URL `https://magickbox-icp-e68.caffeine.xyz/`.
+- The current ICP AI builder project history for the target project ID `019e5022-fe7e-74c9-9428-b475f02043dc`.
+- The public live bundle served from the isolated live URL.
+- Caffeine help documentation for Current vs Live version semantics and the documented Live dropdown / Push version update path.
+
+What was created or changed:
+
+- Adopted `MagickBoxV3` as the product/app name going forward; Caffeine is only the ICP AI builder platform name.
+- Updated product-facing HTML metadata, app aria/alt text, evaluation heading, default profile name, superadmin message, provider description, and generated builder-import metadata/spec strings to say `MagickBoxV3`.
+- Added explicit build marker `magickboxv3-ii-authorize-20260523` in the React root DOM so live-bundle verification can prove the correct build is deployed.
+- Renamed generated builder-import package paths from `magickbox-on-icp-caffeine` to `magickboxv3-icp-builder-import`.
+
+Commands run and results:
+
+- `npm run test -- src/App.test.tsx src/icp/magickboxClient.test.ts` -> passed, 13 tests.
+- `npm run build` -> passed with the existing Vite chunk-size warning; generated `dist/assets/index-SfDjwtKh.js`.
+- Public no-cache bundle checks against `https://magickbox-icp-e68.caffeine.xyz/` -> still served old live asset `assets/index-CyJN2dQ4.js`, proving the builder had not moved the public live pointer from version 7 to version 8 despite earlier status text.
+- Caffeine documentation lookup -> confirmed `Current` means draft, `Live` means public URL; if badges differ, use the Live dropdown / Push version update and wait/reload.
+
+Decisions made:
+
+- Do not call the product/app `Caffeine`; use `MagickBoxV3`.
+- Do not trust builder chat text alone for live deployment. Only consider the target ready when the public URL serves a bundle containing both `https://id.ai/authorize` and `magickboxv3-ii-authorize-20260523`.
+- Avoid the older `MagickBox on ICP` builder project; it is not the target MagickBoxV3 deployment.
+
+Blockers or risks:
+
+- The ICP AI builder UI currently shows the target's imported version as `Current` while the public URL remains on the previous `Live` version.
+- A stuck builder diagnostic/redeploy attempt was observed; the next action must use the actual Live dropdown / Push version update path or a fresh import version, then independently verify the public URL.
+
+Next step:
+
+- Build a fresh MagickBoxV3 import commit, import it into the correct target project, use the documented Live dropdown / Push version update path, and verify the public URL before asking Mark to retry Internet Identity or claim superadmin.

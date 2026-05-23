@@ -11,10 +11,10 @@ const commit = execFileSync("git", ["rev-parse", "--short", "HEAD"], {
   encoding: "utf8",
 }).trim();
 const outRoot = join(root, "tmp", `caffeine-upload-${commit}-${timestamp}`);
-const projectRoot = join(outRoot, "magickbox-on-icp-caffeine");
+const projectRoot = join(outRoot, "magickboxv3-icp-builder-import");
 const frontendRoot = join(projectRoot, "src", "frontend");
 const backendRoot = join(projectRoot, "src", "backend");
-const zipPath = join(root, "tmp", `magickbox-on-icp-caffeine-${commit}-${timestamp}.zip`);
+const zipPath = join(root, "tmp", `magickboxv3-icp-builder-import-${commit}-${timestamp}.zip`);
 
 const frontendFiles = [
   "index.html",
@@ -75,8 +75,8 @@ async function main() {
       'manifest_version = "0.1.0"',
       "",
       "[project]",
-      'id = "codex-magickbox-on-icp"',
-      'name = "codex-magickbox-on-icp"',
+      'id = "magickboxv3"',
+      'name = "MagickBoxV3"',
       "",
       "[workspace]",
       'include = ["src/**"]',
@@ -91,9 +91,9 @@ async function main() {
     JSON.stringify(
       {
         overview:
-          "Isolated Magick Box ICP preview prepared from the canonical Codex prototype repo. It preserves the observable Magick Box UX while moving auth, credits, jobs, payments, audit events, and media manifests toward ICP canisters.",
+          "MagickBoxV3 isolated ICP preview prepared from the canonical Codex prototype repo. It preserves the observable Magick Box UX while moving auth, credits, jobs, payments, audit events, and media manifests toward ICP canisters.",
         features: [
-          "Magick Box landing, chat, gallery, pricing, settings, and admin routes",
+          "MagickBoxV3 landing, chat, gallery, pricing, settings, and admin routes",
           "Internet Identity compatible owner login",
           "ICP-first media manifests and copied reference media",
           "Core canister state for credits, jobs, audit events, payment intents, ad credits, and inline media assets",
@@ -112,7 +112,7 @@ async function main() {
     join(projectRoot, "package.json"),
     JSON.stringify(
       {
-        name: "@caffeine/codex-magickbox-on-icp",
+        name: "@magickbox/magickboxv3-icp-builder-import",
         type: "module",
         engines: {
           node: ">=16.0.0",
@@ -178,15 +178,15 @@ async function main() {
   await writeFile(
     join(projectRoot, "spec.md"),
     [
-      "# Magick Box On ICP",
+      "# MagickBoxV3 On ICP",
       "",
-      "This package is a Caffeine-shaped preview shell generated from the isolated Codex ICP prototype.",
+      "This package is a MagickBoxV3 preview shell generated from the isolated Codex ICP prototype for import through the ICP AI builder.",
       "",
       "Required behavior:",
-      "- Preserve the observable Magick Box UX shell: landing, chat workspace, gallery, pricing, settings, and admin routes.",
+      "- Preserve the observable MagickBoxV3 UX shell: landing, chat workspace, gallery, pricing, settings, and admin routes.",
       "- Use Internet Identity compatible auth.",
       "- Keep application state, credits, jobs, audit events, and media manifests on ICP canisters.",
-      "- Use a single Caffeine backend canister if Caffeine exposes only `PUBLIC_CANISTER_ID:backend`; use the dedicated media canister when one is available.",
+      "- Use a single builder-provided backend canister if only `PUBLIC_CANISTER_ID:backend` is exposed; use the dedicated media canister when one is available.",
       "- Never point to or modify www.magickbox.ai production services.",
       "- Treat this as an isolated preview, not the final privileged funding canister.",
       "",

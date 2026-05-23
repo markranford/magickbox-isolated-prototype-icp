@@ -47,6 +47,8 @@ import {
 } from "./icp/MagickBoxIcpContext";
 import "./App.css";
 
+const magickBoxV3BuildMarker = "magickboxv3-ii-authorize-20260523";
+
 type CreditRecoveryState = {
   providerLabel: string;
   required: number;
@@ -86,9 +88,9 @@ function paymentIntentNotice(
 
 function Logo() {
   return (
-    <Link className="logo" to="/" aria-label="Magick Box home">
+    <Link className="logo" to="/" aria-label="MagickBoxV3 home">
       <img src="/reference-assets/logo-icon.svg" alt="" width="32" height="32" />
-      <img src="/reference-assets/logo-body-dark.svg" alt="MagickBox" height="20" />
+      <img src="/reference-assets/logo-body-dark.svg" alt="MagickBoxV3" height="20" />
     </Link>
   );
 }
@@ -1104,7 +1106,7 @@ function EvaluationPage() {
       <section className="workspace-panel" aria-labelledby="eval-title">
         <div className="workspace-header">
           <div>
-            <h1 id="eval-title">Rewrite Readiness Evaluation</h1>
+            <h1 id="eval-title">MagickBoxV3 Evaluation</h1>
             <p>Route parity and architecture decisions are embedded in the prototype for reviewer traceability.</p>
           </div>
           <Link className="primary-button" to="/">Back to prototype</Link>
@@ -1147,22 +1149,24 @@ function EvaluationPage() {
 function App() {
   return (
     <MagickBoxIcpProvider>
-      <BrowserRouter>
-        <Routes>
-          <Route path="/" element={<LandingPage />} />
-          <Route path="/home/explore" element={<ExplorePage />} />
-          <Route path="/home/magick-chat" element={<ChatPage />} />
-          <Route path="/home/magick-chat/c" element={<ChatPage />} />
-          <Route path="/home/magick-chat/c/:id" element={<ChatPage />} />
-          <Route path="/home/collections" element={<CollectionsPage />} />
-          <Route path="/home/subscriptions" element={<SubscriptionsPage />} />
-          <Route path="/home/admin" element={<AdminPage />} />
-          <Route path="/home/settings" element={<SettingsPage />} />
-          <Route path="/auth/sign-in" element={<SignInPage />} />
-          <Route path="/evaluation" element={<EvaluationPage />} />
-          <Route path="*" element={<LandingPage />} />
-        </Routes>
-      </BrowserRouter>
+      <div data-app="MagickBoxV3" data-build={magickBoxV3BuildMarker}>
+        <BrowserRouter>
+          <Routes>
+            <Route path="/" element={<LandingPage />} />
+            <Route path="/home/explore" element={<ExplorePage />} />
+            <Route path="/home/magick-chat" element={<ChatPage />} />
+            <Route path="/home/magick-chat/c" element={<ChatPage />} />
+            <Route path="/home/magick-chat/c/:id" element={<ChatPage />} />
+            <Route path="/home/collections" element={<CollectionsPage />} />
+            <Route path="/home/subscriptions" element={<SubscriptionsPage />} />
+            <Route path="/home/admin" element={<AdminPage />} />
+            <Route path="/home/settings" element={<SettingsPage />} />
+            <Route path="/auth/sign-in" element={<SignInPage />} />
+            <Route path="/evaluation" element={<EvaluationPage />} />
+            <Route path="*" element={<LandingPage />} />
+          </Routes>
+        </BrowserRouter>
+      </div>
     </MagickBoxIcpProvider>
   );
 }

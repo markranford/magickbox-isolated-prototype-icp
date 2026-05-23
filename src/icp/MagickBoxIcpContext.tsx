@@ -196,7 +196,7 @@ async function ensureProfile(actor: CoreActor) {
     return profile;
   }
 
-  const registered = await actor.register_profile("Magick Box Creator", []);
+  const registered = await actor.register_profile("MagickBoxV3 Creator", []);
 
   if ("err" in registered) {
     throw new Error(registered.err);
@@ -914,7 +914,7 @@ export function MagickBoxIcpProvider({ children }: { children: ReactNode }) {
         const nextAdmin = await fetchAdminState(actor);
         setSuperAdminStatus(nextAdmin.status);
         setAdminDashboard(nextAdmin.dashboard);
-        return { kind: "ok", message: "This principal is now the Magick Box superadmin." };
+        return { kind: "ok", message: "This principal is now the MagickBoxV3 superadmin." };
       } catch (error) {
         return {
           kind: "err",

@@ -261,7 +261,7 @@ export const icpProviderOptions = [
   {
     id: "paid_managed",
     label: "Paid managed provider",
-    description: "Premium Magick Box provider route using ICP-owned credits and external generation workers.",
+    description: "Premium MagickBoxV3 provider route using ICP-owned credits and external generation workers.",
     badge: "80 credits",
     creditCost: 80,
   },
