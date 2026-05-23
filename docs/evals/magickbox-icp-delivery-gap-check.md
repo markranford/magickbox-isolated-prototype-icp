@@ -2,7 +2,7 @@
 
 Date: 2026-05-22T20:27:11+07:00
 
-Latest update: 2026-05-23T21:02:29+07:00
+Latest update: 2026-05-23T22:27:08+07:00
 
 ## Delivered On Local ICP
 
@@ -17,7 +17,7 @@ Latest update: 2026-05-23T21:02:29+07:00
 - The browser app flow now signs in with local browser identity, executes the local worker service, uploads generated output to `magickbox_media`, attaches a manifest to `magickbox_core`, and displays a completed job.
 - A separate MagickBoxV3 app is live through the Caffeine.ai ICP builder at `https://magickbox-icp-e68.caffeine.xyz/`; version 11 serves certified frontend assets from asset canister `i2fwa-kyaaa-aaaam-qizja-cai` and connects to backend/core canister `itg54-4qaaa-aaaam-qiziq-cai` through `/env.json`.
 - Live MagickBoxV3 v11 bundle smoke confirmed the product name, build marker `magickboxv3-ii-authorize-20260523`, the correct Internet Identity authorize endpoint `https://id.ai/authorize`, and the new funding wallet UI.
-- Mark claimed superadmin with Internet Identity, created the system funding wallet, and the live admin now displays the derived ICP account ID plus owner/subaccount funding targets. The wallet remained unfunded at the checkpoint.
+- Mark claimed superadmin with Internet Identity, created the system funding wallet, and the live admin now displays the derived ICP account ID plus owner/subaccount funding targets. The ICP ledger confirmed the wallet received `1 ICP` on 2026-05-23T22:27:08+07:00.
 - Earlier live backend smoke against the same backend canister registered a profile, created/completed a generation job, stored media bytes on ICP, and listed the resulting `icp-media://...` asset.
 
 ## Media Asset Copy Status
@@ -34,14 +34,14 @@ Latest update: 2026-05-23T21:02:29+07:00
 
 | Area | Current status | Needed for ICP delivery |
 | --- | --- | --- |
-| Mainnet ICP canisters | MagickBoxV3 builder preview has a live certified asset canister and backend canister; Mark has claimed superadmin and created the system funding wallet. Direct non-builder mainnet preflight remains blocked by 0 ICP/0 cycles on `magickbox-mainnet-isolated`. | Fund the displayed MagickBoxV3 system wallet for builder-preview operations; separately fund the dedicated isolated identity if a direct non-builder deployment is still required. |
-| Isolated web preview | MagickBoxV3 v11 is live at `https://magickbox-icp-e68.caffeine.xyz/`, loads real backend config from `/env.json`, opens Internet Identity through `https://id.ai/authorize`, and shows the funding wallet target to Mark's superadmin session. | Fund the wallet, verify balance, add backup admin/controller policy before material funds or wider sharing. |
+| Mainnet ICP canisters | MagickBoxV3 builder preview has a live certified asset canister and backend canister; Mark has claimed superadmin, created the system funding wallet, and funded it with 1 ICP. Direct non-builder mainnet preflight remains blocked by 0 ICP/0 cycles on `magickbox-mainnet-isolated`. | Verify the dashboard balance, design guarded cycles/top-up flow, and separately fund the dedicated isolated identity if a direct non-builder deployment is still required. |
+| Isolated web preview | MagickBoxV3 v11 is live at `https://magickbox-icp-e68.caffeine.xyz/`, loads real backend config from `/env.json`, opens Internet Identity through `https://id.ai/authorize`, and shows the funding wallet target to Mark's superadmin session. | Click `Verify balance`, add backup admin/controller policy before material funds or wider sharing. |
 | Full live account exploration | Public routes inspected; logged-in production account was not used. | User-assisted login in a browser and read-only route capture, without changing production data. |
 | Large media storage | Local `magickbox_media` chunk canister stores browser-generated output; the live builder backend stores small media bytes in `magickbox_core` and returns `icp-media://...` URIs. Copied public media is static asset-canister content. | Move large generated image/video/music assets into dedicated ICP media/chunk canisters with quotas, lifecycle, certification, cycle monitoring, and validation. |
 | AI inference | External/local worker adapters are used; model execution is not on ICP. | Decide whether AI remains worker-based or add an ICP-native inference proof if feasible. |
 | FreeLLMAPI live service | Harness exists but optional smoke skips without isolated env vars. | Run isolated FreeLLMAPI and capture `npm run smoke:services:required` evidence. |
 | MagickAI live service | Bridge exists; real SDK execution still needs isolated Python dependencies and credentials outside canister state. | Build isolated worker service or command environment and run required smoke. |
-| ICP payments production readiness | Local ledger proof exists; live builder backend exposes system wallet/admin status; Mark has claimed superadmin and created the system funding wallet, but it is not funded yet. No mainnet spend was made by Codex. | Mark funds the system wallet and verifies balance, then payment flows need production-grade ICRC ledger selection, per-intent accounting, optional ICRC-2 transfer-from, refunds/settlement, and operations runbook. |
+| ICP payments production readiness | Local ledger proof exists; live builder backend exposes system wallet/admin status; Mark has claimed superadmin, created the system funding wallet, and funded it with 1 ICP. No mainnet spend was made by Codex. | Verify dashboard balance, then payment flows need production-grade ICRC ledger selection, per-intent accounting, optional ICRC-2 transfer-from, refunds/settlement, and operations runbook. |
 | Subscriptions | UI/payment intent proof exists; recurring subscriptions are not implemented. | ICRC-2 or equivalent recurring/subscription authorization design. |
 | Ad verifier | Local canister grant proof only. | Trusted verifier principal/service, anti-replay policy, rate limits, and audit review. |
 | User projects/conversations | Metadata/job scaffolding exists; full production conversation/project data model is not complete. | Complete canister schemas, privacy/encryption design, migration plan, and upgrade checks. |
@@ -52,4 +52,4 @@ Latest update: 2026-05-23T21:02:29+07:00
 
 ## Current Recommendation
 
-The immediate next delivery slice is Mark funding the displayed system wallet on `https://magickbox-icp-e68.caffeine.xyz/home/admin`, then using `Verify balance` to confirm the ledger balance. After that, harden the MagickBoxV3 preview with backup admin/controller policy and move large generated media into dedicated ICP media/chunk canisters. A direct non-builder mainnet deployment remains valuable for final authority, but it is still blocked until the isolated deploy identity has ICP/cycles.
+The immediate next delivery slice is clicking `Verify balance` on `https://magickbox-icp-e68.caffeine.xyz/home/admin`, then designing a guarded cycles/top-up process before any ICP spend. After that, harden the MagickBoxV3 preview with backup admin/controller policy and move large generated media into dedicated ICP media/chunk canisters. A direct non-builder mainnet deployment remains valuable for final authority, but it is still blocked until the isolated deploy identity has ICP/cycles.

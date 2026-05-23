@@ -330,7 +330,7 @@ Current owner/funding state:
 - System funding wallet owner: `itg54-4qaaa-aaaam-qiziq-cai`.
 - System funding wallet subaccount: `4d4246554e440000000000000000000000000000000000000000000000000001`.
 - Derived ICP account ID: `8fdbd57fcdc67228e0a3dc3b95476b2a7a1fabfd8d4612f309a622265bf87d87`.
-- Balance observed before funding: `0 ICP`.
+- Balance confirmed on ICP ledger: `100_000_000` e8s (`1 ICP`) as of 2026-05-23T22:27:08+07:00.
 
 What changed:
 
@@ -347,8 +347,8 @@ Verification:
 - Public no-cache verification for v11 found `ICP account ID`, `Funding wallet ready`, `MagickBoxV3`, `https://id.ai/authorize`, and the polished funding-target CSS in the live assets.
 - Authenticated Chrome verification on v10 found the superadmin funding wallet state and account identifier. The final v11 live asset check proves the layout polish is deployed.
 - Public backend status now reports `bootstrap_available = false` and `superadmin_count = 1`.
-- ICP ledger `icrc1_balance_of` for the system wallet owner/subaccount returned `0`, confirming the wallet is not funded yet.
+- ICP ledger `icrc1_balance_of` for the system wallet owner/subaccount returned `100_000_000`, confirming the wallet received `1 ICP`.
 
 Next funding step:
 
-Mark should sign in again if the page shows the locked state, confirm the superadmin panel, copy the ICP account ID above or the owner/subaccount tuple, fund from his own wallet, then click `Verify balance`. Codex did not transfer ICP.
+Mark should sign in again if the page shows the locked state, confirm the superadmin panel, then click `Verify balance`. Codex did not transfer ICP or spend any ICP.

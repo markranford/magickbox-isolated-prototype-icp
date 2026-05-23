@@ -145,7 +145,7 @@ Current behavior:
 - The live bundle contains the MagickBoxV3 build marker `magickboxv3-ii-authorize-20260523`.
 - The live Internet Identity button opens `https://id.ai/authorize`, not the Internet Identity dashboard root.
 - Mark claimed the first superadmin with Internet Identity principal `zo4kw-ezr7z-aslvs-tbhja-ejagl-rtzjk-7zuc7-j5asy-wkbx5-qh3gu-iqe`.
-- The system funding wallet has been created by Mark's superadmin session. It is owned by backend/core canister `itg54-4qaaa-aaaam-qiziq-cai`, uses subaccount `4d4246554e440000000000000000000000000000000000000000000000000001`, and currently showed `0 ICP` before funding.
+- The system funding wallet has been created by Mark's superadmin session. It is owned by backend/core canister `itg54-4qaaa-aaaam-qiziq-cai`, uses subaccount `4d4246554e440000000000000000000000000000000000000000000000000001`, and the ICP ledger confirmed `100_000_000` e8s (`1 ICP`) on 2026-05-23T22:27:08+07:00.
 - The live admin dashboard now derives and displays ICP account ID `8fdbd57fcdc67228e0a3dc3b95476b2a7a1fabfd8d4612f309a622265bf87d87` plus copy controls, `Open NNS`, and `Verify balance`.
 - The one-time claim path is now closed for public visitors.
 - Codex must not claim the one-time superadmin role with a local or automation identity.

@@ -3006,3 +3006,38 @@ Blockers or risks:
 Next step:
 
 - Fund the confirmed system wallet target from Mark's wallet, then use the MagickBoxV3 admin dashboard `Verify balance` control to confirm the on-chain balance.
+
+## 2026-05-23T22:27:08+07:00 - Checkpoint 62: System Funding Wallet Received 1 ICP
+
+Current workspace/folder:
+
+`C:\Users\Mark\Documents\Codex\Codex_MagickBox\magick-box-rewrite-readiness-prototype`
+
+What was inspected:
+
+- Mainnet ICP ledger balance for the confirmed MagickBoxV3 system funding account.
+- Owner principal `itg54-4qaaa-aaaam-qiziq-cai`.
+- Funding subaccount `4d4246554e440000000000000000000000000000000000000000000000000001`.
+
+What was created or changed:
+
+- Recorded the confirmed on-chain receipt of Mark's 1 ICP funding transfer in this durable progress log.
+
+Commands run and results:
+
+- `Get-Date -Format "yyyy-MM-ddTHH:mm:sszzz"` -> `2026-05-23T22:27:08+07:00`.
+- `icp canister call ryjl3-tyaaa-aaaaa-aaaba-cai icrc1_balance_of '(record { owner = principal \"itg54-4qaaa-aaaam-qiziq-cai\"; subaccount = opt vec { ... } })' -e ic` -> returned `(100_000_000 : nat)`, equal to `1 ICP`.
+
+Decisions made:
+
+- Treat the MagickBoxV3 system funding wallet as funded with `1 ICP` on the ICP ledger.
+- The live app dashboard may still need `Verify balance` clicked to refresh the displayed dashboard balance from the ledger-backed state.
+
+Blockers or risks:
+
+- No spend or transfer was performed by Codex. This checkpoint only verifies the inbound balance.
+- Before converting ICP to cycles or funding canister operations, add backup/admin/controller policy and explicit spend approval.
+
+Next step:
+
+- Click `Verify balance` in the MagickBoxV3 superadmin dashboard, then proceed to a guarded system wallet/cycles management design before any ICP spend.
