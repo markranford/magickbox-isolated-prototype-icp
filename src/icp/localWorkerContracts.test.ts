@@ -30,4 +30,20 @@ describe("local ICP worker and media storage contracts", () => {
     expect(advancedSmoke).not.toContain("storage/media");
     expect(advancedSmoke).not.toContain("media-store://sha256/");
   });
+
+  it("falls back to core-canister ICP media storage when Caffeine exposes only one backend canister", () => {
+    const client = readFileSync(
+      resolve(__dirname, "../../src/icp/magickboxClient.ts"),
+      "utf8",
+    );
+    const context = readFileSync(
+      resolve(__dirname, "../../src/icp/MagickBoxIcpContext.tsx"),
+      "utf8",
+    );
+
+    expect(client).toContain("PUBLIC_CANISTER_ID:backend");
+    expect(context).toContain("actor.store_media_asset");
+    expect(context).toContain("core-inline-media-asset");
+    expect(context).not.toContain("ICP media canister is not available from this asset canister runtime");
+  });
 });

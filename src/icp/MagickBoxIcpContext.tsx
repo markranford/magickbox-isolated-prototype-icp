@@ -253,7 +253,6 @@ async function completeGenerationThroughWorker({
   providerId: string;
   prompt: string;
 }): Promise<CreateGenerationOutcome> {
-  const mediaActor = await createMediaActor(identity);
   const execution = await executeBrowserWorker(
     buildBrowserWorkerRequest({
       providerId,
@@ -264,6 +263,65 @@ async function completeGenerationThroughWorker({
   );
   const outputBytes = new TextEncoder().encode(execution.output);
   const resultHash = await promptHash(execution.output);
+  const runtime = resolveIcpRuntime();
+
+  if (!runtime.mediaCanisterId) {
+    const assetResult = await actor.store_media_asset(
+      job.id,
+      resultHash,
+      execution.mimeType,
+      outputBytes,
+    );
+
+    if ("err" in assetResult) {
+      throw new Error(assetResult.err);
+    }
+
+    const storageProvider = "icp-canister-media-store";
+    const mediaUri = assetResult.ok.uri;
+    const attached = await actor.attach_media_manifest(
+      job.id,
+      storageProvider,
+      mediaUri,
+      resultHash,
+      execution.mimeType,
+      BigInt(outputBytes.byteLength),
+    );
+
+    if ("err" in attached) {
+      throw new Error(attached.err);
+    }
+
+    const receipt = JSON.stringify({
+      providerId: execution.providerId,
+      adapter: execution.adapter,
+      model: execution.model,
+      storageProvider,
+      mediaUri,
+      storageMode: "core-inline-media-asset",
+      receipt: execution.receipt,
+    });
+    const completed = await actor.complete_worker_job(
+      job.id,
+      mediaUri,
+      resultHash,
+      receipt,
+      execution.output.slice(0, 1_000),
+    );
+
+    if ("err" in completed) {
+      throw new Error(completed.err);
+    }
+
+    return {
+      kind: "ok",
+      job: completed.ok,
+      mediaUri,
+      outputPreview: execution.output.slice(0, 280),
+    };
+  }
+
+  const mediaActor = await createMediaActor(identity);
   const assetResult = await mediaActor.create_asset(
     job.id,
     resultHash,
@@ -674,13 +732,6 @@ export function MagickBoxIcpProvider({ children }: { children: ReactNode }) {
         return {
           kind: "auth_required",
           message: "Reconnect your ICP identity before generating content",
-        };
-      }
-
-      if (!resolveIcpRuntime().mediaCanisterId) {
-        return {
-          kind: "err",
-          message: "ICP media canister is not available from this asset canister runtime",
         };
       }
 

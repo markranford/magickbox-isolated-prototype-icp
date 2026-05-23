@@ -19,6 +19,7 @@ import {
 type MagickBoxCanisterEnv = {
   readonly "PUBLIC_CANISTER_ID:magickbox_core"?: string;
   readonly "PUBLIC_CANISTER_ID:magickbox_media"?: string;
+  readonly "PUBLIC_CANISTER_ID:backend"?: string;
 };
 
 export type CoreActor = ActorSubclass<_SERVICE>;
@@ -31,6 +32,12 @@ export type IcpRuntime = {
   identityProvider: string;
   rootKey?: Uint8Array;
   reason: string;
+};
+
+type ViteCanisterEnv = {
+  readonly VITE_MAGICKBOX_CORE_CANISTER_ID?: string;
+  readonly VITE_MAGICKBOX_MEDIA_CANISTER_ID?: string;
+  readonly VITE_CAFFEINE_BACKEND_CANISTER_ID?: string;
 };
 
 const eightHoursInNanoseconds = BigInt(8) * BigInt(3_600_000_000_000);
@@ -66,14 +73,28 @@ export function getIdentityProviderUrl() {
   return isLocal ? localIdentityProvider() : "https://id.ai";
 }
 
+export function resolveCanisterIds(
+  env?: MagickBoxCanisterEnv | null,
+  viteEnv: ViteCanisterEnv = import.meta.env as ViteCanisterEnv,
+) {
+  return {
+    canisterId:
+      env?.["PUBLIC_CANISTER_ID:magickbox_core"] ??
+      env?.["PUBLIC_CANISTER_ID:backend"] ??
+      viteEnv.VITE_MAGICKBOX_CORE_CANISTER_ID ??
+      viteEnv.VITE_CAFFEINE_BACKEND_CANISTER_ID ??
+      null,
+    mediaCanisterId:
+      env?.["PUBLIC_CANISTER_ID:magickbox_media"] ??
+      viteEnv.VITE_MAGICKBOX_MEDIA_CANISTER_ID ??
+      null,
+  };
+}
+
 export function resolveIcpRuntime(): IcpRuntime {
   const env = safeGetCanisterEnv<MagickBoxCanisterEnv>();
-  const viteCanisterId = import.meta.env.VITE_MAGICKBOX_CORE_CANISTER_ID;
-  const viteMediaCanisterId = import.meta.env.VITE_MAGICKBOX_MEDIA_CANISTER_ID;
   const viteHost = import.meta.env.VITE_ICP_HOST;
-  const canisterId = env?.["PUBLIC_CANISTER_ID:magickbox_core"] ?? viteCanisterId ?? null;
-  const mediaCanisterId =
-    env?.["PUBLIC_CANISTER_ID:magickbox_media"] ?? viteMediaCanisterId ?? null;
+  const { canisterId, mediaCanisterId } = resolveCanisterIds(env);
   const host = env ? currentOrigin() : viteHost ?? currentOrigin();
   const reason = env
     ? "ic_env detected from the ICP asset canister"
@@ -93,18 +114,22 @@ export function canUseIcpRuntime(runtime: IcpRuntime) {
   return Boolean(runtime.canisterId);
 }
 
+export function buildHttpAgentOptions(runtime: IcpRuntime, identity?: Identity) {
+  return {
+    host: runtime.host,
+    identity,
+    ...(runtime.rootKey ? { rootKey: runtime.rootKey } : {}),
+  };
+}
+
 export async function createCoreActor(identity?: Identity): Promise<CoreActor> {
   const runtime = resolveIcpRuntime();
 
-  if (!runtime.canisterId || !runtime.rootKey) {
+  if (!runtime.canisterId) {
     throw new Error(runtime.reason);
   }
 
-  const agent = await HttpAgent.create({
-    host: runtime.host,
-    identity,
-    rootKey: runtime.rootKey,
-  });
+  const agent = await HttpAgent.create(buildHttpAgentOptions(runtime, identity));
 
   return Actor.createActor<_SERVICE>(idlFactory, {
     agent,
@@ -119,15 +144,7 @@ export async function createMediaActor(identity?: Identity): Promise<MediaActor>
     throw new Error("ICP media canister id is unavailable from the asset canister runtime");
   }
 
-  if (!runtime.rootKey) {
-    throw new Error(runtime.reason);
-  }
-
-  const agent = await HttpAgent.create({
-    host: runtime.host,
-    identity,
-    rootKey: runtime.rootKey,
-  });
+  const agent = await HttpAgent.create(buildHttpAgentOptions(runtime, identity));
 
   return Actor.createActor<MediaService>(mediaIdlFactory, {
     agent,

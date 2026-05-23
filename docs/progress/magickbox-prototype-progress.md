@@ -2286,3 +2286,62 @@ Blockers or risks:
 Next step:
 
 - Either manually upload the lean source bundle into the Caffeine chat using the visible browser UI, or continue from the verified local/GitHub source and move toward direct isolated ICP mainnet deployment once the funded identity/controller requirements are satisfied.
+
+## 2026-05-23T12:12:31+07:00 - Checkpoint 47: Caffeine Recovery Research And Single-Backend ICP Fallback
+
+Current workspace/folder:
+
+`C:\Users\Mark\Documents\Codex\Codex_MagickBox\magick-box-rewrite-readiness-prototype`
+
+What was inspected:
+
+- Caffeine official docs for GitHub integration, upload/import troubleshooting, code upload, and platform behavior.
+- Public `@dfinity/caffeine-mcp-server` package metadata and README.
+- Current Caffeine web runtime config from `https://caffeine.ai`, including `API_URL=https://api.caffeine.ai` and `CODE_UPLOAD_MAX_ZIP_SIZE=20971520`.
+- Current local ICP client/runtime code, worker completion path, core media storage methods, and media canister methods.
+- ICP CLI availability and deploy/identity help.
+
+What was created or changed:
+
+- Added tests for Caffeine single-backend canister fallback and mainnet agent options without requiring a local root key.
+- Added tests requiring a core-canister ICP media fallback when a dedicated media canister is not available.
+- Updated `src/icp/magickboxClient.ts` to resolve `PUBLIC_CANISTER_ID:backend`, accept `VITE_CAFFEINE_BACKEND_CANISTER_ID`, and avoid requiring `IC_ROOT_KEY` for mainnet agent creation.
+- Updated `src/icp/MagickBoxIcpContext.tsx` so generation can store media through `actor.store_media_asset` and attach ICP-only manifests when Caffeine exposes only one backend canister.
+- Added `scripts/prepare-caffeine-upload.mjs`.
+- Added `npm run caffeine:bundle`.
+- Added `docs/handovers/caffeine-recovery-plan-2026-05-23.md`.
+
+Commands run and results:
+
+- `npm view @dfinity/caffeine-mcp-server ...` -> found beta MCP package with create/download/push/deploy tools requiring `CAFFEINE_API_KEY`.
+- `curl.exe -I -L https://caffeine.ai/api_keys` -> `404`, so the old beta API-key path is not current on production.
+- `curl.exe -s -L https://caffeine.ai/` and runtime inspection -> production frontend exposes `API_URL=https://api.caffeine.ai` and `CODE_UPLOAD_MAX_ZIP_SIZE=20971520`.
+- `curl.exe ... https://api.caffeine.ai/projects?featured=true` -> endpoint exists but returns `401` with dummy API key; confirms a key is needed for direct API/MCP work.
+- `npm run test -- src/icp/magickboxClient.test.ts src/icp/localWorkerContracts.test.ts` after writing tests -> failed as expected before implementation.
+- Same targeted test command after implementation -> passed: 2 files / 11 tests.
+- `npm run build` -> passed; Vite emitted only the existing large chunk warning.
+- First `npm run caffeine:bundle` -> failed size gate at 119,712,375 bytes because all copied reference media exceeded Caffeine's 20 MB upload cap.
+- Updated the bundle script to copy only UI-referenced public media.
+- Second `npm run caffeine:bundle` -> passed; generated `tmp\magickbox-on-icp-caffeine-bbf00c7-20260523T051144.zip`, 16,624,083 bytes, 15 referenced media assets.
+- `npm --prefix tmp\caffeine-upload-bbf00c7-20260523T051144\magickbox-on-icp-caffeine\src\frontend run build` -> passed.
+- `npm run verify` -> initially failed because generated `tmp\caffeine-upload-*` workspaces added nested `tsconfig` candidates for ESLint.
+- Updated `eslint.config.js` to ignore `tmp`, `test-results`, and `node_modules`.
+- `npm run verify` -> passed: lint, 7 Vitest files / 30 tests, production build, and 14 Playwright tests.
+- `curl.exe ... https://api.caffeine.ai/projects/...` without browser/session credentials -> returned `401 User not authenticated`, confirming direct Caffeine API retry requires a supported API key or authenticated browser upload.
+
+Decisions made:
+
+- Treat chat-prompt GitHub URL import as non-authoritative; the supported Caffeine paths are Caffeine project GitHub import/export, Caffeine-shaped ZIP upload, or authenticated MCP/API push.
+- Keep the canonical direct ICP repo and canisters as the final authority.
+- Use the Caffeine-shaped bundle as the next retry artifact because it satisfies the documented upload size limit and has a verified frontend build.
+- Preserve full copied reference assets in the canonical direct ICP repo; trim only the Caffeine upload artifact to meet Caffeine's cap.
+
+Blockers or risks:
+
+- Codex Chrome automation still may not be able to complete Caffeine file upload unless the Chrome extension has file URL access or the upload is done manually.
+- The public Caffeine MCP package appears beta/stale around `beta.caffeine.ai`; direct API/MCP use requires a real Caffeine API key and a current endpoint check.
+- Caffeine's likely single-backend shape is supported by fallback code, but the Caffeine backend build itself still needs a live Caffeine upload/deploy attempt.
+
+Next step:
+
+- Retry Caffeine using the generated Caffeine-shaped ZIP, or use a Caffeine API key with a supported MCP/API route. If neither Caffeine path can be completed automatically, continue the direct ICP mainnet deploy path with an isolated funded identity and explicit controller policy.

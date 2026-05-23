@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import {
+  buildHttpAgentOptions,
   canUseIcpRuntime,
   clearLocalBrowserIdentityActive,
   createMediaActor,
@@ -8,6 +9,7 @@ import {
   hasActiveLocalBrowserIdentity,
   markLocalBrowserIdentityActive,
   promptHash,
+  resolveCanisterIds,
   resolveIcpRuntime,
 } from "./magickboxClient";
 
@@ -22,6 +24,28 @@ describe("Magick Box ICP client adapter", () => {
 
   it("requires a media canister id before creating the ICP media actor", async () => {
     await expect(createMediaActor()).rejects.toThrow("media canister");
+  });
+
+  it("accepts Caffeine's single backend canister env as a core canister fallback", () => {
+    const ids = resolveCanisterIds({
+      "PUBLIC_CANISTER_ID:backend": "aaaaa-aa",
+    });
+
+    expect(ids.canisterId).toBe("aaaaa-aa");
+    expect(ids.mediaCanisterId).toBeNull();
+  });
+
+  it("does not require a local root key for mainnet agent options", () => {
+    const options = buildHttpAgentOptions({
+      canisterId: "aaaaa-aa",
+      mediaCanisterId: null,
+      host: "https://icp0.io",
+      identityProvider: "https://id.ai",
+      reason: "mainnet canister runtime",
+    });
+
+    expect(options).toMatchObject({ host: "https://icp0.io" });
+    expect("rootKey" in options).toBe(false);
   });
 
   it("targets local Internet Identity from localhost-style origins", () => {

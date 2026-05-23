@@ -19,6 +19,7 @@
     "worker:local": "node scripts/local-worker-service.mjs",
     "smoke:services": "node scripts/smoke-worker-services.mjs",
     "smoke:services:required": "node scripts/smoke-worker-services.mjs --require-live",
+    "caffeine:bundle": "node scripts/prepare-caffeine-upload.mjs",
     "verify": "npm run lint && npm run test && npm run build && npm run e2e"
   },
   "dependencies": {
