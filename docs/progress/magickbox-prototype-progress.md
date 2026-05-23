@@ -2737,3 +2737,40 @@ Blockers or risks:
 Next step:
 
 - Commit and push the scoped canonical repo changes to `origin/main`, then finalize the user handoff.
+
+## 2026-05-23T17:04:29+07:00 - Checkpoint 56: Canonical Repo Pushed
+
+Current workspace/folder:
+
+`C:\Users\Mark\Documents\Codex\Codex_MagickBox\magick-box-rewrite-readiness-prototype`
+
+What was inspected:
+
+- Staged source/docs/evidence set for the Caffeine v7 backend connection.
+- Canonical Git remote `origin` pointing to `https://github.com/markranford/magickbox-isolated-prototype-icp.git`.
+
+What was created or changed:
+
+- Created canonical commit `4db4f68` with the Caffeine backend runtime loader, Caffeine env writer, isolated one-time superadmin claim, updated tests/docs, and v7 smoke screenshots/artifact.
+- Pushed the commit to `origin/main`.
+
+Commands run and results:
+
+- `git add -- ...` -> staged the scoped source/docs/v7 evidence set.
+- `git diff --check` -> passed, no whitespace errors.
+- `git commit -m "feat: connect Caffeine ICP preview backend"` -> created commit `4db4f68`.
+- `git push origin main` -> pushed `33ad850..4db4f68` to the isolated canonical repo.
+
+Decisions made:
+
+- Older exploratory Caffeine artifacts remain untracked and were not committed.
+- The canonical isolated repo now records the source and evidence behind the live Caffeine v7 state.
+
+Blockers or risks:
+
+- Mark still needs to complete the first-owner claim in the live app with his Internet Identity.
+- Direct non-Caffeine mainnet remains blocked until the dedicated isolated identity is funded.
+
+Next step:
+
+- Final status check, then hand off the live URL and owner claim flow.
