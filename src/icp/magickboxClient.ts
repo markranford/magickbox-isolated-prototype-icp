@@ -74,23 +74,23 @@ export function isCaffeineHostedOrigin(origin = currentOrigin()) {
 
 function localIdentityProvider() {
   if (typeof window === "undefined") {
-    return "http://id.ai.localhost:8010";
+    return "http://id.ai.localhost:8010/authorize";
   }
 
   const port = window.location.port || "8000";
-  return `http://id.ai.localhost:${port}`;
+  return `http://id.ai.localhost:${port}/authorize`;
 }
 
 export function getIdentityProviderUrl() {
   if (typeof window === "undefined") {
-    return "https://id.ai";
+    return "https://id.ai/authorize";
   }
 
   const host = window.location.hostname;
   const isLocal =
     host === "localhost" || host === "127.0.0.1" || host.endsWith(".localhost");
 
-  return isLocal ? localIdentityProvider() : "https://id.ai";
+  return isLocal ? localIdentityProvider() : "https://id.ai/authorize";
 }
 
 export function resolveCanisterIds(

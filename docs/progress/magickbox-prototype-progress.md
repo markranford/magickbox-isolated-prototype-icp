@@ -2774,3 +2774,49 @@ Blockers or risks:
 Next step:
 
 - Final status check, then hand off the live URL and owner claim flow.
+
+## 2026-05-23T17:58:48+07:00 - Checkpoint 57: Internet Identity Authorize Endpoint Fix Prepared
+
+Current workspace/folder:
+
+`C:\Users\Mark\Documents\Codex\Codex_MagickBox\magick-box-rewrite-readiness-prototype`
+
+What was inspected:
+
+- Mark's live Caffeine sign-in symptom: Internet Identity opened the account dashboard, stayed there until the two-minute signer timeout, then returned unsigned to the Magick Box admin page.
+- Installed `@icp-sdk/auth` and `@icp-sdk/signer` sources in `node_modules`.
+- Canonical ICP client and test coverage.
+- Isolated Caffeine bridge repo status.
+
+What was created or changed:
+
+- Updated `src/icp/magickboxClient.ts` so mainnet Internet Identity opens `https://id.ai/authorize` and local II opens `http://id.ai.localhost:<port>/authorize`.
+- Updated `src/icp/magickboxClient.test.ts` expectations for the authorize endpoint.
+- Built a new isolated Caffeine bundle from the canonical repo.
+- Synced and pushed the isolated Caffeine bridge repo commit `61a12aa` (`Fix Internet Identity authorize endpoint`) to `https://github.com/markranford/codex-magickbox-icp-caffeine-20260523.git`.
+
+Commands run and results:
+
+- `rg -n "IDENTITY_PROVIDER_DEFAULT|authorize|establishTimeout" node_modules\@icp-sdk -S` -> confirmed `@icp-sdk/auth` default identity provider is `https://id.ai/authorize` and signer establish timeout is `120000` ms.
+- `rg -n "identityProvider|getIdentityProviderUrl|authorize" src\icp\magickboxClient.ts src\icp\magickboxClient.test.ts` -> confirmed the local source now points to `/authorize`.
+- `npm run test -- src/icp/magickboxClient.test.ts` -> passed, 9 tests.
+- `npm run build` -> passed with the existing Vite chunk-size warning.
+- `npm run caffeine:bundle` -> passed and generated `tmp\magickbox-on-icp-caffeine-0834feb-20260523T104619.zip`, 16,638,131 bytes.
+- Bridge repo `npm run test -- src/icp/magickboxClient.test.ts` -> passed, 9 tests.
+- Bridge repo `npm run lint` -> passed.
+- Bridge repo `npm run build` -> passed with the existing Vite chunk-size warning.
+- Bridge repo `git push origin main` -> pushed commit `61a12aa`.
+
+Decisions made:
+
+- Treat this as an auth endpoint bug, not a user error: the live app must open the II authorization/signer flow rather than the II dashboard.
+- Keep the canonical repo as source of truth and use the bridge repo only for the Caffeine import pipeline.
+
+Blockers or risks:
+
+- The live Caffeine app still needs to import and publish bridge commit `61a12aa`; until that happens, the live URL can still show the old dashboard timeout behavior.
+- Mark should not retry the live superadmin claim until the live Caffeine version is verified to use `/authorize`.
+
+Next step:
+
+- Commit the canonical source/test fix, import bridge commit `61a12aa` into Caffeine, publish the new isolated live version, and verify the live sign-in endpoint before asking Mark to retry.

@@ -43,7 +43,7 @@ describe("Magick Box ICP client adapter", () => {
         canisterId: null,
         mediaCanisterId: null,
         host: "https://magickbox-icp-e68.caffeine.xyz",
-        identityProvider: "https://id.ai",
+        identityProvider: "https://id.ai/authorize",
         reason: "Caffeine hosted runtime",
       }),
     ).toBe(true);
@@ -55,7 +55,7 @@ describe("Magick Box ICP client adapter", () => {
       canisterId: "aaaaa-aa",
       mediaCanisterId: null,
       host: "https://icp0.io",
-      identityProvider: "https://id.ai",
+      identityProvider: "https://id.ai/authorize",
       reason: "mainnet canister runtime",
     });
 
@@ -63,8 +63,9 @@ describe("Magick Box ICP client adapter", () => {
     expect("rootKey" in options).toBe(false);
   });
 
-  it("targets local Internet Identity from localhost-style origins", () => {
+  it("targets local Internet Identity authorize endpoint from localhost-style origins", () => {
     expect(getIdentityProviderUrl()).toContain("id.ai.localhost");
+    expect(getIdentityProviderUrl()).toContain("/authorize");
   });
 
   it("hashes prompts before sending them to canister state", async () => {
