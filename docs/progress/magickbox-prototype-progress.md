@@ -2914,3 +2914,62 @@ Blockers or risks:
 Next step:
 
 - Mark should open `https://magickbox-icp-e68.caffeine.xyz/home/admin`, sign in with Internet Identity, claim superadmin with an 8-128 character setup phrase, then create and fund the system wallet shown by the verified MagickBoxV3 admin dashboard.
+
+## 2026-05-23T21:02:29+07:00 - Checkpoint 60: MagickBoxV3 Funding Wallet UX Deployed
+
+Current workspace/folder:
+
+`C:\Users\Mark\Documents\Codex\Codex_MagickBox\magick-box-rewrite-readiness-prototype`
+
+What was inspected:
+
+- Mark's live MagickBoxV3 admin screenshot after clicking the funding wallet button.
+- Canonical isolated repo admin page, ICP context, and admin styles.
+- ICRC ledger account guidance for owner plus 32-byte subaccount transfer targets.
+- Isolated MagickBoxV3 builder bridge repo at `tmp\caffeine-github-export-20260523`.
+- Live MagickBoxV3 URL `https://magickbox-icp-e68.caffeine.xyz/home/admin`.
+
+What was created or changed:
+
+- Added browser-side ICP account identifier derivation from the funding wallet owner principal plus 32-byte subaccount.
+- Added a real funding target panel for superadmins with copyable ICP account ID, owner principal, subaccount, and ICRC account tuple.
+- Added `Open NNS` and `Verify balance` actions to the funding wallet flow.
+- Polished the funding target layout so the 64-character account ID gets full row width instead of wrapping awkwardly.
+- Added direct dependency `@noble/hashes` for SHA-224 hashing used by the ICP account identifier helper.
+- Saved screenshot artifact `docs/artifacts/prototype/magickboxv3-live-v10-admin-funding-2026-05-23.png` from the authenticated live admin route before the final v11 layout polish.
+
+Commands run and results:
+
+- `npm run test -- src/App.test.tsx src/icp/magickboxClient.test.ts` -> passed, 13 tests.
+- `npm run build` -> passed with the existing Vite chunk-size warning.
+- `npm run lint` -> passed.
+- `npm run caffeine:bundle` -> passed; generated `tmp\magickboxv3-icp-builder-import-07d9dfd-20260523T133722.zip`, 16,639,838 bytes, below upload limit.
+- Bridge repo tests/build after syncing the first funding UX bundle -> passed; bridge commit `888c53c Improve MagickBoxV3 funding flow` pushed.
+- Builder GitHub import of bridge commit `888c53c` -> completed, draft version 10 created.
+- Builder Live dropdown `Push version update v10` -> completed; public no-cache bundle served `assets/index-DqV6_UGo.js` and contained `ICP account ID`, `Funding wallet ready`, `MagickBoxV3`, and `https://id.ai/authorize`.
+- Authenticated Chrome verification on live `/home/admin` after v10 -> found Mark's superadmin principal, `Funding wallet ready`, `ICP account ID`, derived account identifier `8fdbd57fcdc67228e0a3dc3b95476b2a7a1fabfd8d4612f309a622265bf87d87`, owner `itg54-4qaaa-aaaam-qiziq-cai`, ICRC tuple, and copy instructions.
+- Polished layout, reran `npm run test -- src/App.test.tsx src/icp/magickboxClient.test.ts`, `npm run build`, and `npm run lint` -> all passed.
+- `npm run caffeine:bundle` -> passed; generated `tmp\magickboxv3-icp-builder-import-07d9dfd-20260523T135547.zip`, 16,639,840 bytes, below upload limit.
+- Bridge repo tests/build after syncing layout polish -> passed; bridge commit `7dd6509 Polish MagickBoxV3 funding target layout` pushed.
+- Builder GitHub import of bridge commit `7dd6509` -> completed, draft version 11 created.
+- Builder Live dropdown `Push version update v11` -> completed; public no-cache bundle served `assets/index-C5vZLlX6.js` and stylesheet `assets/index-CuNQml61.css`, containing the funding target UI, `https://id.ai/authorize`, and polished CSS checks.
+- `icp canister call itg54-4qaaa-aaaam-qiziq-cai get_superadmin_status '()' -e ic` -> returned `bootstrap_available = false`, `superadmin_count = 1`, and `system_wallet_owner = principal "itg54-4qaaa-aaaam-qiziq-cai"`.
+- `icp canister call ryjl3-tyaaa-aaaaa-aaaba-cai icrc1_balance_of '(record { owner = principal \"itg54-4qaaa-aaaam-qiziq-cai\"; subaccount = opt vec { ... } })' -e ic` for the system wallet subaccount -> returned `(0 : nat)`.
+
+Decisions made:
+
+- Treat the funding button result as successful canister state, but improve the UI so it gives Mark an actionable account target and verification loop.
+- Use `MagickBoxV3` for the product/app name. Refer to Caffeine.ai only as the ICP AI builder/deployment tool.
+- Present both legacy ICP account ID and ICRC owner/subaccount tuple because wallets differ in which recipient format they accept.
+- Do not transfer ICP or move funds from Codex. Mark must fund from his own wallet after checking the target.
+
+Blockers or risks:
+
+- The system funding wallet remains unfunded at `0 ICP` until Mark transfers ICP.
+- Reloading after deployment may require signing in again with Internet Identity before the superadmin panel is visible.
+- The builder UI still has some internal project labels, but the product-facing live app uses `MagickBoxV3`.
+- Direct non-builder mainnet deployment remains blocked until the dedicated isolated identity has ICP/cycles and explicit deploy approval.
+
+Next step:
+
+- Mark should sign in on `https://magickbox-icp-e68.caffeine.xyz/home/admin`, confirm the superadmin panel, copy the ICP account ID `8fdbd57fcdc67228e0a3dc3b95476b2a7a1fabfd8d4612f309a622265bf87d87` or owner/subaccount tuple, fund it from his wallet, then click `Verify balance`.

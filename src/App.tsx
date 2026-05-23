@@ -1,5 +1,7 @@
 import type { ReactNode } from "react";
 import { useMemo, useState } from "react";
+import { sha224 } from "@noble/hashes/sha2.js";
+import { bytesToHex } from "@noble/hashes/utils.js";
 import {
   BrowserRouter,
   Link,
@@ -13,13 +15,16 @@ import {
   Check,
   ChevronDown,
   Activity,
+  Copy,
   CreditCard,
   Database,
+  ExternalLink,
   Gauge,
   LockKeyhole,
   LogIn,
   Menu,
   Paperclip,
+  RefreshCw,
   Send,
   ShieldCheck,
   Sparkles,
@@ -59,6 +64,66 @@ type CreditRecoveryState = {
 
 function formatIcp(amountE8s: number) {
   return (amountE8s / 100_000_000).toFixed(4).replace(/0+$/, "").replace(/\.$/, "");
+}
+
+function hexToBytes(hex: string) {
+  const normalized = hex.replace(/^0x/i, "").trim();
+  if (normalized.length % 2 !== 0) {
+    return null;
+  }
+
+  const bytes = new Uint8Array(normalized.length / 2);
+  for (let index = 0; index < normalized.length; index += 2) {
+    const value = Number.parseInt(normalized.slice(index, index + 2), 16);
+    if (Number.isNaN(value)) {
+      return null;
+    }
+    bytes[index / 2] = value;
+  }
+
+  return bytes;
+}
+
+function crc32(bytes: Uint8Array) {
+  let crc = 0xffffffff;
+  for (const byte of bytes) {
+    crc ^= byte;
+    for (let bit = 0; bit < 8; bit += 1) {
+      crc = crc & 1 ? (crc >>> 1) ^ 0xedb88320 : crc >>> 1;
+    }
+  }
+  return (crc ^ 0xffffffff) >>> 0;
+}
+
+function concatBytes(...chunks: Uint8Array[]) {
+  const output = new Uint8Array(chunks.reduce((total, chunk) => total + chunk.length, 0));
+  let offset = 0;
+  for (const chunk of chunks) {
+    output.set(chunk, offset);
+    offset += chunk.length;
+  }
+  return output;
+}
+
+function icpAccountIdentifier(owner: { toUint8Array: () => Uint8Array }, subaccountHex?: string) {
+  const subaccount = subaccountHex ? hexToBytes(subaccountHex) : new Uint8Array(32);
+  if (!subaccount || subaccount.length !== 32) {
+    return "";
+  }
+
+  const domain = new TextEncoder().encode("account-id");
+  const hash = sha224(concatBytes(new Uint8Array([domain.length]), domain, owner.toUint8Array(), subaccount));
+  const checksum = crc32(hash);
+  const accountId = concatBytes(
+    new Uint8Array([
+      (checksum >>> 24) & 0xff,
+      (checksum >>> 16) & 0xff,
+      (checksum >>> 8) & 0xff,
+      checksum & 0xff,
+    ]),
+    hash,
+  );
+  return bytesToHex(accountId);
 }
 
 function paymentPackageFor(optionId: string) {
@@ -806,6 +871,7 @@ function AdminPage() {
   const icp = useMagickBoxIcp();
   const [setupCode, setSetupCode] = useState("");
   const [notice, setNotice] = useState("Bind your Internet Identity principal before mainnet funding.");
+  const [copiedField, setCopiedField] = useState<string | null>(null);
   const dashboard = icp.adminDashboard;
   const status = icp.superAdminStatus;
   const fundingWallet = dashboard?.wallet.funding_wallet[0] ?? null;
@@ -813,6 +879,14 @@ function AdminPage() {
   const principal = icp.principalText ?? status?.caller.toText() ?? "Sign in with Internet Identity";
   const isSuperadmin = Boolean(status?.is_superadmin);
   const bootstrapAvailable = Boolean(status?.bootstrap_available);
+  const fundingOwner = isSuperadmin && fundingWallet && systemAccount ? systemAccount.owner.toText() : "";
+  const fundingSubaccount = isSuperadmin && fundingWallet ? fundingWallet.subaccount_hex : "";
+  const fundingAccountId =
+    isSuperadmin && fundingWallet && systemAccount
+      ? icpAccountIdentifier(systemAccount.owner, fundingWallet.subaccount_hex)
+      : "";
+  const fundingIcrcAccount =
+    fundingOwner && fundingSubaccount ? `owner=${fundingOwner}; subaccount=${fundingSubaccount}` : "";
   const actions = isSuperadmin ? dashboard?.actions ?? fallbackAdminActions : lockedAdminActions;
   const stats = [
     { label: "Profiles", value: dashboard ? Number(dashboard.profile_count) : 0 },
@@ -841,6 +915,20 @@ function AdminPage() {
   const createFundingWallet = async () => {
     const result = await icp.createSystemFundingWallet();
     setNotice(result.message);
+  };
+
+  const copyFundingValue = async (label: string, value: string) => {
+    if (!value) {
+      return;
+    }
+
+    try {
+      await navigator.clipboard.writeText(value);
+      setCopiedField(label);
+      setNotice(`${label} copied to clipboard.`);
+    } catch {
+      setNotice(`Could not copy ${label}. Select the value manually.`);
+    }
   };
 
   return (
@@ -942,25 +1030,115 @@ function AdminPage() {
             <div className="funding-process">
               {isSuperadmin ? (
                 <>
-                  <h3>Create system funding wallet</h3>
+                  <h3>{fundingWallet ? "System funding wallet" : "Create system funding wallet"}</h3>
                   <button
                     type="button"
                     onClick={createFundingWallet}
                     disabled={icp.isBusy || Boolean(fundingWallet)}
                   >
-                    {fundingWallet ? "Funding wallet created" : "Create funding wallet"}
+                    <Wallet size={16} aria-hidden="true" />
+                    {fundingWallet ? "Funding wallet ready" : "Create funding wallet"}
                   </button>
-                  <ol>
-                    <li>Create the dedicated system funding wallet.</li>
-                    <li>Transfer ICP to the owner and subaccount displayed above.</li>
-                    <li>Refresh this dashboard to verify the ledger balance.</li>
-                    <li>Use the funded controller identity to convert ICP to cycles and top up canisters.</li>
-                    <li>Keep user credit purchases on per-intent subaccounts.</li>
-                  </ol>
-                  <p className="admin-note">
-                    {dashboard?.wallet.funding_instructions ??
-                      "The funding target appears only after a superadmin creates it on ICP."}
-                  </p>
+                  {fundingWallet ? (
+                    <div className="funding-ready" aria-label="System funding target">
+                      <p className="admin-note">
+                        Send ICP to this dedicated MagickBoxV3 system funding account, then verify
+                        the balance from this dashboard. Use the account ID when a wallet asks for
+                        one recipient string; use owner plus subaccount for ICRC-aware transfer
+                        tools.
+                      </p>
+                      <div className="funding-target-grid">
+                        <div className="funding-target-row">
+                          <span className="funding-target-label">ICP account ID</span>
+                          <code>{fundingAccountId || "Unavailable"}</code>
+                          <button
+                            type="button"
+                            className="copy-inline-button"
+                            onClick={() => copyFundingValue("ICP account ID", fundingAccountId)}
+                            disabled={!fundingAccountId}
+                            aria-label="Copy ICP account ID"
+                          >
+                            <Copy size={16} aria-hidden="true" />
+                            {copiedField === "ICP account ID" ? "Copied" : "Copy"}
+                          </button>
+                        </div>
+                        <div className="funding-target-row">
+                          <span className="funding-target-label">Owner principal</span>
+                          <code>{fundingOwner || "Unavailable"}</code>
+                          <button
+                            type="button"
+                            className="copy-inline-button"
+                            onClick={() => copyFundingValue("Owner principal", fundingOwner)}
+                            disabled={!fundingOwner}
+                            aria-label="Copy owner principal"
+                          >
+                            <Copy size={16} aria-hidden="true" />
+                            {copiedField === "Owner principal" ? "Copied" : "Copy"}
+                          </button>
+                        </div>
+                        <div className="funding-target-row">
+                          <span className="funding-target-label">Subaccount</span>
+                          <code>{fundingSubaccount || "Unavailable"}</code>
+                          <button
+                            type="button"
+                            className="copy-inline-button"
+                            onClick={() => copyFundingValue("Subaccount", fundingSubaccount)}
+                            disabled={!fundingSubaccount}
+                            aria-label="Copy subaccount"
+                          >
+                            <Copy size={16} aria-hidden="true" />
+                            {copiedField === "Subaccount" ? "Copied" : "Copy"}
+                          </button>
+                        </div>
+                        <div className="funding-target-row">
+                          <span className="funding-target-label">ICRC account tuple</span>
+                          <code>{fundingIcrcAccount || "Unavailable"}</code>
+                          <button
+                            type="button"
+                            className="copy-inline-button"
+                            onClick={() => copyFundingValue("ICRC account tuple", fundingIcrcAccount)}
+                            disabled={!fundingIcrcAccount}
+                            aria-label="Copy ICRC account tuple"
+                          >
+                            <Copy size={16} aria-hidden="true" />
+                            {copiedField === "ICRC account tuple" ? "Copied" : "Copy"}
+                          </button>
+                        </div>
+                      </div>
+                      <div className="funding-action-row">
+                        <a
+                          className="admin-link-button"
+                          href="https://nns.ic0.app/"
+                          target="_blank"
+                          rel="noreferrer"
+                        >
+                          <ExternalLink size={16} aria-hidden="true" />
+                          Open NNS
+                        </a>
+                        <button type="button" onClick={refresh} disabled={icp.isBusy}>
+                          <RefreshCw size={16} aria-hidden="true" />
+                          Verify balance
+                        </button>
+                      </div>
+                      <ol>
+                        <li>Copy the ICP account ID or owner/subaccount target.</li>
+                        <li>Transfer ICP from your wallet to the exact funding target.</li>
+                        <li>Return here and verify the balance before cycle top-ups.</li>
+                      </ol>
+                    </div>
+                  ) : (
+                    <>
+                      <ol>
+                        <li>Create the dedicated system funding wallet.</li>
+                        <li>Transfer ICP only after the funding target appears.</li>
+                        <li>Refresh this dashboard to verify the ledger balance.</li>
+                      </ol>
+                      <p className="admin-note">
+                        {dashboard?.wallet.funding_instructions ??
+                          "The funding target appears only after a superadmin creates it on ICP."}
+                      </p>
+                    </>
+                  )}
                 </>
               ) : (
                 <>

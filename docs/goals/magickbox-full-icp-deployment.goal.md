@@ -125,7 +125,7 @@ First safe build slice:
 
 ## Current MagickBoxV3 ICP Builder Preview State
 
-As of 2026-05-23T18:47:13+07:00, the isolated MagickBoxV3 deployment is live through the Caffeine.ai ICP builder at:
+As of 2026-05-23T21:02:29+07:00, the isolated MagickBoxV3 deployment is live through the Caffeine.ai ICP builder at:
 
 `https://magickbox-icp-e68.caffeine.xyz/`
 
@@ -140,21 +140,23 @@ Known live MagickBoxV3 preview canisters:
 Current behavior:
 
 - The live MagickBoxV3 frontend loads backend canister config from `/env.json`.
-- Caffeine.ai version 9 is both `Current` and `Live` for the target builder project.
-- The public live bundle is `assets/index-C8k7BkGp.js`.
+- Caffeine.ai builder version 11 is live for the target builder project.
+- The public live bundle is `assets/index-C5vZLlX6.js` with stylesheet `assets/index-CuNQml61.css`.
 - The live bundle contains the MagickBoxV3 build marker `magickboxv3-ii-authorize-20260523`.
 - The live Internet Identity button opens `https://id.ai/authorize`, not the Internet Identity dashboard root.
-- The live backend reports `bootstrap_available = true`, `superadmin_count = 0`, and `system_wallet_owner = principal "itg54-4qaaa-aaaam-qiziq-cai"`.
-- Mark should claim the first superadmin with his Internet Identity from the live admin route before sharing the URL broadly.
-- The one-time claim requires an authenticated non-anonymous principal and an 8-128 character setup phrase.
+- Mark claimed the first superadmin with Internet Identity principal `zo4kw-ezr7z-aslvs-tbhja-ejagl-rtzjk-7zuc7-j5asy-wkbx5-qh3gu-iqe`.
+- The system funding wallet has been created by Mark's superadmin session. It is owned by backend/core canister `itg54-4qaaa-aaaam-qiziq-cai`, uses subaccount `4d4246554e440000000000000000000000000000000000000000000000000001`, and currently showed `0 ICP` before funding.
+- The live admin dashboard now derives and displays ICP account ID `8fdbd57fcdc67228e0a3dc3b95476b2a7a1fabfd8d4612f309a622265bf87d87` plus copy controls, `Open NNS`, and `Verify balance`.
+- The one-time claim path is now closed for public visitors.
 - Codex must not claim the one-time superadmin role with a local or automation identity.
 - Media generated through the app path should be stored on ICP using the `icp-media://...` core canister media path; AWS/S3 is not part of the desired architecture.
 
-Fresh MagickBoxV3 v9 checks recorded:
+Fresh MagickBoxV3 v11 checks recorded:
 
 - `/env.json` returned HTTP 200 with the backend canister ID above.
 - No-cache public bundle verification found `https://id.ai/authorize`, found `magickboxv3-ii-authorize-20260523`, and did not find the stale `https://id.ai` root helper.
-- Click-level browser smoke on `/home/admin` opened `https://id.ai/authorize`, with no page errors and no console errors.
+- No-cache public bundle verification found `ICP account ID`, `Funding wallet ready`, and the polished funding-target CSS deployed in v11.
+- Authenticated Chrome verification on `/home/admin` found `Role` -> `Superadmin`, `Funding wallet ready`, `ICP account ID`, the expected derived account identifier, `Open NNS`, and `Verify balance`.
 - Browser smoke covered `/`, `/home/magick-chat`, `/home/admin`, `/home/settings`, `/home/subscriptions`, and `/evaluation` on desktop and mobile.
 - Browser smoke found no page errors, no app console errors, no runtime-unavailable copy, and a locked signed-out admin route.
 - CLI smoke against the live backend registered a profile, created and completed a generation job, stored media bytes on ICP, and listed the stored media asset.

@@ -310,3 +310,45 @@ Remaining hardening:
 - Keep direct non-Caffeine mainnet deployment blocked until `magickbox-mainnet-isolated` has ICP/cycles and explicit deploy approval.
 - Move large media from the core canister proof path into dedicated ICP media/chunk canisters before real public scale.
 - Wire real isolated MagickAI/FreeLLMAPI worker endpoints only after their service URLs, auth boundaries, and cost controls are agreed.
+
+## 2026-05-23 MagickBoxV3 Funding Wallet Update
+
+Live isolated MagickBoxV3 URL:
+
+`https://magickbox-icp-e68.caffeine.xyz/`
+
+Current live builder version:
+
+- Version 11 imported from bridge commit `7dd6509`.
+- Public JavaScript bundle: `assets/index-C5vZLlX6.js`.
+- Public stylesheet: `assets/index-CuNQml61.css`.
+
+Current owner/funding state:
+
+- Mark claimed superadmin with Internet Identity principal `zo4kw-ezr7z-aslvs-tbhja-ejagl-rtzjk-7zuc7-j5asy-wkbx5-qh3gu-iqe`.
+- The one-time bootstrap path is now closed.
+- System funding wallet owner: `itg54-4qaaa-aaaam-qiziq-cai`.
+- System funding wallet subaccount: `4d4246554e440000000000000000000000000000000000000000000000000001`.
+- Derived ICP account ID: `8fdbd57fcdc67228e0a3dc3b95476b2a7a1fabfd8d4612f309a622265bf87d87`.
+- Balance observed before funding: `0 ICP`.
+
+What changed:
+
+- The superadmin wallet panel now displays a copyable ICP account ID, owner principal, subaccount, and ICRC account tuple.
+- The panel includes `Open NNS` and `Verify balance` actions.
+- The funding target layout was polished so the account identifier has the full available row width.
+
+Verification:
+
+- Local canonical `npm run test -- src/App.test.tsx src/icp/magickboxClient.test.ts` passed.
+- Local canonical `npm run build` passed with the existing Vite chunk-size warning.
+- Local canonical `npm run lint` passed.
+- Bridge repo tests/build passed before both v10 and v11 imports.
+- Public no-cache verification for v11 found `ICP account ID`, `Funding wallet ready`, `MagickBoxV3`, `https://id.ai/authorize`, and the polished funding-target CSS in the live assets.
+- Authenticated Chrome verification on v10 found the superadmin funding wallet state and account identifier. The final v11 live asset check proves the layout polish is deployed.
+- Public backend status now reports `bootstrap_available = false` and `superadmin_count = 1`.
+- ICP ledger `icrc1_balance_of` for the system wallet owner/subaccount returned `0`, confirming the wallet is not funded yet.
+
+Next funding step:
+
+Mark should sign in again if the page shows the locked state, confirm the superadmin panel, copy the ICP account ID above or the owner/subaccount tuple, fund from his own wallet, then click `Verify balance`. Codex did not transfer ICP.

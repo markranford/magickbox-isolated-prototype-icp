@@ -1040,7 +1040,8 @@ textarea:focus-visible {
 
 .admin-header-actions button,
 .admin-claim button,
-.funding-process button {
+.funding-process button,
+.admin-link-button {
   min-height: 38px;
   padding: 0 12px;
   border-radius: 8px;
@@ -1050,6 +1051,7 @@ textarea:focus-visible {
   font-size: 13px;
   font-weight: 800;
   cursor: pointer;
+  text-decoration: none;
 }
 
 .admin-header-actions button:disabled,
@@ -1178,7 +1180,11 @@ textarea:focus-visible {
   margin-top: 16px;
 }
 
-.funding-process button {
+.funding-process > button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
   margin-top: 12px;
   width: 100%;
 }
@@ -1188,6 +1194,69 @@ textarea:focus-visible {
   padding-left: 20px;
   color: var(--muted);
   line-height: 1.55;
+}
+
+.funding-ready {
+  display: grid;
+  gap: 14px;
+  margin-top: 14px;
+}
+
+.funding-target-grid {
+  display: grid;
+  gap: 10px;
+}
+
+.funding-target-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 10px;
+  padding: 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.035);
+}
+
+.funding-target-label {
+  grid-column: 1 / -1;
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.funding-target-row code {
+  min-width: 0;
+  color: var(--text);
+  font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+  font-size: 11px;
+  line-height: 1.4;
+  overflow-wrap: anywhere;
+}
+
+.copy-inline-button,
+.funding-action-row button,
+.admin-link-button {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 7px;
+  white-space: nowrap;
+}
+
+.copy-inline-button {
+  min-width: 84px;
+}
+
+.funding-action-row {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+}
+
+.funding-action-row button,
+.admin-link-button {
+  width: 100%;
 }
 
 .admin-stat-grid {
@@ -1464,5 +1533,14 @@ td {
   .admin-action-grid,
   .admin-stat-grid {
     grid-template-columns: 1fr;
+  }
+
+  .funding-action-row,
+  .funding-target-row {
+    grid-template-columns: 1fr;
+  }
+
+  .copy-inline-button {
+    width: 100%;
   }
 }
