@@ -2590,3 +2590,44 @@ Blockers or risks:
 Next step:
 
 - Fund the dedicated isolated mainnet identity, mint/receive cycles, rerun `npm run preflight:mainnet`, then run the guarded direct ICP mainnet deploy only after explicit approval and with both primary and backup controllers set.
+
+## 2026-05-23T14:45:04+07:00 - Checkpoint 53: Mainnet Funding Gate Rechecked
+
+Current workspace/folder:
+
+`C:\Users\Mark\Documents\Codex\Codex_MagickBox\magick-box-rewrite-readiness-prototype`
+
+What was inspected:
+
+- Dedicated isolated mainnet identity `magickbox-mainnet-isolated`.
+- Mainnet preflight state for token balance, cycles balance, production touchpoints, unsafe bootstrap code, controllers, build output, and copied media manifest.
+- ICP cycles mint requirement for `10T` cycles.
+
+What was created or changed:
+
+- No app code changed.
+- Opened the NNS dapp and IC dashboard in the default browser for Mark to fund the isolated deploy identity interactively.
+
+Commands run and results:
+
+- `MAGICKBOX_MAINNET_IDENTITY=magickbox-mainnet-isolated ... npm run preflight:mainnet` -> code/safety checks passed, no production touchpoints, no unsafe bootstrap code, but blocked on `0 ICP` and `0 cycles`.
+- `icp cycles mint --cycles 10t -n ic --identity magickbox-mainnet-isolated` -> failed safely with `Insufficient funds: 5.46612897 ICP required, 0 ICP available.`
+- 10-minute polling loop for `icp token balance -n ic --identity magickbox-mainnet-isolated` and `icp cycles balance -n ic --identity magickbox-mainnet-isolated` -> timed out with both still `0`.
+- `Start-Process 'https://nns.ic0.app/'` and `Start-Process 'https://dashboard.internetcomputer.org/'` -> opened funding/support pages in the default browser.
+
+Decisions made:
+
+- Keep the direct mainnet deploy blocked until the isolated deploy identity is funded and cycles are minted.
+- Use `10T` cycles as the initial guarded deployment target.
+
+Blockers or risks:
+
+- Mainnet deployment cannot proceed until Mark transfers at least `5.46612897 ICP` to the isolated deploy identity, with a small buffer recommended.
+- Exact funding target:
+  - principal / ICRC account: `q3gim-5flim-jopqa-ivnhk-vo3kj-p6fcj-fnddh-akdwo-wpbml-i736a-uae`
+  - legacy ledger account ID: `be37b9a1d644f3635b5099b915e3b89cd6f5d4cdf345364de3d8634de35d4377`
+- No production service, production repo, DNS, auth, analytics, billing, database, secret, or live user path was touched.
+
+Next step:
+
+- After the transfer lands, run `icp cycles mint --cycles 10t -n ic --identity magickbox-mainnet-isolated`, rerun `npm run preflight:mainnet`, then deploy with the guarded direct ICP command.
