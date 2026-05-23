@@ -243,13 +243,13 @@ Remaining blocker for true mainnet ICP canisters:
 
 - Fund the dedicated isolated identity `magickbox-mainnet-isolated`, mint/receive cycles, then run the guarded new-canister mainnet deploy only after explicit approval. Do not reuse production Magick Box infrastructure.
 
-## 2026-05-23 Caffeine Mainnet Preview v7 Update
+## 2026-05-23 MagickBoxV3 ICP Builder Preview v9 Update
 
-Live isolated Caffeine URL:
+Live isolated MagickBoxV3 URL:
 
 `https://magickbox-icp-e68.caffeine.xyz/`
 
-This is now more than a static control center. Caffeine version 7 serves the reviewed isolated frontend with a runtime `/env.json` and connects to a real isolated backend canister on ICP mainnet.
+This is now more than a static control center. Caffeine.ai builder version 9 serves the reviewed MagickBoxV3 frontend with a runtime `/env.json` and connects to a real isolated backend canister on ICP mainnet.
 
 Live canisters:
 
@@ -261,7 +261,10 @@ Source of truth:
 
 - Canonical isolated repo: `https://github.com/markranford/magickbox-isolated-prototype-icp`
 - Caffeine bridge repo: `https://github.com/markranford/codex-magickbox-icp-caffeine-20260523`
-- Latest Caffeine bridge commit imported and published: `1f9ff33`
+- Latest bridge commit imported and published: `def344a`
+- Product/app name: `MagickBoxV3`
+- Caffeine.ai role: ICP AI builder and deployment tool only, not the product name.
+- Live public bundle: `assets/index-C8k7BkGp.js`
 
 Current superadmin status:
 
@@ -280,20 +283,25 @@ Mark's next owner step:
 
 Important: Codex did not claim the one-time superadmin role. The first authenticated owner claim is intentionally left for Mark's II principal. Claim it before sharing the URL broadly.
 
-Fresh v7 evidence:
+Fresh v9 evidence:
 
 - `/env.json` returned HTTP 200 with backend canister `itg54-4qaaa-aaaam-qiziq-cai`.
 - Certified asset response headers identify frontend canister `i2fwa-kyaaa-aaaam-qizja-cai`.
+- Public no-cache bundle verification found `https://id.ai/authorize`, found `magickboxv3-ii-authorize-20260523`, and did not find the stale `https://id.ai` root helper.
+- Click-level browser smoke against `/home/admin` opened `https://id.ai/authorize`; the page title was `MagickBoxV3 ICP Prototype` and no page/console errors were recorded.
 - Live route smoke covered `/`, `/home/magick-chat`, `/home/admin`, `/home/settings`, `/home/subscriptions`, and `/evaluation` on desktop and mobile.
 - Browser smoke found no page errors, no app console errors, no runtime-unavailable state, and a locked signed-out admin route.
 - Live backend Candid smoke registered a profile, created and completed a generation job, stored media bytes on ICP, and listed the resulting `icp-media://...` asset.
 
 Artifacts:
 
+- `docs/artifacts/prototype/magickboxv3-live-v9-smoke-2026-05-23T18-47-13-943Z.json`
+- `docs/artifacts/prototype/magickboxv3-live-v9-desktop-home-admin-2026-05-23T18-47-13-943Z.png`
+- `docs/artifacts/prototype/magickboxv3-live-v9-mobile-home-admin-2026-05-23T18-47-13-943Z.png`
 - `docs/artifacts/prototype/caffeine-live-v7-smoke-2026-05-23T09-55-57-703Z.json`
 - `docs/artifacts/prototype/caffeine-live-v7-desktop-home-admin-2026-05-23T09-55-57-703Z.png`
 - `docs/artifacts/prototype/caffeine-live-v7-mobile-home-admin-2026-05-23T09-55-57-703Z.png`
-- Additional v7 desktop/mobile route screenshots live beside those files.
+- Additional v7 desktop/mobile route screenshots live beside those files and remain useful for earlier route evidence.
 
 Remaining hardening:
 

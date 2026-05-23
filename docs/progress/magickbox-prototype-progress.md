@@ -2862,3 +2862,55 @@ Blockers or risks:
 Next step:
 
 - Build a fresh MagickBoxV3 import commit, import it into the correct target project, use the documented Live dropdown / Push version update path, and verify the public URL before asking Mark to retry Internet Identity or claim superadmin.
+
+## 2026-05-23T18:47:13+07:00 - Checkpoint 59: MagickBoxV3 v9 Live And II Authorize Verified
+
+Current workspace/folder:
+
+`C:\Users\Mark\Documents\Codex\Codex_MagickBox\magick-box-rewrite-readiness-prototype`
+
+What was inspected:
+
+- Canonical isolated repo and bridge repo git status.
+- Target builder project `019e5022-fe7e-74c9-9428-b475f02043dc`.
+- Live isolated MagickBoxV3 URL `https://magickbox-icp-e68.caffeine.xyz/`.
+- Live `/env.json`.
+- Live backend canister `itg54-4qaaa-aaaam-qiziq-cai` superadmin status.
+- Public bundle served by the live URL.
+
+What was created or changed:
+
+- Imported bridge commit `def344a` into the target builder project.
+- The builder created draft version 9.
+- Used the Live dropdown `Push version update` control to promote v9.
+- Verified builder version history now shows version 9 as both `Current` and `Live`.
+- Captured fresh MagickBoxV3 v9 desktop/mobile admin screenshots and a smoke JSON artifact.
+- Updated goal, eval, and handoff docs to reflect MagickBoxV3 v9 as the current live isolated preview.
+
+Commands run and results:
+
+- Bridge repo `git log --oneline -5` -> confirmed latest bridge commit `def344a Rename builder import to MagickBoxV3`.
+- Caffeine.ai builder GitHub import of `def344a` -> completed; draft version 9 created.
+- Caffeine.ai builder Live dropdown `Push version update` -> completed; UI reported `Version 9 is now live and serving users!`.
+- Public no-cache bundle check for `https://magickbox-icp-e68.caffeine.xyz/` -> served `assets/index-C8k7BkGp.js`; contained `https://id.ai/authorize`; did not contain the stale `https://id.ai` root helper; contained `magickboxv3-ii-authorize-20260523`; contained `MagickBoxV3`.
+- Headless browser sign-in smoke on `/home/admin` -> passed; page title `MagickBoxV3 ICP Prototype`; DOM marker `magickboxv3-ii-authorize-20260523`; clicking `Sign in with Internet Identity` opened `https://id.ai/authorize`; no console/page errors.
+- `Invoke-WebRequest https://magickbox-icp-e68.caffeine.xyz/env.json?codexCheck=magickboxv3-v9` -> returned backend canister `itg54-4qaaa-aaaam-qiziq-cai`, backend host `https://icp-api.io`, derivation origin `https://magickbox-icp-e68.caffeine.xyz`, project ID `019e5022-fe7e-74c9-9428-b475f02043dc`.
+- `icp canister call itg54-4qaaa-aaaam-qiziq-cai get_superadmin_status '()' -e ic` -> returned `bootstrap_available = true`, `superadmin_count = 0`, `is_superadmin = false`, `system_wallet_owner = principal "itg54-4qaaa-aaaam-qiziq-cai"`.
+- Playwright screenshot artifact script -> passed for desktop and mobile `/home/admin`, both HTTP 200 with the MagickBoxV3 marker and no errors.
+
+Decisions made:
+
+- Use `MagickBoxV3` as the product/app name. Use `Caffeine.ai` only for the builder/deployment tool.
+- The live URL is safe for Mark to retry Internet Identity because the public bundle now proves the authorize endpoint is deployed.
+- Codex must still not claim the one-time superadmin role; Mark's II principal should do that first owner step.
+
+Blockers or risks:
+
+- Mark has not yet claimed the one-time superadmin role.
+- The system wallet is not funded, and no ICP transfer was made by Codex.
+- The builder UI still displays the internal project label `MagickBox ICP` in some places; product-facing code and docs now use `MagickBoxV3`.
+- Direct non-builder mainnet deployment remains blocked until the dedicated isolated identity has ICP/cycles and explicit deploy approval.
+
+Next step:
+
+- Mark should open `https://magickbox-icp-e68.caffeine.xyz/home/admin`, sign in with Internet Identity, claim superadmin with an 8-128 character setup phrase, then create and fund the system wallet shown by the verified MagickBoxV3 admin dashboard.

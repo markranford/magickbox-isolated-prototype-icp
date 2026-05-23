@@ -1,0 +1,29 @@
+{
+  "ok": true,
+  "results": [
+    {
+      "name": "desktop-home-admin",
+      "url": "https://magickbox-icp-e68.caffeine.xyz/home/admin?codexArtifact=magickboxv3-v9-desktop-home-admin",
+      "status": 200,
+      "title": "MagickBoxV3 ICP Prototype",
+      "marker": "magickboxv3-ii-authorize-20260523",
+      "hasSignIn": true,
+      "hasSuperadmin": true,
+      "hasOwnerLocked": true,
+      "errors": [],
+      "screenshot": "C:\\Users\\Mark\\Documents\\Codex\\Codex_MagickBox\\magick-box-rewrite-readiness-prototype\\docs\\artifacts\\prototype\\magickboxv3-live-v9-desktop-home-admin-2026-05-23T18-47-13-943Z.png"
+    },
+    {
+      "name": "mobile-home-admin",
+      "url": "https://magickbox-icp-e68.caffeine.xyz/home/admin?codexArtifact=magickboxv3-v9-mobile-home-admin",
+      "status": 200,
+      "title": "MagickBoxV3 ICP Prototype",
+      "marker": "magickboxv3-ii-authorize-20260523",
+      "hasSignIn": true,
+      "hasSuperadmin": true,
+      "hasOwnerLocked": true,
+      "errors": [],
+      "screenshot": "C:\\Users\\Mark\\Documents\\Codex\\Codex_MagickBox\\magick-box-rewrite-readiness-prototype\\docs\\artifacts\\prototype\\magickboxv3-live-v9-mobile-home-admin-2026-05-23T18-47-13-943Z.png"
+    }
+  ]
+}

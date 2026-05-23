@@ -123,15 +123,15 @@ First safe build slice:
 - Caffeine.ai account use is approved for a separate isolated app only.
 - No API keys stored in canister state.
 
-## Current Caffeine Mainnet Preview State
+## Current MagickBoxV3 ICP Builder Preview State
 
-As of 2026-05-23T16:59:19+07:00, the isolated Caffeine deployment is live at:
+As of 2026-05-23T18:47:13+07:00, the isolated MagickBoxV3 deployment is live through the Caffeine.ai ICP builder at:
 
 `https://magickbox-icp-e68.caffeine.xyz/`
 
-This is a separate Caffeine/ICP preview deployment, not the production Magick Box website.
+This is a separate MagickBoxV3 ICP preview deployment, not the production Magick Box website.
 
-Known live Caffeine canisters:
+Known live MagickBoxV3 preview canisters:
 
 - Frontend certified asset canister: `i2fwa-kyaaa-aaaam-qizja-cai`
 - Backend/core canister: `itg54-4qaaa-aaaam-qiziq-cai`
@@ -139,16 +139,22 @@ Known live Caffeine canisters:
 
 Current behavior:
 
-- The live Caffeine frontend loads backend canister config from `/env.json`.
+- The live MagickBoxV3 frontend loads backend canister config from `/env.json`.
+- Caffeine.ai version 9 is both `Current` and `Live` for the target builder project.
+- The public live bundle is `assets/index-C8k7BkGp.js`.
+- The live bundle contains the MagickBoxV3 build marker `magickboxv3-ii-authorize-20260523`.
+- The live Internet Identity button opens `https://id.ai/authorize`, not the Internet Identity dashboard root.
 - The live backend reports `bootstrap_available = true`, `superadmin_count = 0`, and `system_wallet_owner = principal "itg54-4qaaa-aaaam-qiziq-cai"`.
 - Mark should claim the first superadmin with his Internet Identity from the live admin route before sharing the URL broadly.
 - The one-time claim requires an authenticated non-anonymous principal and an 8-128 character setup phrase.
 - Codex must not claim the one-time superadmin role with a local or automation identity.
 - Media generated through the app path should be stored on ICP using the `icp-media://...` core canister media path; AWS/S3 is not part of the desired architecture.
 
-Fresh Caffeine v7 checks recorded:
+Fresh MagickBoxV3 v9 checks recorded:
 
 - `/env.json` returned HTTP 200 with the backend canister ID above.
+- No-cache public bundle verification found `https://id.ai/authorize`, found `magickboxv3-ii-authorize-20260523`, and did not find the stale `https://id.ai` root helper.
+- Click-level browser smoke on `/home/admin` opened `https://id.ai/authorize`, with no page errors and no console errors.
 - Browser smoke covered `/`, `/home/magick-chat`, `/home/admin`, `/home/settings`, `/home/subscriptions`, and `/evaluation` on desktop and mobile.
 - Browser smoke found no page errors, no app console errors, no runtime-unavailable copy, and a locked signed-out admin route.
 - CLI smoke against the live backend registered a profile, created and completed a generation job, stored media bytes on ICP, and listed the stored media asset.
