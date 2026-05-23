@@ -2973,3 +2973,36 @@ Blockers or risks:
 Next step:
 
 - Mark should sign in on `https://magickbox-icp-e68.caffeine.xyz/home/admin`, confirm the superadmin panel, copy the ICP account ID `8fdbd57fcdc67228e0a3dc3b95476b2a7a1fabfd8d4612f309a622265bf87d87` or owner/subaccount tuple, fund it from his wallet, then click `Verify balance`.
+
+## 2026-05-23T21:08:44+07:00 - Checkpoint 61: Funding And II Values Confirmed By Mark
+
+Current workspace/folder:
+
+`C:\Users\Mark\Documents\Codex\Codex_MagickBox\magick-box-rewrite-readiness-prototype`
+
+What was inspected:
+
+- Mark's chat confirmation of the live MagickBoxV3 system funding wallet values and Internet Identity principal.
+
+What was created or changed:
+
+- Recorded the confirmed owner principal, funding subaccount, and Internet Identity principal in this durable progress log.
+
+Commands run and results:
+
+- `Get-Date -Format "yyyy-MM-ddTHH:mm:sszzz"` -> `2026-05-23T21:08:44+07:00`.
+
+Decisions made:
+
+- Treat the following values as the user-confirmed MagickBoxV3 funding/admin record:
+  - Funding owner: `itg54-4qaaa-aaaam-qiziq-cai`
+  - Funding subaccount: `4d4246554e440000000000000000000000000000000000000000000000000001`
+  - Mark Internet Identity principal: `zo4kw-ezr7z-aslvs-tbhja-ejagl-rtzjk-7zuc7-j5asy-wkbx5-qh3gu-iqe`
+
+Blockers or risks:
+
+- These values identify the live isolated MagickBoxV3 funding/admin path, but they do not mean funds have been transferred. Ledger verification previously showed `0 ICP`.
+
+Next step:
+
+- Fund the confirmed system wallet target from Mark's wallet, then use the MagickBoxV3 admin dashboard `Verify balance` control to confirm the on-chain balance.
