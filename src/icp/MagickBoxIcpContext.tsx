@@ -9,7 +9,9 @@ import {
   type ReactNode,
 } from "react";
 import type { AuthClient } from "@icp-sdk/auth/client";
+import type { Identity } from "@icp-sdk/core/agent";
 import type {
+  AdminDashboard,
   CreateJobResult,
   AdCreditGrant,
   CreditOption,
@@ -18,12 +20,15 @@ import type {
   PaymentIntent,
   Profile,
   ProviderOption,
+  SuperAdminStatus,
+  SystemFundingWallet,
 } from "./generated/magickbox_core.did";
 import {
   canUseIcpRuntime,
   clearLocalBrowserIdentityActive,
   createAuthClient,
   createCoreActor,
+  createMediaActor,
   getOrCreateLocalBrowserIdentity,
   hasActiveLocalBrowserIdentity,
   markLocalBrowserIdentityActive,
@@ -33,6 +38,11 @@ import {
   type CoreActor,
   type IcpRuntime,
 } from "./magickboxClient";
+import {
+  assertBrowserWorkerAvailable,
+  buildBrowserWorkerRequest,
+  executeBrowserWorker,
+} from "./browserWorker";
 import {
   creditRecoveryOptions,
   icpProviderOptions,
@@ -58,7 +68,7 @@ export type UiCreditOption = {
 };
 
 export type CreateGenerationOutcome =
-  | { kind: "ok"; job: GenerationJob }
+  | { kind: "ok"; job: GenerationJob; outputPreview?: string; mediaUri?: string }
   | {
       kind: "insufficient_credits";
       required: number;
@@ -78,11 +88,18 @@ export type AdCreditOutcome =
   | { kind: "auth_required"; message: string }
   | { kind: "err"; message: string };
 
+export type AdminActionOutcome =
+  | { kind: "ok"; message: string; wallet?: SystemFundingWallet }
+  | { kind: "auth_required"; message: string }
+  | { kind: "err"; message: string };
+
 type MagickBoxIcpState = {
   actor: CoreActor | null;
   authClient: AuthClient | null;
   profile: Profile | null;
   paymentAccount: PaymentAccount | null;
+  superAdminStatus: SuperAdminStatus | null;
+  adminDashboard: AdminDashboard | null;
   jobs: GenerationJob[];
   providerOptions: UiProviderOption[];
   creditOptions: UiCreditOption[];
@@ -112,7 +129,10 @@ type MagickBoxIcpState = {
     proofId: string;
     credits: number;
   }) => Promise<AdCreditOutcome>;
+  bootstrapSuperadmin: (setupCode: string) => Promise<AdminActionOutcome>;
+  createSystemFundingWallet: () => Promise<AdminActionOutcome>;
   refreshAccount: () => Promise<void>;
+  refreshAdmin: () => Promise<void>;
 };
 
 const MagickBoxIcpContext = createContext<MagickBoxIcpState | null>(null);
@@ -185,6 +205,22 @@ async function ensureProfile(actor: CoreActor) {
   return registered.ok;
 }
 
+async function fetchAdminState(actor: CoreActor) {
+  const status = await actor.get_superadmin_status();
+
+  if (!status.is_superadmin) {
+    return { status, dashboard: null };
+  }
+
+  const dashboard = await actor.get_admin_dashboard();
+
+  if ("err" in dashboard) {
+    return { status, dashboard: null };
+  }
+
+  return { status, dashboard: dashboard.ok };
+}
+
 function normalizeCreateJobResult(result: CreateJobResult): CreateGenerationOutcome {
   if ("ok" in result) {
     return { kind: "ok", job: result.ok };
@@ -202,12 +238,115 @@ function normalizeCreateJobResult(result: CreateJobResult): CreateGenerationOutc
   return { kind: "err", message: result.err };
 }
 
+async function completeGenerationThroughWorker({
+  actor,
+  identity,
+  job,
+  mode,
+  providerId,
+  prompt,
+}: {
+  actor: CoreActor;
+  identity: Identity;
+  job: GenerationJob;
+  mode: CreationMode;
+  providerId: string;
+  prompt: string;
+}): Promise<CreateGenerationOutcome> {
+  const mediaActor = await createMediaActor(identity);
+  const execution = await executeBrowserWorker(
+    buildBrowserWorkerRequest({
+      providerId,
+      mode,
+      jobId: job.id,
+      prompt,
+    }),
+  );
+  const outputBytes = new TextEncoder().encode(execution.output);
+  const resultHash = await promptHash(execution.output);
+  const assetResult = await mediaActor.create_asset(
+    job.id,
+    resultHash,
+    execution.mimeType,
+    BigInt(outputBytes.byteLength),
+  );
+
+  if ("err" in assetResult) {
+    throw new Error(assetResult.err);
+  }
+
+  const assetId = assetResult.ok.id;
+  const maxChunkBytes = 900_000;
+  let chunkIndex = 0;
+
+  for (let offset = 0; offset < outputBytes.byteLength; offset += maxChunkBytes) {
+    const chunk = outputBytes.slice(offset, offset + maxChunkBytes);
+    const chunkResult = await mediaActor.put_chunk(assetId, BigInt(chunkIndex), chunk);
+
+    if ("err" in chunkResult) {
+      throw new Error(chunkResult.err);
+    }
+
+    chunkIndex += 1;
+  }
+
+  const manifestResult = await mediaActor.commit_asset(assetId);
+
+  if ("err" in manifestResult) {
+    throw new Error(manifestResult.err);
+  }
+
+  const manifest = manifestResult.ok;
+  const receipt = JSON.stringify({
+    providerId: execution.providerId,
+    adapter: execution.adapter,
+    model: execution.model,
+    storageProvider: manifest.storage_provider,
+    mediaUri: manifest.uri,
+    receipt: execution.receipt,
+  });
+  const attached = await actor.attach_media_manifest(
+    job.id,
+    manifest.storage_provider,
+    manifest.uri,
+    resultHash,
+    execution.mimeType,
+    BigInt(outputBytes.byteLength),
+  );
+
+  if ("err" in attached) {
+    throw new Error(attached.err);
+  }
+
+  const completed = await actor.complete_worker_job(
+    job.id,
+    manifest.uri,
+    resultHash,
+    receipt,
+    execution.output.slice(0, 1_000),
+  );
+
+  if ("err" in completed) {
+    throw new Error(completed.err);
+  }
+
+  return {
+    kind: "ok",
+    job: completed.ok,
+    mediaUri: manifest.uri,
+    outputPreview: execution.output.slice(0, 280),
+  };
+}
+
 export function MagickBoxIcpProvider({ children }: { children: ReactNode }) {
   const initialRuntime = useMemo(() => resolveIcpRuntime(), []);
   const [actor, setActor] = useState<CoreActor | null>(null);
   const [authClient, setAuthClient] = useState<AuthClient | null>(null);
+  const [activeIdentity, setActiveIdentity] = useState<Identity | null>(null);
   const [profile, setProfile] = useState<Profile | null>(null);
   const [paymentAccount, setPaymentAccount] = useState<PaymentAccount | null>(null);
+  const [superAdminStatus, setSuperAdminStatus] = useState<SuperAdminStatus | null>(null);
+  const [adminDashboard, setAdminDashboard] = useState<AdminDashboard | null>(null);
   const [jobs, setJobs] = useState<GenerationJob[]>([]);
   const [providerOptions, setProviderOptions] = useState<UiProviderOption[]>(
     icpProviderOptions.map(mapStaticProviderOption),
@@ -242,6 +381,18 @@ export function MagickBoxIcpProvider({ children }: { children: ReactNode }) {
 
     setProfile(firstOrNull(nextProfile));
     setJobs(nextJobs);
+  }, [actor]);
+
+  const refreshAdmin = useCallback(async () => {
+    if (!actor) {
+      setSuperAdminStatus(null);
+      setAdminDashboard(null);
+      return;
+    }
+
+    const nextAdmin = await fetchAdminState(actor);
+    setSuperAdminStatus(nextAdmin.status);
+    setAdminDashboard(nextAdmin.dashboard);
   }, [actor]);
 
   useEffect(() => {
@@ -282,14 +433,18 @@ export function MagickBoxIcpProvider({ children }: { children: ReactNode }) {
           const authenticatedActor = await createCoreActor(identity);
           const nextProfile = await ensureProfile(authenticatedActor);
           const nextJobs = await authenticatedActor.list_my_jobs();
+          const nextAdmin = await fetchAdminState(authenticatedActor);
 
           if (cancelled) {
             return;
           }
 
           setActor(authenticatedActor);
+          setActiveIdentity(identity);
           setProfile(nextProfile);
           setJobs(nextJobs);
+          setSuperAdminStatus(nextAdmin.status);
+          setAdminDashboard(nextAdmin.dashboard);
           setPrincipalText(identity.getPrincipal().toText());
           setAuthMethod("internet_identity");
           setStatus("authenticated");
@@ -302,14 +457,18 @@ export function MagickBoxIcpProvider({ children }: { children: ReactNode }) {
           const localActor = await createCoreActor(identity);
           const nextProfile = await ensureProfile(localActor);
           const nextJobs = await localActor.list_my_jobs();
+          const nextAdmin = await fetchAdminState(localActor);
 
           if (cancelled) {
             return;
           }
 
           setActor(localActor);
+          setActiveIdentity(identity);
           setProfile(nextProfile);
           setJobs(nextJobs);
+          setSuperAdminStatus(nextAdmin.status);
+          setAdminDashboard(nextAdmin.dashboard);
           setPrincipalText(identity.getPrincipal().toText());
           setAuthMethod("local_browser");
           setStatus("authenticated");
@@ -317,7 +476,15 @@ export function MagickBoxIcpProvider({ children }: { children: ReactNode }) {
           return;
         }
 
+        const anonymousAdmin = await fetchAdminState(anonymousActor);
+        if (cancelled) {
+          return;
+        }
+
+        setSuperAdminStatus(anonymousAdmin.status);
+        setAdminDashboard(anonymousAdmin.dashboard);
         setStatus("anonymous");
+        setActiveIdentity(null);
         setStatusMessage("Local ICP canister detected; sign in to write account state");
       } catch (error) {
         if (cancelled) {
@@ -326,6 +493,7 @@ export function MagickBoxIcpProvider({ children }: { children: ReactNode }) {
 
         setRuntimeMode("unavailable");
         setStatus("error");
+        setActiveIdentity(null);
         setStatusMessage(error instanceof Error ? error.message : "ICP connection failed");
       }
     }
@@ -354,6 +522,7 @@ export function MagickBoxIcpProvider({ children }: { children: ReactNode }) {
       const authenticatedActor = await createCoreActor(identity);
       const nextProfile = await ensureProfile(authenticatedActor);
       const nextJobs = await authenticatedActor.list_my_jobs();
+      const nextAdmin = await fetchAdminState(authenticatedActor);
       const [providers, credits, account] = await Promise.all([
         authenticatedActor.get_provider_options(),
         authenticatedActor.get_credit_options(),
@@ -363,8 +532,11 @@ export function MagickBoxIcpProvider({ children }: { children: ReactNode }) {
       setRuntimeMode("icp");
       setAuthClient(nextAuthClient);
       setActor(authenticatedActor);
+      setActiveIdentity(identity);
       setProfile(nextProfile);
       setJobs(nextJobs);
+      setSuperAdminStatus(nextAdmin.status);
+      setAdminDashboard(nextAdmin.dashboard);
       setProviderOptions(providers.map(mapProviderOption));
       setCreditOptions(credits.map(mapCreditOption));
       setPaymentAccount(account);
@@ -403,6 +575,7 @@ export function MagickBoxIcpProvider({ children }: { children: ReactNode }) {
       const localActor = await createCoreActor(identity);
       const nextProfile = await ensureProfile(localActor);
       const nextJobs = await localActor.list_my_jobs();
+      const nextAdmin = await fetchAdminState(localActor);
       const [providers, credits, account] = await Promise.all([
         localActor.get_provider_options(),
         localActor.get_credit_options(),
@@ -411,8 +584,11 @@ export function MagickBoxIcpProvider({ children }: { children: ReactNode }) {
 
       setRuntimeMode("icp");
       setActor(localActor);
+      setActiveIdentity(identity);
       setProfile(nextProfile);
       setJobs(nextJobs);
+      setSuperAdminStatus(nextAdmin.status);
+      setAdminDashboard(nextAdmin.dashboard);
       setProviderOptions(providers.map(mapProviderOption));
       setCreditOptions(credits.map(mapCreditOption));
       setPaymentAccount(account);
@@ -434,11 +610,24 @@ export function MagickBoxIcpProvider({ children }: { children: ReactNode }) {
       await authClient?.signOut();
       clearLocalBrowserIdentityActive();
       const anonymousActor = canUseIcpRuntime(resolveIcpRuntime()) ? await createCoreActor() : null;
+      const anonymousState = anonymousActor
+        ? await Promise.all([
+            anonymousActor.get_provider_options(),
+            anonymousActor.get_credit_options(),
+            anonymousActor.get_payment_account(),
+            fetchAdminState(anonymousActor),
+          ])
+        : null;
 
       setActor(anonymousActor);
+      setActiveIdentity(null);
       setProfile(null);
       setJobs([]);
-      setPaymentAccount(null);
+      setPaymentAccount(anonymousState?.[2] ?? null);
+      setProviderOptions(anonymousState?.[0].map(mapProviderOption) ?? icpProviderOptions.map(mapStaticProviderOption));
+      setCreditOptions(anonymousState?.[1].map(mapCreditOption) ?? creditRecoveryOptions.map(mapStaticCreditOption));
+      setSuperAdminStatus(anonymousState?.[3].status ?? null);
+      setAdminDashboard(anonymousState?.[3].dashboard ?? null);
       setPrincipalText(null);
       setAuthMethod(null);
       setStatus(anonymousActor ? "anonymous" : "unavailable");
@@ -481,8 +670,23 @@ export function MagickBoxIcpProvider({ children }: { children: ReactNode }) {
         };
       }
 
+      if (!activeIdentity) {
+        return {
+          kind: "auth_required",
+          message: "Reconnect your ICP identity before generating content",
+        };
+      }
+
+      if (!resolveIcpRuntime().mediaCanisterId) {
+        return {
+          kind: "err",
+          message: "ICP media canister is not available from this asset canister runtime",
+        };
+      }
+
       setIsBusy(true);
       try {
+        await assertBrowserWorkerAvailable();
         await ensureProfile(actor);
         const result = await actor.create_generation_job(
           mode,
@@ -500,17 +704,37 @@ export function MagickBoxIcpProvider({ children }: { children: ReactNode }) {
         setProfile(firstOrNull(nextProfile));
         setJobs(nextJobs);
 
-        return outcome;
+        if (outcome.kind !== "ok") {
+          return outcome;
+        }
+
+        const completed = await completeGenerationThroughWorker({
+          actor,
+          identity: activeIdentity,
+          job: outcome.job,
+          mode,
+          providerId,
+          prompt,
+        });
+        const [completedProfile, completedJobs] = await Promise.all([
+          actor.get_my_profile(),
+          actor.list_my_jobs(),
+        ]);
+
+        setProfile(firstOrNull(completedProfile));
+        setJobs(completedJobs);
+
+        return completed;
       } catch (error) {
         return {
           kind: "err",
-          message: error instanceof Error ? error.message : "Canister job creation failed",
+          message: error instanceof Error ? error.message : "Canister generation failed",
         };
       } finally {
         setIsBusy(false);
       }
     },
-    [actor, runtimeMode, status],
+    [activeIdentity, actor, runtimeMode, status],
   );
 
   const createIcpPaymentIntent = useCallback(
@@ -612,12 +836,95 @@ export function MagickBoxIcpProvider({ children }: { children: ReactNode }) {
     [actor, runtimeMode, status],
   );
 
+  const bootstrapSuperadmin = useCallback(
+    async (setupCode: string): Promise<AdminActionOutcome> => {
+      if (runtimeMode !== "icp" || !actor) {
+        return {
+          kind: "auth_required",
+          message: "Open the local ICP asset canister to bind the superadmin principal",
+        };
+      }
+
+      if (status !== "authenticated") {
+        return {
+          kind: "auth_required",
+          message: "Sign in with Internet Identity before claiming superadmin",
+        };
+      }
+
+      setIsBusy(true);
+      try {
+        const result = await actor.bootstrap_superadmin(setupCode.trim());
+
+        if ("err" in result) {
+          return { kind: "err", message: result.err };
+        }
+
+        const nextAdmin = await fetchAdminState(actor);
+        setSuperAdminStatus(nextAdmin.status);
+        setAdminDashboard(nextAdmin.dashboard);
+        return { kind: "ok", message: "This principal is now the Magick Box superadmin." };
+      } catch (error) {
+        return {
+          kind: "err",
+          message: error instanceof Error ? error.message : "Superadmin bootstrap failed",
+        };
+      } finally {
+        setIsBusy(false);
+      }
+    },
+    [actor, runtimeMode, status],
+  );
+
+  const createSystemFundingWallet = useCallback(async (): Promise<AdminActionOutcome> => {
+    if (runtimeMode !== "icp" || !actor) {
+      return {
+        kind: "auth_required",
+        message: "Open the ICP asset canister to create the system funding wallet",
+      };
+    }
+
+    if (status !== "authenticated") {
+      return {
+        kind: "auth_required",
+        message: "Sign in with Internet Identity before creating the system funding wallet",
+      };
+    }
+
+    setIsBusy(true);
+    try {
+      const result = await actor.create_system_funding_wallet();
+
+      if ("err" in result) {
+        return { kind: "err", message: result.err };
+      }
+
+      const nextAdmin = await fetchAdminState(actor);
+      setSuperAdminStatus(nextAdmin.status);
+      setAdminDashboard(nextAdmin.dashboard);
+      return {
+        kind: "ok",
+        wallet: result.ok,
+        message: "System funding wallet created. Fund the displayed ICP account and refresh to verify.",
+      };
+    } catch (error) {
+      return {
+        kind: "err",
+        message: error instanceof Error ? error.message : "System funding wallet creation failed",
+      };
+    } finally {
+      setIsBusy(false);
+    }
+  }, [actor, runtimeMode, status]);
+
   const value = useMemo<MagickBoxIcpState>(
     () => ({
       actor,
       authClient,
       profile,
       paymentAccount,
+      superAdminStatus,
+      adminDashboard,
       jobs,
       providerOptions,
       creditOptions,
@@ -635,13 +942,18 @@ export function MagickBoxIcpProvider({ children }: { children: ReactNode }) {
       createGenerationJob,
       createIcpPaymentIntent,
       grantAdCredits,
+      bootstrapSuperadmin,
+      createSystemFundingWallet,
       refreshAccount,
+      refreshAdmin,
     }),
     [
       actor,
       authClient,
       profile,
       paymentAccount,
+      superAdminStatus,
+      adminDashboard,
       jobs,
       providerOptions,
       creditOptions,
@@ -658,7 +970,10 @@ export function MagickBoxIcpProvider({ children }: { children: ReactNode }) {
       createGenerationJob,
       createIcpPaymentIntent,
       grantAdCredits,
+      bootstrapSuperadmin,
+      createSystemFundingWallet,
       refreshAccount,
+      refreshAdmin,
     ],
   );
 

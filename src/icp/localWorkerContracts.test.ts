@@ -19,10 +19,12 @@ describe("local ICP worker and media storage contracts", () => {
     expect(adapters).toContain("MAGICKAI_WORKER_COMMAND");
   });
 
-  it("stores generated media in the ICP canister before anchoring manifests", () => {
+  it("stores generated media in the dedicated ICP media canister before anchoring manifests", () => {
     const advancedSmoke = readFileSync(advancedSmokePath, "utf8");
 
-    expect(advancedSmoke).toContain("store_media_asset");
+    expect(advancedSmoke).toContain("magickbox_media create_asset");
+    expect(advancedSmoke).toContain("magickbox_media put_chunk");
+    expect(advancedSmoke).toContain("magickbox_media commit_asset");
     expect(advancedSmoke).toContain("icp-canister-media-store");
     expect(advancedSmoke).toContain("icp-media://");
     expect(advancedSmoke).not.toContain("storage/media");

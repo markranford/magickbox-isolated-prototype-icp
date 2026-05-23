@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import {
   canUseIcpRuntime,
   clearLocalBrowserIdentityActive,
+  createMediaActor,
   getIdentityProviderUrl,
   getOrCreateLocalBrowserIdentity,
   hasActiveLocalBrowserIdentity,
@@ -17,6 +18,10 @@ describe("Magick Box ICP client adapter", () => {
     expect(canUseIcpRuntime(runtime)).toBe(false);
     expect(runtime.canisterId).toBeNull();
     expect(runtime.reason).toContain("canister writes require the ICP asset canister");
+  });
+
+  it("requires a media canister id before creating the ICP media actor", async () => {
+    await expect(createMediaActor()).rejects.toThrow("media canister");
   });
 
   it("targets local Internet Identity from localhost-style origins", () => {

@@ -40,7 +40,9 @@ describe("external worker services and durable media backend contracts", () => {
     const packageJson = readFileSync(packageJsonPath, "utf8");
     const advancedSmoke = readFileSync(advancedSmokePath, "utf8");
 
-    expect(advancedSmoke).toContain("store_media_asset");
+    expect(advancedSmoke).toContain("magickbox_media create_asset");
+    expect(advancedSmoke).toContain("magickbox_media put_chunk");
+    expect(advancedSmoke).toContain("magickbox_media commit_asset");
     expect(advancedSmoke).toContain("icp-canister-media-store");
     expect(decision).toContain("ICP canister media storage");
     expect(decision).toContain("ICP manifests");

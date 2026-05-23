@@ -91,12 +91,27 @@ test("creation surface exposes provider choices and credit state", async ({ page
   await expect(page.getByText("25 credits")).toBeVisible();
 });
 
+test("admin route exposes superadmin and system wallet management surface", async ({ page }) => {
+  await page.goto("/home/admin");
+
+  await expect(page.getByRole("heading", { name: "Superadmin" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "System Wallet" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Internet Identity principal" })).toBeVisible();
+  await expect(
+    page.getByLabel("System Wallet").getByRole("heading", { name: "Create system funding wallet" }),
+  ).toBeVisible();
+  await expect(page.getByRole("button", { name: "Create funding wallet" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Payment and credit controls" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Worker and AI routes" })).toBeVisible();
+});
+
 test("built assets include ICP asset canister routing policy", async () => {
   const policy = await readFile("dist/.ic-assets.json5", "utf8");
 
   expect(policy).toContain('"allow_raw_access": false');
   expect(policy).toContain('"enable_aliasing": true');
   expect(policy).toContain("Content-Security-Policy");
+  expect(policy).toContain("http://127.0.0.1:*");
 });
 
 declare global {

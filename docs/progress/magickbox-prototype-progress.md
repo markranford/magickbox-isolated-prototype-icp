@@ -1367,3 +1367,829 @@ Blockers or risks:
 Next step:
 
 - Build the dedicated ICP media/chunk canister and a canister-backed gallery index so newly generated Magick Box media can live on ICP beyond static copied assets.
+
+## 2026-05-22T20:46:06+07:00 - Checkpoint 27: Mainnet/Caffeine Gate Reopened And Preflight Started
+
+Current workspace/folder:
+
+`C:\Users\Mark\Documents\Codex\Codex_MagickBox\magick-box-rewrite-readiness-prototype`
+
+What was inspected:
+
+- Current isolated prototype git state.
+- Durable full ICP goal document.
+- Current `icp.yaml`, effective `icp project show`, local/mainnet environments, and deployed local canister structure.
+- Chrome/Caffeine.ai account state through the Codex Chrome extension, using the `stratagility.com` profile.
+- Local ICP identities and their mainnet ICP/cycles balances.
+
+What was created or changed:
+
+- Updated `docs/goals/magickbox-full-icp-deployment.goal.md` to record Mark's explicit approval to use Caffeine.ai for a separate isolated live ICP app.
+- Kept production Magick Box repos, `www.magickbox.ai`, DNS, auth, analytics, billing, databases, secrets, deployment settings, and live users out of scope.
+
+Commands run and results:
+
+- `git status --short` -> clean before edits.
+- `icp --version` -> `icp 0.2.6`.
+- `icp identity default` -> `sprint0-admin`.
+- `icp identity list` plus balance checks across available identities -> every checked identity had `0 ICP` and `0 cycles` on mainnet.
+- `icp network list` -> `local`, `ic`.
+- `icp environment list` -> `ic`, `local`.
+- `icp project show` -> effective config already includes built-in `ic` mainnet network/environment in addition to the project local environment.
+- `icp network ping ic` -> mainnet endpoint healthy.
+- Chrome `openTabs()` -> Caffeine.ai is open and authenticated in Mark's Stratagility Chrome profile.
+- Caffeine DOM snapshot -> account shows verified `mark@stratagility.com`, available Caffeine app chat surface, prior deployments, and current status text `Hold tight, your app is getting deployed...`.
+
+Decisions made:
+
+- Direct `icp deploy -e ic` cannot be run yet from the currently available local identities because they have no ICP or cycles.
+- Caffeine.ai is the approved path to attempt a separate live ICP app immediately, while direct CLI mainnet deployment remains gated on funding/controller policy.
+- The next local hardening slice is a dedicated ICP media/chunk canister so generated media does not rely on external object storage or size-limited core-canister blobs.
+
+Blockers or risks:
+
+- Direct CLI mainnet deploy is blocked by zero ICP/cycles for every available local identity.
+- Caffeine.ai may require its own deployment completion, source upload/import limits, or manual confirmation inside the authenticated browser.
+- The existing Caffeine tab appeared to have an in-progress deployment status before starting the Magick Box deployment prompt.
+
+Next step:
+
+- Add the dedicated ICP media/chunk canister, wire the advanced smoke to store worker output there, verify locally, then prompt Caffeine.ai to create the isolated `codex_magickboxOnICP` live ICP app from this source.
+
+## 2026-05-22T20:56:23+07:00 - Checkpoint 28: Dedicated ICP Media Canister Added And Caffeine App Creation Started
+
+Current workspace/folder:
+
+`C:\Users\Mark\Documents\Codex\Codex_MagickBox\magick-box-rewrite-readiness-prototype`
+
+What was inspected:
+
+- Existing `magickbox_core` media manifest and small-blob storage implementation.
+- ICP CLI local/mainnet environment behavior.
+- Caffeine.ai authenticated Chrome tab in the `stratagility.com` profile.
+- Local ICP browser output after adding the media canister.
+
+What was created or changed:
+
+- Added `canisters/magickbox_media/main.mo`.
+- Added `canisters/magickbox_media/magickbox_media.did`.
+- Added `magickbox_media` to `icp.yaml`.
+- Updated `scripts/deploy-local-icp.sh` to deploy/report the media canister.
+- Updated `scripts/smoke-local-icp-advanced.mjs` so worker outputs are stored through `magickbox_media create_asset`, `put_chunk`, and `commit_asset`, then anchored in `magickbox_core` as ICP media manifests.
+- Generated `src/icp/generated/magickbox_media.did.ts`.
+- Updated frontend runtime metadata to read `PUBLIC_CANISTER_ID:magickbox_media` and show the media canister in the status strip.
+- Added `scripts/preflight-mainnet-icp.mjs` and `npm run preflight:mainnet`.
+- Added `docs/handovers/caffeine-magickbox-on-icp-prompt.md`.
+- Submitted the Caffeine app creation prompt in a new Caffeine chat/app.
+
+Commands run and results:
+
+- `wsl ... icp build magickbox_media` -> passed.
+- `npm run test -- --run src/icp/canisterContract.test.ts src/icp/externalServiceContracts.test.ts src/icp/localWorkerContracts.test.ts` -> passed, 3 files / 10 tests.
+- `npx icp-bindgen --did-file canisters\magickbox_media\magickbox_media.did --out-dir src\icp\generated --declarations-typescript --declarations-flat --actor-disabled --force` -> generated media canister binding.
+- `wsl ... icp build` -> passed for all canisters.
+- `npm run preflight:mainnet` -> correctly blocked direct CLI mainnet deploy because no dedicated `MAGICKBOX_MAINNET_IDENTITY` is set and the default identity has `0 ICP` and `0 cycles`; IC mainnet endpoint was healthy.
+- `npm run test` -> passed, 6 files / 20 tests.
+- `npm run lint` -> passed after removing stale generated eslint disable.
+- `npm run build` -> passed; Vite warned one generated bundle is about 500 kB.
+- `wsl ... bash scripts/deploy-local-icp.sh` -> passed after one stale local cache cleanup retry; local canisters:
+  - `magickbox_core`: `t63gs-up777-77776-aaaba-cai`
+  - `magickbox_media`: `tz2ag-zx777-77776-aaabq-cai`
+  - `frontend`: `tm5rl-y7777-77776-aaaca-cai`
+- `wsl ... bash scripts/smoke-local-icp.sh` -> passed.
+- `npm run smoke:icp:advanced` -> passed; local Ollama, FreeLLMAPI-compatible, and MagickAI-compatible worker outputs were stored as committed `magickbox_media` assets and anchored as `icp-media://...` manifests in `magickbox_core`.
+- In-app browser opened `http://frontend.local.localhost:8010/` -> page loaded, showed `Media canister tz2ag-zx777-77776-aaabq-cai`, provider controls, and copied media content.
+- Caffeine.ai new chat created at `https://caffeine.ai/chat/019e4ff8-dc08-7792-b3a9-5bd6c9c7984c`; prompt submitted and app slot showed `Waiting for name...` with status `Hold tight, your app is getting deployed...`.
+
+Decisions made:
+
+- Generated media is now ICP-only through a dedicated media canister, with the core canister retaining manifest/job/account state.
+- Direct CLI mainnet deployment remains blocked until a dedicated funded identity and backup-controller policy exist.
+- Caffeine.ai is now the active path for attempting a separate live ICP/Caffeine app creation.
+
+Blockers or risks:
+
+- Caffeine app generation/deployment is still in progress and may need manual confirmation or additional instructions when its preview is ready.
+- Direct CLI mainnet deploy remains blocked by missing dedicated identity selection and 0 ICP/cycles on the current default identity.
+- The Caffeine app may mirror canister behavior if it cannot directly compile/deploy Motoko canisters.
+
+Next step:
+
+- Monitor the Caffeine app creation until a preview/live URL appears, then use the Caffeine controls to publish the separate app if available and document the result.
+
+## 2026-05-22T20:59:11+07:00 - Checkpoint 29: Caffeine Build Questions Answered
+
+Current workspace/folder:
+
+`C:\Users\Mark\Documents\Codex\Codex_MagickBox\magick-box-rewrite-readiness-prototype`
+
+What was inspected:
+
+- Active authenticated Caffeine.ai app chat at `https://caffeine.ai/chat/019e4ff8-dc08-7792-b3a9-5bd6c9c7984c`.
+- Caffeine composer status and app panel for the new `codex_magickboxOnICP` app.
+
+What was created or changed:
+
+- No local code changed in this checkpoint.
+- Sent the Caffeine PM answers requesting the strongest real implementation path: live FreeLLMAPI/OpenAI-compatible provider adapter, MagickAI/user/local provider boundaries, real ICP/ICRC payment binding, per-intent subaccounts, ICRC-2 where supported, and full ICP media canister storage with no AWS/S3.
+
+Commands run and results:
+
+- Chrome/Caffeine DOM snapshot -> Caffeine had paused on three PM questions about AI provider mode, payment implementation, and media canister depth.
+- Chrome textbox fill/click send -> answers were submitted successfully; the chat returned to `Reasoning` with `Analyzing requirements and producing the PM spec`.
+
+Decisions made:
+
+- Caffeine should not proceed with mocked/stubbed success states.
+- The new app should grant credits only from verifiable payment, ad, or provider events.
+- Media must stay on ICP through a separate canister or the closest Caffeine-supported ICP equivalent; any Caffeine canister limitation must be documented instead of hidden.
+
+Blockers or risks:
+
+- Caffeine app panel still shows `Waiting for name...`; preview, code, specs, and `Go live` are not available yet.
+- Caffeine may still decide it cannot deploy Motoko canisters directly and may need a follow-up instruction or source upload.
+
+Next step:
+
+- Continue monitoring Caffeine until preview/spec/code or a live app action becomes available, then verify and publish only the new isolated app.
+
+## 2026-05-22T21:08:36+07:00 - Checkpoint 30: Caffeine Spec And Code Generated, Preview Still Blocked
+
+Current workspace/folder:
+
+`C:\Users\Mark\Documents\Codex\Codex_MagickBox\magick-box-rewrite-readiness-prototype`
+
+What was inspected:
+
+- Caffeine.ai `codex_magickboxOnICP` app panel, spec pane, and code pane.
+- Generated Caffeine project tree and visible Motoko/frontend files.
+
+What was created or changed:
+
+- No local code changed in this checkpoint.
+- Caffeine generated a named app slot, AI-generated spec metadata, and a read-only code tree for `codex_magickboxOnICP`.
+
+Commands run and results:
+
+- Chrome/Caffeine monitor after PM answers -> app was renamed from `Waiting for name...` to `codex_magickboxOnICP`.
+- Caffeine spec pane -> enabled and showed an ICP-native Magick Box prototype with Internet Identity, FreeLLMAPI/OpenAI-compatible provider, ICP/ICRC credit top-up, ICRC-2 secondary path, and dedicated ICP media canister with `icp-media://` URIs.
+- Caffeine code pane -> enabled and showed generated files including `src/backend/lib/*.mo`, `src/backend/mixins/*.mo`, `src/backend/types/common.mo`, frontend assets, fonts, `index.css`, and `project.json`.
+- Caffeine app pane -> remained at `4 of 13 tasks done`; `Open in new tab`, `Refresh preview`, and `Go live` were still disabled.
+
+Decisions made:
+
+- The generated spec/code is useful and should not be discarded.
+- Because the preview/publish controls remain locked while the build appears stalled, the next action is to use Caffeine's own stop/continue loop inside the isolated `codex_magickboxOnICP` app rather than modifying any production surface.
+
+Blockers or risks:
+
+- Caffeine may be stuck during compile/deploy and has not exposed a preview URL or canister IDs yet.
+- Caffeine code is currently visible as read-only in the web UI; no local export has been performed.
+
+Next step:
+
+- Stop the stalled Caffeine run if it remains blocked, then prompt Caffeine to continue from the generated code and finish compile, preview, and live publish for the isolated app.
+
+## 2026-05-22T21:15:59+07:00 - Checkpoint 31: Caffeine App ID Captured, Motoko Compile Fix In Progress
+
+Current workspace/folder:
+
+`C:\Users\Mark\Documents\Codex\Codex_MagickBox\magick-box-rewrite-readiness-prototype`
+
+What was inspected:
+
+- Caffeine.ai `codex_magickboxOnICP` app panel, app actions menu, build status, browser logs, and open Chrome tabs.
+
+What was created or changed:
+
+- No local code changed in this checkpoint.
+- Captured Caffeine app/chat ID `019e4ff8-dc08-7792-b3a9-5bd6c9c7984c` for the new isolated app.
+
+Commands run and results:
+
+- Caffeine refresh/monitor -> build advanced from `4 of 13 tasks done` to `5 of 13 tasks done`.
+- Caffeine DOM error-context extraction -> visible status is `Fixing remaining Motoko compile errors and finalizing TypeScript bindings.`
+- Caffeine app actions menu -> `Copy app ID` available; `Go live`, `Open in new tab`, and `Refresh preview` still disabled.
+- Chrome open-tabs check -> no separate Caffeine preview tab for `codex_magickboxOnICP` exists yet.
+- Browser console warning/error log check -> no Caffeine page console errors were exposed; Cloudflare/Statsig telemetry warnings from browser automation are unrelated to the app build.
+
+Decisions made:
+
+- The Caffeine build is not a production touch and can continue inside the new isolated app.
+- Since Caffeine is actively fixing Motoko compile errors, do not discard the generated app or start over.
+- Keep the local ICP prototype as the verified fallback while Caffeine works through its compile/deploy pipeline.
+
+Blockers or risks:
+
+- Caffeine has not yet exposed a preview URL, live URL, or canister IDs for `codex_magickboxOnICP`.
+- The visible blocker is Caffeine-side Motoko compile/type binding repair.
+
+Next step:
+
+- Re-run local verification while Caffeine continues, then monitor Caffeine until preview or deployment controls unlock.
+
+## 2026-05-22T21:23:04+07:00 - Checkpoint 32: Caffeine Recovery App Prompt Prepared
+
+Current workspace/folder:
+
+`C:\Users\Mark\Documents\Codex\Codex_MagickBox\magick-box-rewrite-readiness-prototype`
+
+What was inspected:
+
+- Authenticated Caffeine.ai tab for `codex_magickboxOnICP`.
+- Current Caffeine landing/new-app prompt page in Mark's Stratagility Chrome profile.
+
+What was created or changed:
+
+- Added `docs/handovers/caffeine-magickbox-on-icp-live-recovery-prompt.md`.
+
+Commands run and results:
+
+- Chrome/Caffeine status extraction -> existing app `codex_magickboxOnICP` still exists at chat/app ID `019e4ff8-dc08-7792-b3a9-5bd6c9c7984c`.
+- Caffeine build monitor -> app remains at `5 OF 13 TASKS DONE`.
+- Caffeine visible status -> `Iterating on Motoko hash implementation - nearly there.`
+- Caffeine controls -> `Go live`, `Open in new tab`, `Refresh preview`, and `Send prompt` remain disabled; `Stop` remains enabled but does not release the locked run.
+- Caffeine new-app page -> prompt box and `Send prompt` are available.
+
+Decisions made:
+
+- Preserve the original Caffeine app and its generated spec/code rather than deleting or discarding it.
+- Start a second isolated Caffeine app, `codex_magickboxOnICP_live`, with a deployable-first prompt that keeps ICP-first/no-AWS constraints while avoiding the custom Motoko hash-map compile path that blocked the first Caffeine run.
+
+Blockers or risks:
+
+- The first Caffeine app is stuck inside Caffeine's generated Motoko compile loop and has not exposed a preview URL, live URL, or canister IDs.
+- The recovery app may need to use Caffeine-supported backend persistence for its live app if Caffeine cannot directly deploy Motoko canisters.
+
+Next step:
+
+- Submit the recovery prompt on Caffeine's new-app page, monitor build progress, and publish only if Caffeine exposes a safe isolated preview/live app.
+
+## 2026-05-22T21:36:18+07:00 - Checkpoint 33: Second Caffeine App Created And Code Generated
+
+Current workspace/folder:
+
+`C:\Users\Mark\Documents\Codex\Codex_MagickBox\magick-box-rewrite-readiness-prototype`
+
+What was inspected:
+
+- Caffeine.ai recovery chat/app at `https://caffeine.ai/chat/019e5011-d076-7181-84b7-4bdaae59402b`.
+- Caffeine PM questions, generated spec pane, generated code pane, and app preview controls.
+
+What was created or changed:
+
+- Submitted `docs/handovers/caffeine-magickbox-on-icp-live-recovery-prompt.md` to Caffeine.
+- Caffeine created a second isolated app/chat for the recovery path.
+- Caffeine named the app UI `MagickBox on ICP` even though the prompt requested `codex_magickboxOnICP_live`.
+
+Commands run and results:
+
+- Caffeine new-app prompt submission -> navigated to chat/app ID `019e5011-d076-7181-84b7-4bdaae59402b`.
+- Caffeine PM questions answered -> selected real provider execution, combined user/developer status page, and actual ICRC ledger calls as the priority with honest pending states where unsupported.
+- Caffeine build monitor -> progressed through `1 OF 27 TASKS DONE`, `5 OF 27 TASKS DONE`, and `7 OF 27 TASKS DONE`.
+- Caffeine spec pane -> generated AI spec for an isolated ICP/Magick Box creative platform with provider-required AI states, Internet Identity fallback, ICRC payment intents, ad-verifier credits, ICP-first media records, and system/status diagnostics.
+- Caffeine code pane -> generated read-only code tree including `src/backend/lib/ai.mo`, `auth.mo`, `credits.mo`, `media.mo`, `payments.mo`, `status.mo`, mixin APIs, type modules, `main.mo`, and frontend assets.
+- Caffeine app controls -> `Go live`, `Open in new tab`, and `Refresh preview` remain disabled while the build remains at `7 OF 27 TASKS DONE`.
+
+Decisions made:
+
+- Preserve both Caffeine apps: the first has deeper Motoko/canister ambition but is stuck at a Motoko hash implementation; the second is the deployable-first recovery path and has useful generated spec/code.
+- Do not use production Magick Box services, existing GitHub repos, AWS/S3, DNS, auth, analytics, billing, databases, or secrets.
+
+Blockers or risks:
+
+- The second Caffeine app is not live yet. It has generated spec/code but no enabled preview/live action.
+- Caffeine may still be blocked on generated Motoko or Caffeine backend compile despite the deployable-first prompt.
+- Caffeine UI name does not currently match the requested `codex_` prefix.
+
+Next step:
+
+- Continue monitoring the second Caffeine app until preview/go-live unlocks, then verify the isolated app before publishing. If it remains stalled, capture the final Caffeine-side blocker and keep the tab available for handoff.
+
+## 2026-05-22T21:58:36+07:00 - Checkpoint 34: Caffeine Apps Created, Preview Still Blocked
+
+Current workspace/folder:
+
+`C:\Users\Mark\Documents\Codex\Codex_MagickBox\magick-box-rewrite-readiness-prototype`
+
+What was inspected:
+
+- Three Caffeine.ai app/chat pages in Mark's authenticated Caffeine account.
+- Caffeine app preview controls, spec/code panes, build status text, and browser console logs.
+
+What was created or changed:
+
+- Added `docs/handovers/caffeine-magickbox-on-icp-control-center-prompt.md`.
+- Added `docs/handovers/caffeine-app-status-2026-05-22.md`.
+- Created a third Caffeine app/chat for the frontend-only control-center fallback.
+
+Commands run and results:
+
+- Submitted `codex_magickboxOnICP_control_center` prompt -> Caffeine created chat/app `https://caffeine.ai/chat/019e5022-fe7e-74c9-9428-b475f02043dc`.
+- Caffeine control-center monitor -> advanced through `1 OF 20 TASKS DONE`, `3 OF 20 TASKS DONE`, `14 OF 20 TASKS DONE`, and `17 OF 20 TASKS DONE`.
+- Caffeine code pane -> generated frontend-only tree (`src/frontend`, `index.html`, `index.css`, `project.json`) and avoided a generated Motoko backend tree for this third attempt.
+- Caffeine final monitor -> remained at `17 OF 20 TASKS DONE`; `Go live`, `Open in new tab`, and `Refresh preview` remained disabled.
+- Caffeine browser logs -> repeated Caffeine editor-worker errors: `Error: Unexpected usage at e_.loadForeignModule ... tsMode ... getLanguageServiceWorker ... _doValidate`.
+
+Decisions made:
+
+- The best Caffeine candidate is the third app, `codex_magickboxOnICP_control_center` / UI name `MagickBox ICP`, because it avoids Caffeine-side Motoko compilation and models the app as an isolated ICP control center.
+- Stop short of pressing any production/deployment controls unless Caffeine exposes a clearly isolated preview/live target.
+- Preserve all three Caffeine chats because each contains useful generated spec/code or status evidence.
+
+Blockers or risks:
+
+- Caffeine has not yet produced an enabled preview/live URL for any created app.
+- The Caffeine UI may be blocked by its own build/editor worker pipeline rather than the local project.
+- The frontend-only Caffeine app is a control center, not the authoritative ICP app; authoritative storage/payments/media remain on the local ICP prototype/canister path.
+
+Next step:
+
+- Keep Caffeine tabs open for continuation. If Caffeine unblocks, verify the control-center preview and only then use `Go live` if it is clearly a new isolated Caffeine app and not connected to Magick Box production.
+
+## 2026-05-23T07:25:50+07:00 - Checkpoint 35: Completion Plan For Real Login And Generation
+
+Current workspace/folder:
+
+`C:\Users\Mark\Documents\Codex\Codex_MagickBox\magick-box-rewrite-readiness-prototype`
+
+What was inspected:
+
+- Current isolated repo status, `package.json`, `icp.yaml`, `src/icp/MagickBoxIcpContext.tsx`, `src/icp/magickboxClient.ts`, `canisters/magickbox_core/main.mo`, `canisters/magickbox_media/main.mo`, worker smoke scripts, generated bindings, tests, and prior progress checkpoints.
+- Local Ollama inventory and port availability.
+- Existing Caffeine app status from prior handoff docs.
+
+What was created or changed:
+
+- Added `docs/superpowers/plans/2026-05-23-icp-login-generation-completion.md`.
+
+Commands run and results:
+
+- `git status --short` -> existing useful dirty work remains in the isolated prototype; no reference repo or production file was touched.
+- `Get-Content package.json` -> scripts already include lint, test, build, e2e, local ICP advanced smoke, service smoke, and mainnet preflight.
+- `Get-Content icp.yaml` -> local managed ICP network with `ii: true`, gateway `8010`, and canisters `magickbox_core`, `magickbox_media`, and `frontend`.
+- `rg ... src canisters scripts tests docs` -> confirmed existing II, payment, ad-credit, worker, and media canister paths.
+- `ollama list` -> local models are available, including `qwen3.6:latest`, `gemma4:31b`, and `glm4:9b`.
+- `Test-NetConnection 127.0.0.1:11434` -> Ollama is reachable.
+- `wsl ... icp canister id ...` -> no current local canister IDs returned from that quick command, so the local ICP deploy/smoke step must refresh the canister environment before UI testing.
+
+Decisions made:
+
+- Treat Caffeine.ai as an optional isolated deployment wrapper, not the critical path for success.
+- Complete the direct local ICP product path first: signed browser identity, real worker execution, ICP media canister byte storage, core manifest attachment, and completed job UI.
+- Keep AI inference outside ICP behind a worker adapter, while keeping generated output, manifests, job state, credits, and audit records on ICP.
+
+Blockers or risks:
+
+- Direct mainnet deployment still requires a funded ICP/cycles identity and backup-controller policy before any spend or mainnet install.
+- Caffeine preview/live controls were previously disabled, so it cannot be relied on until rechecked.
+- Browser-based Internet Identity popups can be blocked inside the in-app browser; local browser identity remains the local ICP test fallback, while real II remains the production auth target.
+
+Next step:
+
+- Add tests for the browser worker and media-write path, confirm they fail, then implement the browser-to-worker-to-ICP-media completion slice.
+
+## 2026-05-23T07:34:52+07:00 - Checkpoint 36: Browser Worker Flow Implemented And Local ICP Redeployed
+
+Current workspace/folder:
+
+`C:\Users\Mark\Documents\Codex\Codex_MagickBox\magick-box-rewrite-readiness-prototype`
+
+What was inspected:
+
+- Browser ICP client, ICP context provider, generated media Candid binding, worker adapter library, local deploy script, and local network logs.
+- PocketIC/network-launcher process state after the first deploy failure.
+
+What was created or changed:
+
+- Added `src/icp/browserWorker.ts`.
+- Added `scripts/local-worker-service.mjs`.
+- Added `scripts/smoke-local-icp-ui-generation.mjs`.
+- Updated `src/icp/magickboxClient.ts` with `createMediaActor`.
+- Updated `src/icp/MagickBoxIcpContext.tsx` so an authenticated browser submission checks the worker service, creates an ICP job, executes the selected worker, uploads output bytes to `magickbox_media`, attaches an ICP-only manifest to `magickbox_core`, completes the job, and refreshes account state.
+- Updated `src/App.tsx` to surface completed generation output instead of a queued-only placeholder.
+- Updated `package.json` with `worker:local` and `smoke:icp:ui`.
+- Added/updated focused Vitest tests.
+
+Commands run and results:
+
+- `npm run test -- src/icp/browserWorker.test.ts src/icp/magickboxClient.test.ts` before implementation -> failed because `browserWorker` and `createMediaActor` did not exist.
+- `npm run test -- src/icp/browserWorker.test.ts src/icp/magickboxClient.test.ts` after implementation -> 10 tests passed.
+- `npm run test` -> 7 files / 25 tests passed.
+- `npm run lint` -> passed.
+- `npm run build` -> passed; Vite still reports the known post-minify chunk-size warning around 504 kB.
+- `wsl ... bash scripts/deploy-local-icp.sh` first attempt -> failed with PocketIC `Failed to copy state to WSL-native state directory: Permission denied`.
+- Inspected `.icp/cache/networks/local/network-launcher/stderr.log` and local processes -> found stale local PocketIC processes and no running network for this project.
+- Killed stale local PocketIC processes only.
+- `wsl ... bash scripts/deploy-local-icp.sh` retry -> passed.
+
+Decisions made:
+
+- Browser generation now requires a reachable worker service before creating a canister job, reducing accidental credit spend when no worker is available.
+- Generated content is uploaded to the dedicated ICP media canister before the core job is marked complete.
+- Local browser identity remains the reliable local test path when Internet Identity popups are blocked by the embedded browser.
+
+Blockers or risks:
+
+- The browser worker is intentionally off-ICP because dynamic model execution still needs local/Ollama, FreeLLMAPI, or MagickAI-compatible infrastructure.
+- Direct mainnet deployment remains unattempted until preflight proves ICP/cycles and backup-controller policy.
+
+Next step:
+
+- Run `npm run smoke:icp:advanced` and `npm run smoke:icp:ui` against the redeployed local canisters, then capture results and screenshots.
+
+## 2026-05-23T07:50:24+07:00 - Checkpoint 37: End-To-End Local ICP Generation And Caffeine Control Center Live
+
+Current workspace/folder:
+
+`C:\Users\Mark\Documents\Codex\Codex_MagickBox\magick-box-rewrite-readiness-prototype`
+
+What was inspected:
+
+- Local ICP redeploy output, advanced canister smoke output, UI generation smoke output, direct mainnet preflight output, and Caffeine authenticated app/settings/live pages.
+- Caffeine live domain `https://magickbox-icp-e68.caffeine.xyz/`.
+
+What was created or changed:
+
+- Updated `public/.ic-assets.json5` CSP to allow local loopback worker endpoints.
+- Updated `scripts/deploy-local-icp.sh` to stop stale local PocketIC processes before recreating project-local state.
+- Updated `scripts/smoke-local-icp-ui-generation.mjs` to use a dedicated smoke worker port and set the browser worker URL in local storage.
+- Updated `docs/evals/checklist.md`.
+- Updated `docs/evals/magickbox-icp-delivery-gap-check.md`.
+- Updated `docs/handovers/magickbox-full-icp-local-deploy-handoff.md`.
+- Updated `docs/handovers/magickbox-isolated-prototype-handoff.md`.
+- Updated `docs/handovers/caffeine-app-status-2026-05-22.md`.
+- Captured Caffeine live screenshot at `docs/artifacts/prototype/caffeine-live-control-center.png`.
+- Captured UI generation screenshot at `docs/artifacts/prototype/local-icp-ui-worker-generation.png`.
+
+Commands run and results:
+
+- `npm run e2e -- --grep "built assets include" --project=chromium-desktop` before CSP fix -> failed because the asset CSP did not allow the local worker.
+- `npm run build` -> passed after CSP fix.
+- `npm run e2e -- --grep "built assets include" --project=chromium-desktop` -> passed.
+- `wsl ... bash scripts/deploy-local-icp.sh` first post-CSP attempt -> failed due stale PocketIC state-copy permission issue.
+- Updated deploy script and reran `wsl ... bash scripts/deploy-local-icp.sh` -> passed.
+- `npm run smoke:icp:advanced` -> passed; payment, ad credits, local Ollama, FreeLLMAPI-compatible, MagickAI-compatible, dedicated ICP media storage, and core manifest anchoring were verified.
+- `npm run smoke:icp:ui` before CSP fix -> failed because asset CSP blocked `http://127.0.0.1:8788/health`.
+- `npm run smoke:icp:ui` after CSP/deploy -> passed; local browser identity login, worker execution, ICP media upload, core manifest attachment, and completed UI state were verified.
+- `npm run verify` -> passed: lint, 7 Vitest files / 25 tests, build, and 12 Playwright checks.
+- `npm run preflight:mainnet` -> failed safely with blockers: `MAGICKBOX_MAINNET_IDENTITY` unset, selected identity has `0 ICP`, and selected identity has `0 cycles`.
+- Caffeine `Go live` -> published isolated control center at `https://magickbox-icp-e68.caffeine.xyz/`.
+- Caffeine live smoke with Playwright -> passed; title `Magick Box ICP Control Center`, no console errors.
+
+Decisions made:
+
+- The authoritative working app for login and generation is the isolated local ICP asset/canister deployment.
+- The Caffeine deployment is useful as a live control-center/preview wrapper, but not authoritative state and not the actual ICP canister deployment.
+- Direct mainnet ICP deployment must remain blocked until a dedicated funded identity and backup-controller policy are ready.
+
+Blockers or risks:
+
+- True mainnet ICP canisters are not deployed because current preflight identity has no ICP/cycles.
+- Internet Identity should still be exercised in a normal browser popup flow; local browser identity is the verified local fallback.
+- AI inference remains off-ICP by design and writes results back to ICP.
+
+Next step:
+
+- Fund and configure a dedicated isolated mainnet identity, add backup-controller policy, then deploy new isolated mainnet canisters. Until then, use `http://frontend.local.localhost:8010/` for the fully working canister-backed app and `https://magickbox-icp-e68.caffeine.xyz/` for the live Caffeine control center.
+
+## 2026-05-23T07:59:26+07:00 - Checkpoint 38: Final Worker Port Hardening And Redeploy
+
+Current workspace/folder:
+
+`C:\Users\Mark\Documents\Codex\Codex_MagickBox\magick-box-rewrite-readiness-prototype`
+
+What was inspected:
+
+- Local worker port behavior, local ICP gateway health, and final local canister IDs after redeploy.
+
+What was created or changed:
+
+- Changed the default browser worker endpoint from `http://127.0.0.1:8787/execute` to `http://127.0.0.1:8788/execute` because port `8787` was already occupied by a stale WSL relay on this machine.
+- Changed `scripts/local-worker-service.mjs` default port to `8788`.
+- Updated the browser worker unit test expectation.
+- Rebuilt and fully redeployed the isolated local ICP app.
+- Corrected latest handoff canister IDs.
+
+Commands run and results:
+
+- `npm run test -- src/icp/browserWorker.test.ts` -> passed, 4 tests.
+- `npm run build` -> passed; Vite chunk-size warning remains.
+- `wsl ... icp deploy frontend --identity magickbox-local-prototype -e local` -> deployed frontend but left the local gateway descriptor stale.
+- `wsl ... icp network start -d` -> detected stale descriptor and restarted a fresh empty local network.
+- `wsl ... bash scripts/deploy-local-icp.sh` -> passed with hardened cleanup and full install.
+- `npm run smoke:icp:advanced` -> passed after the final full redeploy.
+- `npm run smoke:icp:ui` -> passed after the final full redeploy.
+
+Final local canisters:
+
+- `magickbox_core`: `tm5rl-y7777-77776-aaaca-cai`
+- `magickbox_media`: `tz2ag-zx777-77776-aaabq-cai`
+- `frontend`: `t63gs-up777-77776-aaaba-cai`
+
+Decisions made:
+
+- Use `8788` as the default local worker service port for manual testing and smoke tests.
+- Keep full local deploy as the reliable path after frontend asset changes because project-local gateway descriptors can become stale.
+
+Blockers or risks:
+
+- Mainnet ICP deployment remains blocked by unfunded identity/cycles, not by local code.
+
+Next step:
+
+- Manual test path: run `npm run worker:local`, open `http://frontend.local.localhost:8010/home/magick-chat`, choose `Use local browser identity`, select `Local Ollama`, and submit a prompt.
+
+## 2026-05-23T08:14:05+07:00 - Checkpoint 39: In-App Browser Generation Test And Clean UI Smoke
+
+Current workspace/folder:
+
+`C:\Users\Mark\Documents\Codex\Codex_MagickBox\magick-box-rewrite-readiness-prototype`
+
+What was inspected:
+
+- Current in-app browser tab at `http://frontend.local.localhost:8010/home/settings`.
+- Local frontend health at `http://frontend.local.localhost:8010/home/magick-chat`.
+- Local worker health at `http://127.0.0.1:8788/health`.
+- Mainnet deploy preflight.
+
+What was created or changed:
+
+- Started the local worker service on `127.0.0.1:8788`.
+- Used the in-app browser to navigate to `/home/magick-chat`, connect a local browser identity, select `Local Ollama`, submit a real prompt, and verify completion.
+- Captured browser evidence screenshots:
+  - `docs/artifacts/prototype/iab-icp-generation-test-2026-05-23.png`
+  - `docs/artifacts/prototype/iab-icp-generation-test-full-2026-05-23.png`
+- Hardened `scripts/smoke-local-icp-ui-generation.mjs` so it reuses an already-running worker instead of starting a conflicting worker on the same port.
+
+Commands run and results:
+
+- `Invoke-WebRequest http://frontend.local.localhost:8010/home/magick-chat` -> `200`.
+- `npm run preflight:mainnet` -> failed safely: selected identity has `0 ICP`, `0 cycles`, and `MAGICKBOX_MAINNET_IDENTITY` is not set to a dedicated isolated Magick Box identity.
+- `Start-Process npm.cmd run worker:local` -> worker became healthy.
+- In-app browser test -> passed: local identity connected, provider `Local Ollama`, job `#5` completed on the ICP-backed UI, and browser console error log was empty.
+- `npm run smoke:icp:advanced` -> passed: local ICRC payment intent/subaccount, ad credit grant, worker adapters, dedicated ICP media canister storage, and core manifest anchoring verified.
+- `npm run smoke:icp:ui` before smoke hardening -> passed but printed a worker `EADDRINUSE` stack trace because the manual worker was already running.
+- `npm run smoke:icp:ui` after smoke hardening -> passed cleanly with `workerStartedBySmoke: false`.
+- `npm run test -- src/icp/browserWorker.test.ts` -> passed, 4 tests.
+- `npm run smoke:services` -> passed optional mode with FreeLLMAPI and MagickAI live endpoints skipped because their env vars are not configured.
+
+Decisions made:
+
+- Treat the local ICP deployment as the authoritative working app until a dedicated funded mainnet identity is ready.
+- Keep Caffeine as an isolated live preview/control surface, not as the source of truth for canister state.
+- Keep local worker port `8788` and make smoke tests tolerant of manual worker startup.
+
+Blockers or risks:
+
+- Full ICP mainnet deploy is still blocked by no funded isolated identity/cycles.
+- Live FreeLLMAPI and MagickAI service checks remain optional until isolated endpoint credentials/config are supplied.
+
+Next step:
+
+- Inspect the live Caffeine deployment and confirm what can be shown/deployed there now without touching production MagickBox or mainnet ICP.
+
+## 2026-05-23T08:17:56+07:00 - Checkpoint 40: Caffeine Live Route Check And Guarded Mainnet Deploy Command
+
+Current workspace/folder:
+
+`C:\Users\Mark\Documents\Codex\Codex_MagickBox\magick-box-rewrite-readiness-prototype`
+
+What was inspected:
+
+- Live Caffeine app at `https://magickbox-icp-e68.caffeine.xyz/?codexCheck=20260523`.
+- Caffeine internal routes `/composer`, `/canister-config`, `/system-status`, and `/deployment-checklist`.
+- Mainnet deployment script requirements and current preflight state.
+
+What was created or changed:
+
+- Added `scripts/deploy-mainnet-icp.mjs`.
+- Added `npm run deploy:mainnet:icp`.
+- Updated `docs/evals/checklist.md`.
+- Updated `docs/handovers/magickbox-full-icp-local-deploy-handoff.md`.
+- Updated `docs/handovers/caffeine-app-status-2026-05-22.md`.
+- Captured Caffeine evidence screenshot at `docs/artifacts/prototype/caffeine-live-control-center-2026-05-23-check.png`.
+
+Commands run and results:
+
+- Caffeine live dashboard route -> passed; title `Magick Box ICP Control Center`, no console errors.
+- Caffeine internal route smoke -> passed for `/composer`, `/canister-config`, `/system-status`, and `/deployment-checklist`; no 404s and no console errors.
+- `npm run deploy:mainnet:icp` -> blocked by default, as intended, because identity/controllers/approval env vars are not set.
+- `MAGICKBOX_MAINNET_DRY_RUN=1 ... npm run deploy:mainnet:icp` -> passed dry-run and printed the exact `icp deploy -e ic ...` command without deploying.
+- `npm run lint` -> passed.
+- `npm run verify` -> passed: lint, 7 Vitest files / 25 tests, build, and 12 Playwright tests.
+- `npm run preflight:mainnet` -> failed safely: no dedicated `MAGICKBOX_MAINNET_IDENTITY`, selected identity has `0 ICP`, and selected identity has `0 cycles`.
+
+Decisions made:
+
+- Caffeine is confirmed live as an isolated control center and can be shown now.
+- The real working dapp remains the isolated ICP canister deployment, not the Caffeine app.
+- Mainnet deploy should proceed only through the guarded `npm run deploy:mainnet:icp` path after funding/configuring a dedicated isolated identity.
+
+Blockers or risks:
+
+- Mainnet deployment requires ICP/cycles on a dedicated isolated Magick Box identity.
+- A backup controller principal is required before using the guarded mainnet deploy command.
+
+Next step:
+
+- If Mark provides ICP tokens, create/configure the dedicated isolated identity, fund it, verify balances with `npm run preflight:mainnet`, then run `npm run deploy:mainnet:icp` only after explicit approval.
+
+## 2026-05-23T09:04:14+07:00 - Checkpoint 41: Superadmin Dashboard And System Wallet Funding Flow
+
+Current workspace/folder:
+
+`C:\Users\Mark\Documents\Codex\Codex_MagickBox\magick-box-rewrite-readiness-prototype`
+
+What was inspected:
+
+- `magickbox_core` role, payment, worker, media, and audit state model.
+- React ICP context and app shell routes.
+- Current local ICP canister deployment and local browser identity behavior.
+
+What was created or changed:
+
+- Added superadmin role state and guarded admin methods to `canisters/magickbox_core/main.mo`.
+- Added Candid types/methods for `SuperAdminStatus`, `SystemWallet`, `AdminDashboard`, and `AdminAction`.
+- Regenerated `src/icp/generated/magickbox_core.did.ts`.
+- Added `/home/admin` management dashboard to the React app.
+- Added Admin navigation item.
+- Added admin dashboard styles.
+- Added TDD coverage for canister contract and app route.
+- Captured proof screenshot at `docs/artifacts/prototype/superadmin-dashboard-local-claim-2026-05-23.png`.
+
+Commands run and results:
+
+- Initial red test: `npm run test -- src/icp/canisterContract.test.ts` -> failed because superadmin/admin wallet Candid contract was missing.
+- Initial red test: `npm run e2e -- --grep "admin route" --project=chromium-desktop` -> failed because `/home/admin` was not implemented.
+- `npx icp-bindgen --did-file canisters\magickbox_core\magickbox_core.did --out-dir src\icp\generated --declarations-typescript --declarations-flat --actor-disabled --force` -> regenerated core bindings.
+- `npm run test -- src/icp/canisterContract.test.ts` -> passed, 6 tests.
+- `npm run e2e -- --grep "admin route" --project=chromium-desktop` -> passed.
+- `npm run build` -> passed with existing Vite chunk-size warning.
+- `wsl ... icp build magickbox_core` -> passed.
+- `wsl ... bash scripts/deploy-local-icp.sh` -> deployed updated local canisters.
+- In-app browser superadmin smoke -> passed: local identity claimed superadmin, system wallet displayed, balance read as `0 ICP`, management functions loaded, and console logs were clean.
+- `npm run verify` -> passed: lint, 7 Vitest files / 26 tests, build, and 14 Playwright tests.
+- Fresh redeploy after local proof -> passed; bootstrap reset so Mark's II can be first real superadmin.
+- `icp canister call magickbox_core get_superadmin_status --args-file .icp/cache/call-args/empty.did -e local --identity magickbox-local-prototype` -> confirmed `bootstrap_available = true`, `superadmin_count = 0`.
+- `npm run smoke:icp:ui` -> passed after fresh redeploy.
+
+Decisions made:
+
+- Superadmin binding uses the signed ICP caller principal, so Mark's Internet Identity principal can become the main account.
+- The first local/mainnet bootstrap requires a setup code and closes after one superadmin is created.
+- The system wallet is the core canister's main ICRC account; user credit purchases continue to use per-intent subaccounts.
+- The dashboard exposes current hard controls and roadmap management surfaces without storing provider secrets on-chain.
+
+Blockers or risks:
+
+- The local in-app browser still uses local browser identity for popup-blocked testing; Mark should use normal Chrome/II to bind the real II principal.
+- The prototype bootstrap code is appropriate for local proof only. Before mainnet, replace it with a deployment-specific secret or controller-driven admin seeding.
+- Mainnet funding still requires a dedicated isolated identity with ICP/cycles and backup controller principal.
+
+Next step:
+
+- Mark should open `http://frontend.local.localhost:8010/home/admin` in a normal browser, sign in with Internet Identity, and claim superadmin with the agreed setup code. Then fund the displayed system wallet owner principal and refresh the dashboard.
+
+## 2026-05-23T09:07:24+07:00 - Checkpoint 42: Admin Sign-Out Cleanup And Final Asset Sync
+
+Current workspace/folder:
+
+`C:\Users\Mark\Documents\Codex\Codex_MagickBox\magick-box-rewrite-readiness-prototype`
+
+What was inspected:
+
+- Signed-out `/home/admin` state after the fresh redeploy.
+- Local frontend asset canister state.
+
+What was created or changed:
+
+- Updated the ICP React context so sign-out reloads anonymous provider, credit, payment-account, and superadmin status data instead of clearing the visible system wallet owner.
+- Deployed the latest frontend bundle to the local ICP asset canister.
+
+Commands run and results:
+
+- `npm run test -- src/icp/canisterContract.test.ts src/icp/magickboxClient.test.ts` -> passed, 12 tests.
+- `npm run build` -> passed with existing Vite chunk-size warning.
+- `icp deploy frontend --identity magickbox-local-prototype -e local` -> passed.
+- In-app browser `/home/admin` after frontend sync -> passed: II sign-in buttons visible, system wallet owner `t63gs-up777-77776-aaaba-cai` visible, bootstrap available, and admin count `0`.
+- `npm run smoke:icp:ui` -> passed after final frontend sync.
+
+Decisions made:
+
+- Leave the visible local app signed out and bootstrap-open so Mark can bind the next real superadmin principal through Internet Identity.
+
+Blockers or risks:
+
+- Internet Identity popup may still be blocked in the Codex in-app browser; use normal Chrome for the real II claim.
+
+Next step:
+
+- Mark signs in with II on `/home/admin`, claims superadmin, then funds the displayed system wallet owner principal.
+
+## 2026-05-23T09:27:39+07:00 - Checkpoint 43: Mainnet Correction And Superadmin-Created Funding Wallet
+
+Current workspace/folder:
+
+`C:\Users\Mark\Documents\Codex\Codex_MagickBox\magick-box-rewrite-readiness-prototype`
+
+What was inspected:
+
+- User correction that `http://frontend.local.localhost:8010/home/admin` is local proof only, not a mainnet URL.
+- Mainnet preflight status, ICP/cycles balances, and guarded deploy path.
+- Existing superadmin dashboard, system wallet status, payment subaccount helpers, generated Candid bindings, and Playwright admin route coverage.
+
+What was created or changed:
+
+- Added `SystemFundingWallet` to `magickbox_core`.
+- Added `create_system_funding_wallet`, guarded by `require_superadmin`.
+- Added deterministic dedicated `MBFUND` ICRC subaccounts for system funding, separate from user credit payment intent subaccounts.
+- Updated `SystemWallet` to report `funding_wallet` and `requires_wallet_creation`.
+- Updated `/home/admin` so the post-superadmin funding process creates the funding wallet first, then displays owner/subaccount for funding and ledger-balance verification.
+- Regenerated TypeScript Candid bindings.
+- Captured admin screenshot evidence at `docs/artifacts/prototype/system-funding-wallet-admin-local-2026-05-23.png`.
+- Updated `docs/handovers/magickbox-full-icp-local-deploy-handoff.md`.
+
+Commands run and results:
+
+- `npm run test -- src/icp/canisterContract.test.ts` -> failed first as expected because `SystemFundingWallet`, `create_system_funding_wallet`, and wallet-creation Candid fields were missing.
+- `npm run e2e -- --grep "admin route" --project=chromium-desktop` -> failed first as expected because the admin page still exposed old `Fund main wallet` copy.
+- `npx icp-bindgen --did-file canisters\magickbox_core\magickbox_core.did --out-dir src\icp\generated --declarations-typescript --declarations-flat --actor-disabled --force` -> regenerated core bindings.
+- `npm run test -- src/icp/canisterContract.test.ts src/icp/magickboxClient.test.ts` -> passed, 13 tests.
+- `npm run build` -> passed with the existing Vite chunk-size warning.
+- `npm run e2e -- --grep "admin route" --project=chromium-desktop` -> passed.
+- `wsl ... icp build magickbox_core` -> passed.
+- `wsl ... bash scripts/deploy-local-icp.sh` -> deployed the updated isolated local stack.
+- Local canister proof: `bootstrap_superadmin` -> passed; `create_system_funding_wallet` -> passed and returned subaccount `4d4246554e440000000000000000000000000000000000000000000000000001`.
+- Local dashboard proof: `get_admin_dashboard` -> passed and returned the dedicated funding wallet, instructions, balance, and audit count.
+- Fresh local redeploy after proof -> passed.
+- `get_superadmin_status` after fresh redeploy -> confirmed `bootstrap_available = true`, `superadmin_count = 0`.
+- `npm run verify` -> passed: lint, 7 Vitest files / 27 tests, build, and 14 Playwright tests.
+- `npm run smoke:icp:ui` -> passed against `http://frontend.local.localhost:8010/home/magick-chat`.
+- `npm run preflight:mainnet` -> failed safely because no dedicated mainnet identity is configured and the selected identity has `0 ICP` and `0 cycles`.
+
+Decisions made:
+
+- The user-facing system funding process should not ask Mark to fund an unlabeled default canister account.
+- Superadmin now creates a dedicated on-chain funding wallet account first; funding happens only after the app displays that account and subaccount.
+- User credit purchases remain on per-intent `MBPAY` subaccounts; system funding uses `MBFUND` subaccounts.
+- The local canister was reset after proof so Mark's II can still be the first visible superadmin in the local UI.
+
+Blockers or risks:
+
+- There is still no mainnet URL because no funded isolated mainnet identity/cycles wallet is available yet.
+- Candidate mainnet identities created during dry-run readiness are disposable only unless Mark explicitly accepts seed-exposure risk; do not use them for a durable real deployment.
+- Mainnet requires a privately controlled, funded isolated identity, a backup controller principal, cycles, and explicit deploy approval.
+- The local bootstrap code must be replaced with a mainnet-specific secure bootstrap or controller-seeded admin process before public mainnet exposure.
+
+Next step:
+
+- Mark should provide or create a fresh privately controlled isolated ICP identity, fund it with enough ICP to mint cycles, provide a backup controller principal, and explicitly approve the guarded mainnet deployment. Then run the mainnet deploy path to create the real `https://<frontend-canister-id>.icp0.io/home/admin` URL.
+
+## 2026-05-23T10:23:26+07:00 - Checkpoint 44: Caffeine Live Admin Claim Gate Verification
+
+Current workspace/folder:
+
+`C:\Users\Mark\Documents\Codex\Codex_MagickBox\magick-box-rewrite-readiness-prototype`
+
+What was inspected:
+
+- Existing isolated local prototype status and dirty worktree.
+- Caffeine builder chat `MagickBox on ICP`.
+- Published Caffeine live app at `https://magickbox-on-icp-vmf.caffeine.xyz/`.
+- Admin route `/home/admin`, signed-out Internet Identity gate, demo flow, and visible superadmin controls.
+- Generated Caffeine code view, including `src/backend/lib/admin.mo` and `frontend/src/pages/AdminPage.tsx` references.
+
+What was created or changed:
+
+- No production or reference repository changes.
+- No local prototype code changes in this checkpoint.
+- Prompted Caffeine multiple times to harden `/home/admin` so demo users cannot see or invoke superadmin/funding actions.
+- Caffeine published/reported Version 5 with a claimed demo security fix.
+
+Commands run and results:
+
+- Chrome/Caffeine smoke: opened `https://magickbox-on-icp-vmf.caffeine.xyz/home/admin`, cleared local/session storage, clicked `Continue as Demo`.
+- Result: failed. Demo user still saw `Claim Superadmin` and bootstrap claim copy.
+- Caffeine hardening prompt for Version 5: accepted and Caffeine reported `Version 5 is live`.
+- Independent Version 5 smoke: opened `/home/admin?v5Smoke=...`, clicked `Continue as Demo`.
+- Result: failed. Demo user still saw `Claim Superadmin`.
+- Cache/service-worker purge smoke: attempted `localStorage`, `sessionStorage`, `caches`, and service-worker cleanup, then reopened `/home/admin?afterPurge=...`.
+- Result: failed. Demo user still saw `Claim Superadmin`.
+- Caffeine `Live app web page` button check: pointed back to the same `magickbox-on-icp-vmf.caffeine.xyz` domain; no alternate safe live URL was found.
+
+Decisions made:
+
+- Do not claim superadmin, create a funding wallet, or fund anything through the Caffeine live app while the public demo route exposes `Claim Superadmin`.
+- Treat the Caffeine app as an isolated live preview only, not as an approved owner/funding path.
+- Continue to prefer the verified local ICP canister implementation for real superadmin/funding logic until a real mainnet canister deployment is funded and explicitly approved.
+
+Blockers or risks:
+
+- Caffeine reports the fix as live, but the public live DOM does not match the reported Version 5 behavior.
+- The live Caffeine app still labels some state as Caffeine/ICP live while also saying external ICP mainnet canisters are required; this is not a trustworthy mainnet deployment boundary.
+- No dedicated funded mainnet ICP identity/cycles wallet is configured yet.
+
+Next step:
+
+- Either require Caffeine support/manual source replacement to make the published domain match the generated Version 5 code, or move to the guarded real ICP mainnet deploy path using a privately controlled funded identity, backup controller principal, and isolated canisters.

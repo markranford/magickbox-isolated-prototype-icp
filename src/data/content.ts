@@ -9,6 +9,7 @@ import {
   Music,
   Settings,
   Sparkles,
+  UserCog,
   Users,
   Zap,
 } from "lucide-react";
@@ -339,6 +340,7 @@ export const appNav = [
   { label: "Explore", to: "/home/explore?category=latest", icon: Compass },
   { label: "Collections", to: "/home/collections", icon: GalleryVerticalEnd },
   { label: "Subscriptions", to: "/home/subscriptions", icon: Box },
+  { label: "Admin", to: "/home/admin", icon: UserCog },
   { label: "Settings", to: "/home/settings", icon: Settings },
 ];
 

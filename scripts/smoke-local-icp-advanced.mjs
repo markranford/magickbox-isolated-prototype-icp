@@ -170,17 +170,38 @@ async function createAndCompleteWorkerJob({ providerId, label, prompt, requested
 
   const resultHash = createHash("sha256").update(execution.output).digest("hex");
   const resultBytes = Buffer.byteLength(execution.output, "utf8");
-  console.log(`== Store ${providerId} media asset on ICP ==`);
+  console.log(`== Create ${providerId} media asset in dedicated ICP media canister ==`);
   const mediaAssetOutput = icp(
-    `canister call magickbox_core store_media_asset --args-file ${shellQuote(
+    `canister call magickbox_media create_asset --args-file ${shellQuote(
       writeArgs(
         `${providerId}-media-asset.did`,
-        `(${jobId} : nat, ${candidText(resultHash)}, "text/plain", ${candidBlob(execution.output)})`,
+        `(${jobId} : nat, ${candidText(resultHash)}, "text/plain", ${resultBytes} : nat)`,
       ),
     )} -e local --identity ${shellQuote(workerIdentity)}`,
   );
   console.log(mediaAssetOutput);
-  const assetUri = parseText("uri", mediaAssetOutput);
+  const mediaAssetId = parseNat("id", mediaAssetOutput);
+
+  console.log(`== Upload ${providerId} media chunk to dedicated ICP media canister ==`);
+  console.log(
+    icp(
+      `canister call magickbox_media put_chunk --args-file ${shellQuote(
+        writeArgs(
+          `${providerId}-media-chunk-0.did`,
+          `(${mediaAssetId} : nat, 0 : nat, ${candidBlob(execution.output)})`,
+        ),
+      )} -e local --identity ${shellQuote(workerIdentity)}`,
+    ),
+  );
+
+  console.log(`== Commit ${providerId} media asset in dedicated ICP media canister ==`);
+  const mediaManifestOutput = icp(
+    `canister call magickbox_media commit_asset --args-file ${shellQuote(
+      writeArgs(`${providerId}-media-commit.did`, `(${mediaAssetId} : nat)`),
+    )} -e local --identity ${shellQuote(workerIdentity)}`,
+  );
+  console.log(mediaManifestOutput);
+  const assetUri = parseText("uri", mediaManifestOutput);
 
   if (!assetUri.startsWith(ICP_MEDIA_URI_SCHEME)) {
     throw new Error(`Expected ICP media URI, got ${assetUri}`);
@@ -328,12 +349,27 @@ async function main() {
   }
 
   console.log("== Evidence lists ==");
+  console.log("-- magickbox_media.get_storage_policy");
+  console.log(
+    icp(
+      `canister call magickbox_media get_storage_policy --args-file ${shellQuote(
+        writeArgs("empty.did", "()"),
+      )} -e local --identity ${shellQuote(ownerIdentity)} --query`,
+    ),
+  );
+  console.log("-- magickbox_media.list_my_assets");
+  console.log(
+    icp(
+      `canister call magickbox_media list_my_assets --args-file ${shellQuote(
+        writeArgs("empty.did", "()"),
+      )} -e local --identity ${shellQuote(workerIdentity)} --query`,
+    ),
+  );
   for (const method of [
     "list_my_payment_intents",
     "list_my_ad_credit_grants",
     "list_my_worker_grants",
     "list_my_worker_runs",
-    "list_my_media_assets",
     "list_my_media_manifests",
   ]) {
     console.log(`-- ${method}`);

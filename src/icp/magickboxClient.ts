@@ -11,15 +11,22 @@ import {
   idlFactory,
   type _SERVICE,
 } from "./generated/magickbox_core.did";
+import {
+  idlFactory as mediaIdlFactory,
+  type _SERVICE as MediaService,
+} from "./generated/magickbox_media.did";
 
 type MagickBoxCanisterEnv = {
   readonly "PUBLIC_CANISTER_ID:magickbox_core"?: string;
+  readonly "PUBLIC_CANISTER_ID:magickbox_media"?: string;
 };
 
 export type CoreActor = ActorSubclass<_SERVICE>;
+export type MediaActor = ActorSubclass<MediaService>;
 
 export type IcpRuntime = {
   canisterId: string | null;
+  mediaCanisterId: string | null;
   host: string;
   identityProvider: string;
   rootKey?: Uint8Array;
@@ -62,8 +69,11 @@ export function getIdentityProviderUrl() {
 export function resolveIcpRuntime(): IcpRuntime {
   const env = safeGetCanisterEnv<MagickBoxCanisterEnv>();
   const viteCanisterId = import.meta.env.VITE_MAGICKBOX_CORE_CANISTER_ID;
+  const viteMediaCanisterId = import.meta.env.VITE_MAGICKBOX_MEDIA_CANISTER_ID;
   const viteHost = import.meta.env.VITE_ICP_HOST;
   const canisterId = env?.["PUBLIC_CANISTER_ID:magickbox_core"] ?? viteCanisterId ?? null;
+  const mediaCanisterId =
+    env?.["PUBLIC_CANISTER_ID:magickbox_media"] ?? viteMediaCanisterId ?? null;
   const host = env ? currentOrigin() : viteHost ?? currentOrigin();
   const reason = env
     ? "ic_env detected from the ICP asset canister"
@@ -71,6 +81,7 @@ export function resolveIcpRuntime(): IcpRuntime {
 
   return {
     canisterId,
+    mediaCanisterId,
     host,
     identityProvider: getIdentityProviderUrl(),
     rootKey: env?.IC_ROOT_KEY,
@@ -79,7 +90,7 @@ export function resolveIcpRuntime(): IcpRuntime {
 }
 
 export function canUseIcpRuntime(runtime: IcpRuntime) {
-  return Boolean(runtime.canisterId && runtime.rootKey);
+  return Boolean(runtime.canisterId);
 }
 
 export async function createCoreActor(identity?: Identity): Promise<CoreActor> {
@@ -98,6 +109,29 @@ export async function createCoreActor(identity?: Identity): Promise<CoreActor> {
   return Actor.createActor<_SERVICE>(idlFactory, {
     agent,
     canisterId: runtime.canisterId,
+  });
+}
+
+export async function createMediaActor(identity?: Identity): Promise<MediaActor> {
+  const runtime = resolveIcpRuntime();
+
+  if (!runtime.mediaCanisterId) {
+    throw new Error("ICP media canister id is unavailable from the asset canister runtime");
+  }
+
+  if (!runtime.rootKey) {
+    throw new Error(runtime.reason);
+  }
+
+  const agent = await HttpAgent.create({
+    host: runtime.host,
+    identity,
+    rootKey: runtime.rootKey,
+  });
+
+  return Actor.createActor<MediaService>(mediaIdlFactory, {
+    agent,
+    canisterId: runtime.mediaCanisterId,
   });
 }
 

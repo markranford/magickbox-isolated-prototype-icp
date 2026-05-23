@@ -2,6 +2,8 @@
 
 Date: 2026-05-22T20:27:11+07:00
 
+Latest update: 2026-05-23T07:50:24+07:00
+
 ## Delivered On Local ICP
 
 - Frontend build deployed to the isolated local ICP asset canister on port `8010`.
@@ -11,6 +13,9 @@ Date: 2026-05-22T20:27:11+07:00
 - Local ICP payment proof uses per-intent ICRC subaccounts and local ledger balance verification.
 - Local worker proof completes Ollama, FreeLLMAPI-compatible, and MagickAI-compatible jobs and stores small worker outputs as ICP media assets.
 - ICP media manifests are restricted to `icp-canister-media-store` and `icp-media://` URIs.
+- Dedicated `magickbox_media` canister now stores browser-generated worker output bytes through `create_asset`, `put_chunk`, and `commit_asset`.
+- The browser app flow now signs in with local browser identity, executes the local worker service, uploads generated output to `magickbox_media`, attaches a manifest to `magickbox_core`, and displays a completed job.
+- A separate Caffeine control-center app is live at `https://magickbox-icp-e68.caffeine.xyz/`; it is a non-authoritative control plane, not the authoritative ICP canister app.
 
 ## Media Asset Copy Status
 
@@ -26,9 +31,10 @@ Date: 2026-05-22T20:27:11+07:00
 
 | Area | Current status | Needed for ICP delivery |
 | --- | --- | --- |
-| Mainnet or isolated preview | Local ICP only; no mainnet deploy and no shared preview. | Explicit approval, new isolated canisters, cycle funding, controller policy, and preview URL. |
+| Mainnet ICP canisters | Local ICP canisters only; direct mainnet preflight is blocked by 0 ICP/0 cycles and no dedicated `MAGICKBOX_MAINNET_IDENTITY`. | Fund a dedicated isolated identity, set backup controller policy, then deploy new isolated mainnet canisters. |
+| Isolated web preview | Caffeine control-center app is live at `https://magickbox-icp-e68.caffeine.xyz/`; it is not authoritative state. | Wire the Caffeine app to isolated mainnet ICP canisters after funding, or replace it with the certified asset canister URL. |
 | Full live account exploration | Public routes inspected; logged-in production account was not used. | User-assisted login in a browser and read-only route capture, without changing production data. |
-| Large media storage | Small worker outputs are stored in `magickbox_core`; copied public media is static asset-canister content. | Dedicated ICP media/chunk canister for large generated image/video/music assets, with chunk upload, quotas, lifecycle, and cycle monitoring. |
+| Large media storage | Dedicated local `magickbox_media` chunk canister stores generated text outputs; copied public media is static asset-canister content. | Extend the media canister with production quotas, lifecycle, certification, cycle monitoring, and larger image/video/music validation. |
 | AI inference | External/local worker adapters are used; model execution is not on ICP. | Decide whether AI remains worker-based or add an ICP-native inference proof if feasible. |
 | FreeLLMAPI live service | Harness exists but optional smoke skips without isolated env vars. | Run isolated FreeLLMAPI and capture `npm run smoke:services:required` evidence. |
 | MagickAI live service | Bridge exists; real SDK execution still needs isolated Python dependencies and credentials outside canister state. | Build isolated worker service or command environment and run required smoke. |
@@ -43,4 +49,4 @@ Date: 2026-05-22T20:27:11+07:00
 
 ## Current Recommendation
 
-The next delivery slice should be a dedicated ICP media/chunk canister. That is the missing piece between "static copied public media can be served from ICP assets" and "new user-generated Magick Box media lives on ICP at production scale."
+The next delivery slice should be an isolated mainnet canister deployment after funding and controller policy are ready: certified assets, `magickbox_core`, `magickbox_media`, II login, local/remote worker callback, and ICP media manifest verification. Caffeine can remain a separate control-center wrapper, but authoritative app state should stay in ICP canisters.

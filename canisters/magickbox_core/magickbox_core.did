@@ -61,6 +61,55 @@ type PaymentAccount = record {
   token_symbol : text;
   fee_e8s : nat;
 };
+type AdminAction = record {
+  id : text;
+  title : text;
+  description : text;
+  status : text;
+  route : text;
+  requires_superadmin : bool;
+};
+type SuperAdminStatus = record {
+  caller : principal;
+  is_superadmin : bool;
+  superadmin_count : nat;
+  bootstrap_available : bool;
+  system_wallet_owner : principal;
+  ledger_id : principal;
+};
+type SystemFundingWallet = record {
+  id : nat;
+  creator : principal;
+  account : PaymentAccount;
+  subaccount_hex : text;
+  status : text;
+  created_at : int;
+  verified_at : opt int;
+  balance_e8s : nat;
+};
+type SystemWallet = record {
+  account : PaymentAccount;
+  balance_e8s : nat;
+  funding_wallet : opt SystemFundingWallet;
+  requires_wallet_creation : bool;
+  funding_instructions : text;
+  cycles_note : text;
+};
+type AdminDashboard = record {
+  status : SuperAdminStatus;
+  wallet : SystemWallet;
+  profile_count : nat;
+  job_count : nat;
+  pending_payment_count : nat;
+  claimed_payment_count : nat;
+  media_manifest_count : nat;
+  worker_grant_count : nat;
+  worker_run_count : nat;
+  ad_credit_grant_count : nat;
+  audit_event_count : nat;
+  total_user_credits : nat;
+  actions : vec AdminAction;
+};
 type PaymentIntent = record {
   id : nat;
   owner : principal;
@@ -136,6 +185,14 @@ type CreateJobResult = variant {
   err : text;
 };
 service : {
+  get_superadmin_status : () -> (SuperAdminStatus) query;
+  bootstrap_superadmin : (text) -> (variant { ok : SuperAdminStatus; err : text });
+  add_superadmin : (principal) -> (variant { ok : SuperAdminStatus; err : text });
+  remove_superadmin : (principal) -> (variant { ok : SuperAdminStatus; err : text });
+  create_system_funding_wallet : () -> (variant { ok : SystemFundingWallet; err : text });
+  get_system_wallet_status : () -> (variant { ok : SystemWallet; err : text });
+  get_admin_dashboard : () -> (variant { ok : AdminDashboard; err : text });
+  list_admin_audit_events : () -> (vec AuditEvent) query;
   register_profile : (text, opt text) -> (variant { ok : Profile; err : text });
   get_my_profile : () -> (opt Profile) query;
   get_credit_options : () -> (vec CreditOption) query;

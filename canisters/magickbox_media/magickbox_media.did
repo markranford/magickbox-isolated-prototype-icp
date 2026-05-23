@@ -1,0 +1,45 @@
+type MediaAsset = record {
+  id : nat;
+  owner : principal;
+  job_id : nat;
+  uri : text;
+  content_hash : text;
+  mime_type : text;
+  expected_bytes : nat;
+  received_bytes : nat;
+  chunk_count : nat;
+  status : text;
+  created_at : int;
+  updated_at : int;
+};
+type MediaChunk = record {
+  asset_id : nat;
+  index : nat;
+  owner : principal;
+  content : blob;
+  bytes : nat;
+  created_at : int;
+};
+type MediaManifest = record {
+  asset_id : nat;
+  owner : principal;
+  job_id : nat;
+  uri : text;
+  content_hash : text;
+  mime_type : text;
+  bytes : nat;
+  chunk_count : nat;
+  storage_provider : text;
+  created_at : int;
+  committed_at : int;
+};
+service : {
+  create_asset : (nat, text, text, nat) -> (variant { ok : MediaAsset; err : text });
+  put_chunk : (nat, nat, blob) -> (variant { ok : MediaChunk; err : text });
+  commit_asset : (nat) -> (variant { ok : MediaManifest; err : text });
+  list_my_assets : () -> (vec MediaAsset) query;
+  get_asset : (nat) -> (opt MediaAsset) query;
+  get_chunk : (nat, nat) -> (opt MediaChunk) query;
+  get_manifest : (nat) -> (variant { ok : MediaManifest; err : text }) query;
+  get_storage_policy : () -> (text) query;
+}

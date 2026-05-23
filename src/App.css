@@ -1025,6 +1025,209 @@ textarea:focus-visible {
   margin: 0;
 }
 
+.admin-dashboard {
+  display: grid;
+  gap: 18px;
+}
+
+.admin-header-actions {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.admin-header-actions button,
+.admin-claim button,
+.funding-process button {
+  min-height: 38px;
+  padding: 0 12px;
+  border-radius: 8px;
+  background: rgba(75, 212, 216, 0.16);
+  border: 1px solid rgba(75, 212, 216, 0.28);
+  color: var(--text);
+  font-size: 13px;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.admin-header-actions button:disabled,
+.admin-claim button:disabled,
+.funding-process button:disabled {
+  cursor: wait;
+  opacity: 0.6;
+}
+
+.admin-grid,
+.admin-stat-grid,
+.admin-action-grid {
+  display: grid;
+  gap: 14px;
+}
+
+.admin-grid {
+  grid-template-columns: minmax(0, 0.9fr) minmax(0, 1.1fr);
+}
+
+.admin-panel,
+.admin-section {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.admin-panel {
+  padding: 18px;
+}
+
+.admin-section {
+  padding: 20px;
+}
+
+.admin-panel-title,
+.admin-section-title {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+
+.admin-panel-title svg,
+.admin-section-title svg {
+  color: var(--gold);
+}
+
+.admin-panel h2,
+.admin-section h2,
+.funding-process h3 {
+  margin: 0;
+  color: var(--white);
+  font-size: 20px;
+  line-height: 1.25;
+}
+
+.principal-line {
+  margin: 0 0 14px;
+  padding: 10px 12px;
+  border-radius: 8px;
+  background: rgba(0, 0, 0, 0.22);
+  color: var(--gold);
+  font-family: ui-monospace, SFMono-Regular, Consolas, "Liberation Mono", monospace;
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+
+.admin-detail-list {
+  display: grid;
+  gap: 10px;
+  margin: 0;
+}
+
+.admin-detail-list div,
+.admin-stat-grid div,
+.admin-action-grid article {
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.04);
+}
+
+.admin-detail-list div {
+  padding: 12px;
+}
+
+.admin-detail-list dt,
+.admin-stat-grid span,
+.admin-action-grid span {
+  color: var(--muted);
+  font-size: 12px;
+  font-weight: 800;
+}
+
+.admin-detail-list dd {
+  margin: 5px 0 0;
+  color: var(--text);
+  overflow-wrap: anywhere;
+}
+
+.admin-claim {
+  display: grid;
+  gap: 10px;
+  margin-top: 14px;
+}
+
+.admin-claim label {
+  display: grid;
+  gap: 8px;
+  color: var(--muted);
+  font-size: 13px;
+  font-weight: 800;
+}
+
+.admin-claim input {
+  width: 100%;
+  min-height: 42px;
+  padding: 10px 12px;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--text);
+}
+
+.funding-process {
+  margin-top: 16px;
+}
+
+.funding-process button {
+  margin-top: 12px;
+  width: 100%;
+}
+
+.funding-process ol {
+  margin: 12px 0 0;
+  padding-left: 20px;
+  color: var(--muted);
+  line-height: 1.55;
+}
+
+.admin-stat-grid {
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+}
+
+.admin-stat-grid div {
+  padding: 14px;
+}
+
+.admin-stat-grid strong {
+  display: block;
+  margin-top: 8px;
+  color: var(--white);
+  font-size: 24px;
+  line-height: 1;
+}
+
+.admin-action-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+}
+
+.admin-action-grid article {
+  min-height: 150px;
+  padding: 15px;
+}
+
+.admin-action-grid h3 {
+  margin: 9px 0 8px;
+  color: var(--white);
+  font-size: 17px;
+}
+
+.admin-action-grid p,
+.admin-note {
+  margin: 0;
+  color: var(--muted);
+  line-height: 1.5;
+}
+
 .auth-page,
 .eval-page {
   min-height: 100vh;
@@ -1128,7 +1331,9 @@ td {
 @media (max-width: 1120px) {
   .feature-grid,
   .explore-grid,
-  .icp-grid {
+  .icp-grid,
+  .admin-action-grid,
+  .admin-stat-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
 }
@@ -1154,7 +1359,8 @@ td {
   .feature-grid,
   .plan-grid,
   .about-section,
-  .suggestion-list {
+  .suggestion-list,
+  .admin-grid {
     grid-template-columns: 1fr;
   }
 
@@ -1200,6 +1406,10 @@ td {
 
   .workspace-header {
     flex-direction: column;
+  }
+
+  .admin-header-actions {
+    justify-content: flex-start;
   }
 
   .icp-status-strip {
@@ -1248,6 +1458,11 @@ td {
   }
 
   .credit-recovery-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .admin-action-grid,
+  .admin-stat-grid {
     grid-template-columns: 1fr;
   }
 }

@@ -1,0 +1,169 @@
+#!/usr/bin/env node
+import { spawnSync } from "node:child_process";
+import { existsSync, readdirSync, readFileSync } from "node:fs";
+import { resolve } from "node:path";
+
+const root = resolve(import.meta.dirname, "..");
+const identity = process.env.MAGICKBOX_MAINNET_IDENTITY ?? null;
+const isWindows = process.platform === "win32";
+
+function run(command, args, options = {}) {
+  const result = spawnSync(command, args, {
+    cwd: root,
+    encoding: "utf8",
+    maxBuffer: 10 * 1024 * 1024,
+    ...options,
+  });
+
+  return {
+    command: [command, ...args].join(" "),
+    ok: result.status === 0 && !result.error,
+    status: result.status,
+    stdout: result.stdout?.trim() ?? "",
+    stderr: [result.stderr?.trim(), result.error?.message].filter(Boolean).join("\n"),
+  };
+}
+
+function runIcp(args, { withIdentity = true } = {}) {
+  const identityArgs = identity ? ["--identity", identity] : [];
+  const fullArgs = withIdentity ? [...args, ...identityArgs] : args;
+
+  return isWindows ? run("cmd.exe", ["/d", "/s", "/c", "icp", ...fullArgs]) : run("icp", fullArgs);
+}
+
+function parseNumericBalance(text) {
+  const match = /Balance:\s*([0-9][0-9_.]*)\s*([A-Z]+)/i.exec(text);
+
+  if (!match) {
+    return null;
+  }
+
+  return {
+    amount: Number(match[1].replaceAll("_", "")),
+    unit: match[2].toUpperCase(),
+  };
+}
+
+function readFiles(dir, extensions) {
+  if (!existsSync(dir)) {
+    return [];
+  }
+
+  const files = [];
+  for (const entry of readdirSync(dir, { withFileTypes: true })) {
+    const fullPath = resolve(dir, entry.name);
+    if (entry.isDirectory()) {
+      files.push(...readFiles(fullPath, extensions));
+    } else if (entry.isFile() && extensions.some((extension) => fullPath.endsWith(extension))) {
+      files.push(fullPath);
+    }
+  }
+
+  return files;
+}
+
+function scanForProductionTouchpoints() {
+  const files = [
+    ...readFiles(resolve(root, "src"), [".ts", ".tsx", ".css"]),
+    ...readFiles(resolve(root, "scripts"), [".mjs", ".js", ".sh"]),
+    ...readFiles(resolve(root, "canisters"), [".mo", ".did"]),
+  ];
+  const patterns = [
+    "www.magickbox.ai",
+    "magickbox.ai/api",
+    "MAGICKBOX_PRODUCTION",
+    "AWS_ACCESS_KEY",
+    "STRIPE_SECRET",
+    "VERCEL_TOKEN",
+  ];
+
+  const ownScript = resolve(root, "scripts", "preflight-mainnet-icp.mjs");
+  const hits = [];
+  for (const file of files) {
+    if (file === ownScript) {
+      continue;
+    }
+    const text = readFileSync(file, "utf8");
+    for (const pattern of patterns) {
+      if (text.includes(pattern)) {
+        hits.push({ file: file.replace(root, "."), pattern });
+      }
+    }
+  }
+
+  return hits;
+}
+
+const checks = {
+  identity: runIcp(["identity", "principal"]),
+  defaultIdentity: runIcp(["identity", "default"], { withIdentity: false }),
+  network: runIcp(["network", "ping", "ic"], { withIdentity: false }),
+  environments: runIcp(["environment", "list"], { withIdentity: false }),
+  tokenBalance: runIcp(["token", "balance", "-n", "ic"]),
+  cyclesBalance: runIcp(["cycles", "balance", "-n", "ic"]),
+  buildOutput: {
+    ok: existsSync(resolve(root, "dist", "index.html")),
+    path: "dist/index.html",
+  },
+  mediaManifest: {
+    ok: existsSync(resolve(root, "public", "reference-assets", "live-site", "media-manifest.json")),
+    path: "public/reference-assets/live-site/media-manifest.json",
+  },
+  mainnetMapping: {
+    ok:
+      existsSync(resolve(root, ".icp", "data", "mappings", "ic.ids.json")) ||
+      existsSync(resolve(root, ".icp", "cache", "mappings", "ic.ids.json")),
+    paths: [
+      ".icp/data/mappings/ic.ids.json",
+      ".icp/cache/mappings/ic.ids.json",
+    ],
+  },
+  productionTouchpoints: scanForProductionTouchpoints(),
+};
+
+const token = parseNumericBalance(checks.tokenBalance.stdout);
+const cycles = parseNumericBalance(checks.cyclesBalance.stdout);
+const blockers = [];
+
+if (!identity) {
+  blockers.push("MAGICKBOX_MAINNET_IDENTITY is not set to a dedicated isolated Magick Box identity.");
+}
+if (!checks.network.ok) {
+  blockers.push("Cannot reach the IC mainnet endpoint.");
+}
+if (!token || token.amount <= 0) {
+  blockers.push("Selected identity has 0 ICP on mainnet.");
+}
+if (!cycles || cycles.amount <= 0) {
+  blockers.push("Selected identity has 0 cycles on mainnet.");
+}
+if (!checks.buildOutput.ok) {
+  blockers.push("Missing dist/index.html; run npm run build before deploying assets.");
+}
+if (checks.productionTouchpoints.length > 0) {
+  blockers.push("Potential production touchpoints were found in app/source scripts.");
+}
+
+const report = {
+  generatedAt: new Date().toISOString(),
+  workspace: root,
+  requestedIdentity: identity,
+  defaultIdentity: checks.defaultIdentity.stdout,
+  principal: checks.identity.stdout,
+  tokenBalance: checks.tokenBalance.stdout,
+  cyclesBalance: checks.cyclesBalance.stdout,
+  mainnetEndpointHealthy: checks.network.ok,
+  buildOutputPresent: checks.buildOutput.ok,
+  copiedLiveMediaManifestPresent: checks.mediaManifest.ok,
+  existingMainnetCanisterMappingPresent: checks.mainnetMapping.ok,
+  productionTouchpoints: checks.productionTouchpoints,
+  blockers,
+  deployCommandWhenFunded:
+    "icp deploy -e ic --identity <funded-isolated-identity> --controller <primary-principal> --controller <backup-principal>",
+};
+
+console.log(JSON.stringify(report, null, 2));
+
+if (blockers.length > 0) {
+  process.exitCode = 1;
+}

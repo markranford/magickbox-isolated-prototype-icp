@@ -12,12 +12,18 @@ import {
 import {
   Check,
   ChevronDown,
+  Activity,
+  CreditCard,
+  Database,
+  Gauge,
   LockKeyhole,
   LogIn,
   Menu,
   Paperclip,
   Send,
+  ShieldCheck,
   Sparkles,
+  Wallet,
   WandSparkles,
   X,
 } from "lucide-react";
@@ -117,6 +123,9 @@ function IcpStatusStrip({ compact = false }: { compact?: boolean }) {
         <span>{runtimeLabel}</span>
         <strong>{icp.statusMessage}</strong>
         {icp.principalText ? <small>{icp.principalText}</small> : null}
+        {icp.runtime.mediaCanisterId ? (
+          <small>Media canister {icp.runtime.mediaCanisterId}</small>
+        ) : null}
       </div>
       <div className="icp-status-actions">
         <span>{credits} credits</span>
@@ -197,7 +206,11 @@ function Composer({
         return;
       }
 
-      setSubmitted(`${selected.label} queued on ICP job #${Number(result.job.id)}: ${value}`);
+      setSubmitted(
+        `${selected.label} completed on ICP job #${Number(result.job.id)}: ${
+          result.outputPreview ?? value
+        }`,
+      );
       setPrompt("");
       return;
     }
@@ -724,6 +737,269 @@ function SubscriptionsPage() {
   );
 }
 
+const fallbackAdminActions = [
+  {
+    id: "fund_main_wallet",
+    title: "Create system funding wallet",
+    description: "Create a dedicated ICP subaccount from the superadmin dashboard, then fund and verify it.",
+    status: "needs ICP canister",
+  },
+  {
+    id: "manage_credits",
+    title: "Payment and credit controls",
+    description: "Review intents, claims, subscriptions, ad grants, and user credit liability.",
+    status: "superadmin",
+  },
+  {
+    id: "manage_workers",
+    title: "Worker and AI routes",
+    description: "Control MagickAI, FreeLLMAPI, own-provider, local LLM, and paid worker boundaries.",
+    status: "superadmin",
+  },
+  {
+    id: "media_storage",
+    title: "ICP media storage",
+    description: "Inspect media manifests, chunked assets, owners, hashes, quotas, and lifecycle state.",
+    status: "superadmin",
+  },
+  {
+    id: "safety",
+    title: "Deployment safety",
+    description: "Track controllers, cycles, mainnet readiness, backups, and production isolation.",
+    status: "superadmin",
+  },
+  {
+    id: "audit",
+    title: "Audit and operations",
+    description: "Review admin audit events, user support signals, moderation queues, and health checks.",
+    status: "superadmin",
+  },
+];
+
+function AdminPage() {
+  const icp = useMagickBoxIcp();
+  const [setupCode, setSetupCode] = useState("");
+  const [notice, setNotice] = useState("Bind your Internet Identity principal before mainnet funding.");
+  const dashboard = icp.adminDashboard;
+  const status = icp.superAdminStatus;
+  const fundingWallet = dashboard?.wallet.funding_wallet[0] ?? null;
+  const systemAccount = fundingWallet?.account ?? dashboard?.wallet.account ?? icp.paymentAccount;
+  const principal = icp.principalText ?? status?.caller.toText() ?? "Sign in with Internet Identity";
+  const isSuperadmin = Boolean(status?.is_superadmin);
+  const bootstrapAvailable = Boolean(status?.bootstrap_available);
+  const actions = dashboard?.actions ?? fallbackAdminActions;
+  const stats = [
+    { label: "Profiles", value: dashboard ? Number(dashboard.profile_count) : 0 },
+    { label: "Jobs", value: dashboard ? Number(dashboard.job_count) : 0 },
+    { label: "Pending payments", value: dashboard ? Number(dashboard.pending_payment_count) : 0 },
+    { label: "Claimed payments", value: dashboard ? Number(dashboard.claimed_payment_count) : 0 },
+    { label: "Media manifests", value: dashboard ? Number(dashboard.media_manifest_count) : 0 },
+    { label: "Worker runs", value: dashboard ? Number(dashboard.worker_run_count) : 0 },
+    { label: "Ad grants", value: dashboard ? Number(dashboard.ad_credit_grant_count) : 0 },
+    { label: "User credits", value: dashboard ? Number(dashboard.total_user_credits) : 0 },
+  ];
+
+  const claimSuperadmin = async () => {
+    const result = await icp.bootstrapSuperadmin(setupCode);
+    setNotice(result.message);
+    if (result.kind === "ok") {
+      setSetupCode("");
+    }
+  };
+
+  const refresh = async () => {
+    await Promise.all([icp.refreshAccount(), icp.refreshAdmin()]);
+    setNotice("Management dashboard refreshed from ICP.");
+  };
+
+  const createFundingWallet = async () => {
+    const result = await icp.createSystemFundingWallet();
+    setNotice(result.message);
+  };
+
+  return (
+    <AppShell>
+      <section className="workspace-panel admin-dashboard" aria-labelledby="admin-title">
+        <div className="workspace-header">
+          <div>
+            <h1 id="admin-title">Superadmin</h1>
+            <p>{notice}</p>
+          </div>
+          <div className="admin-header-actions">
+            {icp.isAuthenticated ? (
+              <button type="button" onClick={refresh} disabled={icp.isBusy}>
+                Refresh
+              </button>
+            ) : (
+              <>
+                <button type="button" onClick={icp.signIn} disabled={icp.isBusy}>
+                  Sign in with Internet Identity
+                </button>
+                <button type="button" onClick={icp.signInWithLocalIdentity} disabled={icp.isBusy}>
+                  Use local browser identity
+                </button>
+              </>
+            )}
+          </div>
+        </div>
+
+        <div className="admin-grid">
+          <section className="admin-panel" aria-labelledby="admin-identity-title">
+            <div className="admin-panel-title">
+              <ShieldCheck size={20} aria-hidden="true" />
+              <h2 id="admin-identity-title">Internet Identity principal</h2>
+            </div>
+            <p className="principal-line">{principal}</p>
+            <dl className="admin-detail-list">
+              <div>
+                <dt>Role</dt>
+                <dd>{isSuperadmin ? "Superadmin" : "Not bound yet"}</dd>
+              </div>
+              <div>
+                <dt>Bootstrap</dt>
+                <dd>{bootstrapAvailable ? "Available" : "Closed"}</dd>
+              </div>
+              <div>
+                <dt>Admins</dt>
+                <dd>{status ? Number(status.superadmin_count) : 0}</dd>
+              </div>
+            </dl>
+            {!isSuperadmin && icp.isAuthenticated && bootstrapAvailable ? (
+              <div className="admin-claim">
+                <label>
+                  Bootstrap code
+                  <input
+                    type="password"
+                    value={setupCode}
+                    onChange={(event) => setSetupCode(event.target.value)}
+                    placeholder="Enter setup code"
+                  />
+                </label>
+                <button type="button" onClick={claimSuperadmin} disabled={icp.isBusy}>
+                  Claim superadmin
+                </button>
+              </div>
+            ) : null}
+          </section>
+
+          <section className="admin-panel" aria-labelledby="system-wallet-title">
+            <div className="admin-panel-title">
+              <Wallet size={20} aria-hidden="true" />
+              <h2 id="system-wallet-title">System Wallet</h2>
+            </div>
+            <dl className="admin-detail-list">
+              <div>
+                <dt>Owner</dt>
+                <dd>{fundingWallet ? systemAccount?.owner.toText() : "Create wallet after superadmin claim"}</dd>
+              </div>
+              <div>
+                <dt>Subaccount</dt>
+                <dd>{fundingWallet?.subaccount_hex ?? "Dedicated wallet not created"}</dd>
+              </div>
+              <div>
+                <dt>Balance</dt>
+                <dd>
+                  {fundingWallet
+                    ? `${formatIcp(Number(fundingWallet.balance_e8s))} ICP`
+                    : "Create wallet, fund it, then refresh"}
+                </dd>
+              </div>
+            </dl>
+            <div className="funding-process">
+              <h3>Create system funding wallet</h3>
+              <button
+                type="button"
+                onClick={createFundingWallet}
+                disabled={icp.isBusy || !isSuperadmin || Boolean(fundingWallet)}
+              >
+                {fundingWallet ? "Funding wallet created" : "Create funding wallet"}
+              </button>
+              <ol>
+                <li>Claim superadmin with Internet Identity.</li>
+                <li>Create the dedicated system funding wallet.</li>
+                <li>Transfer ICP to the owner and subaccount displayed above.</li>
+                <li>Refresh this dashboard to verify the ledger balance.</li>
+                <li>Use the funded controller identity to convert ICP to cycles and top up canisters.</li>
+                <li>Keep user credit purchases on per-intent subaccounts.</li>
+              </ol>
+              <p className="admin-note">
+                {dashboard?.wallet.funding_instructions ??
+                  "The funding target appears only after a superadmin creates it on ICP."}
+              </p>
+            </div>
+          </section>
+        </div>
+
+        <section className="admin-section" aria-labelledby="admin-stats-title">
+          <div className="admin-section-title">
+            <Activity size={20} aria-hidden="true" />
+            <h2 id="admin-stats-title">Management Snapshot</h2>
+          </div>
+          <div className="admin-stat-grid">
+            {stats.map((stat) => (
+              <div key={stat.label}>
+                <span>{stat.label}</span>
+                <strong>{stat.value}</strong>
+              </div>
+            ))}
+          </div>
+        </section>
+
+        <section className="admin-section" aria-labelledby="admin-functions-title">
+          <div className="admin-section-title">
+            <Gauge size={20} aria-hidden="true" />
+            <h2 id="admin-functions-title">Management Functions</h2>
+          </div>
+          <div className="admin-action-grid">
+            {actions.map((action) => (
+              <article key={action.id}>
+                <span>{action.status}</span>
+                <h3>{action.title}</h3>
+                <p>{action.description}</p>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section className="admin-section" aria-labelledby="admin-control-title">
+          <div className="admin-section-title">
+            <CreditCard size={20} aria-hidden="true" />
+            <h2 id="admin-control-title">Controls To Add Next</h2>
+          </div>
+          <div className="admin-action-grid">
+            {[
+              ["Users and roles", "Invite admins, suspend accounts, inspect user credits, and handle support recovery."],
+              ["Payments", "Claim ICP payments, reconcile ICRC transfers, configure subscriptions, and export payment evidence."],
+              ["AI providers", "Enable workers, set cost policies, monitor queue failures, and route local or external inference."],
+              ["Media and storage", "Manage quotas, delete policies, public visibility, asset verification, and lifecycle rules."],
+              ["Safety", "Review audit events, canister controllers, cycle thresholds, upgrade readiness, and incident locks."],
+              ["Growth", "Track ad verifier partners, referral credits, creator publishing, featured gallery, and content review."],
+            ].map(([title, description]) => (
+              <article key={title}>
+                <span>roadmap</span>
+                <h3>{title}</h3>
+                <p>{description}</p>
+              </article>
+            ))}
+          </div>
+        </section>
+
+        <section className="admin-section" aria-labelledby="admin-storage-title">
+          <div className="admin-section-title">
+            <Database size={20} aria-hidden="true" />
+            <h2 id="admin-storage-title">ICP Authority Boundary</h2>
+          </div>
+          <p className="admin-note">
+            Superadmin role, profile state, credits, payment intents, worker receipts, audit events,
+            and media manifests belong on ICP. Provider secrets and heavy inference stay outside
+            canister state behind explicit worker boundaries.
+          </p>
+        </section>
+      </section>
+    </AppShell>
+  );
+}
+
 function SettingsPage() {
   return (
     <AppShell>
@@ -840,6 +1116,7 @@ function App() {
           <Route path="/home/magick-chat/c/:id" element={<ChatPage />} />
           <Route path="/home/collections" element={<CollectionsPage />} />
           <Route path="/home/subscriptions" element={<SubscriptionsPage />} />
+          <Route path="/home/admin" element={<AdminPage />} />
           <Route path="/home/settings" element={<SettingsPage />} />
           <Route path="/auth/sign-in" element={<SignInPage />} />
           <Route path="/evaluation" element={<EvaluationPage />} />

@@ -12,7 +12,11 @@
     "test:watch": "vitest",
     "e2e": "playwright test",
     "audit:media": "node scripts/audit-live-media-assets.mjs",
+    "preflight:mainnet": "node scripts/preflight-mainnet-icp.mjs",
+    "deploy:mainnet:icp": "node scripts/deploy-mainnet-icp.mjs",
     "smoke:icp:advanced": "node scripts/smoke-local-icp-advanced.mjs",
+    "smoke:icp:ui": "node scripts/smoke-local-icp-ui-generation.mjs",
+    "worker:local": "node scripts/local-worker-service.mjs",
     "smoke:services": "node scripts/smoke-worker-services.mjs",
     "smoke:services:required": "node scripts/smoke-worker-services.mjs --require-live",
     "verify": "npm run lint && npm run test && npm run build && npm run e2e"

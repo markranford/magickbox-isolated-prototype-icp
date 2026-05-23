@@ -87,6 +87,60 @@ persistent actor MagickBoxCore {
     fee_e8s : Nat;
   };
 
+  type AdminAction = {
+    id : Text;
+    title : Text;
+    description : Text;
+    status : Text;
+    route : Text;
+    requires_superadmin : Bool;
+  };
+
+  type SuperAdminStatus = {
+    caller : Principal;
+    is_superadmin : Bool;
+    superadmin_count : Nat;
+    bootstrap_available : Bool;
+    system_wallet_owner : Principal;
+    ledger_id : Principal;
+  };
+
+  type SystemFundingWallet = {
+    id : Nat;
+    creator : Principal;
+    account : PaymentAccount;
+    subaccount_hex : Text;
+    status : Text;
+    created_at : Int;
+    verified_at : ?Int;
+    balance_e8s : Nat;
+  };
+
+  type SystemWallet = {
+    account : PaymentAccount;
+    balance_e8s : Nat;
+    funding_wallet : ?SystemFundingWallet;
+    requires_wallet_creation : Bool;
+    funding_instructions : Text;
+    cycles_note : Text;
+  };
+
+  type AdminDashboard = {
+    status : SuperAdminStatus;
+    wallet : SystemWallet;
+    profile_count : Nat;
+    job_count : Nat;
+    pending_payment_count : Nat;
+    claimed_payment_count : Nat;
+    media_manifest_count : Nat;
+    worker_grant_count : Nat;
+    worker_run_count : Nat;
+    ad_credit_grant_count : Nat;
+    audit_event_count : Nat;
+    total_user_credits : Nat;
+    actions : [AdminAction];
+  };
+
   type PaymentIntent = {
     id : Nat;
     owner : Principal;
@@ -172,6 +226,10 @@ persistent actor MagickBoxCore {
   type JobResult = { #ok : GenerationJob; #err : Text };
   type CollectionResult = { #ok : CollectionRecord; #err : Text };
   type PaymentAccountResult = { #ok : PaymentAccount; #err : Text };
+  type SuperAdminStatusResult = { #ok : SuperAdminStatus; #err : Text };
+  type SystemFundingWalletResult = { #ok : SystemFundingWallet; #err : Text };
+  type SystemWalletResult = { #ok : SystemWallet; #err : Text };
+  type AdminDashboardResult = { #ok : AdminDashboard; #err : Text };
   type PaymentIntentResult = { #ok : PaymentIntent; #err : Text };
   type WorkerGrantResult = { #ok : WorkerGrant; #err : Text };
   type WorkerRunResult = { #ok : WorkerRun; #err : Text };
@@ -189,6 +247,8 @@ persistent actor MagickBoxCore {
   var ad_credit_grants : [AdCreditGrant] = [];
   var media_assets : [MediaAsset] = [];
   var media_manifests : [MediaManifest] = [];
+  var super_admins : [Principal] = [];
+  var system_funding_wallets : [SystemFundingWallet] = [];
   var claimed_payment_blocks : [Nat] = [];
   var next_job_id : Nat = 1;
   var next_collection_id : Nat = 1;
@@ -199,6 +259,7 @@ persistent actor MagickBoxCore {
   var next_ad_credit_grant_id : Nat = 1;
   var next_media_asset_id : Nat = 1;
   var next_media_manifest_id : Nat = 1;
+  var next_system_funding_wallet_id : Nat = 1;
 
   func now() : Int {
     Time.now()
@@ -219,6 +280,50 @@ persistent actor MagickBoxCore {
       return ?"Internet Identity or another ICP-compatible identity is required";
     };
     null
+  };
+
+  func is_superadmin(caller : Principal) : Bool {
+    for (admin in super_admins.vals()) {
+      if (Principal.equal(admin, caller)) {
+        return true;
+      };
+    };
+    false
+  };
+
+  func require_superadmin(caller : Principal) : ?Text {
+    switch (require_authenticated(caller)) {
+      case (?err) { return ?err };
+      case null {};
+    };
+    if (not is_superadmin(caller)) {
+      return ?"Superadmin access is required";
+    };
+    null
+  };
+
+  func add_superadmin_internal(admin : Principal) : Bool {
+    if (Principal.isAnonymous(admin) or is_superadmin(admin)) {
+      return false;
+    };
+    super_admins := append_item<Principal>(super_admins, admin);
+    true;
+  };
+
+  func remove_superadmin_internal(admin : Principal) : Bool {
+    var removed = false;
+    var next : [Principal] = [];
+    for (existing in super_admins.vals()) {
+      if (Principal.equal(existing, admin)) {
+        removed := true;
+      } else {
+        next := append_item<Principal>(next, existing);
+      };
+    };
+    if (removed) {
+      super_admins := next;
+    };
+    removed;
   };
 
   func find_profile_index(owner : Principal) : ?Nat {
@@ -324,6 +429,170 @@ persistent actor MagickBoxCore {
       token_symbol = "ICP";
       fee_e8s = 10_000;
     };
+  };
+
+  func subaccount_for_system_funding_wallet(wallet_id : Nat) : Blob {
+    // "MBFUND" prefixes dedicated system funding subaccounts.
+    let bytes : [Nat8] = [
+      77, 66, 70, 85, 78, 68, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0,
+      0, 0, 0, 0, 0, 0, 0, 0,
+      nat_byte(wallet_id, 7), nat_byte(wallet_id, 6), nat_byte(wallet_id, 5), nat_byte(wallet_id, 4),
+      nat_byte(wallet_id, 3), nat_byte(wallet_id, 2), nat_byte(wallet_id, 1), nat_byte(wallet_id, 0),
+    ];
+    Blob.fromArray(bytes);
+  };
+
+  func account_for_system_funding_wallet(wallet_id : Nat) : PaymentAccount {
+    {
+      owner = Principal.fromActor(MagickBoxCore);
+      subaccount = ?subaccount_for_system_funding_wallet(wallet_id);
+      ledger_id = ICP_LEDGER_ID;
+      token_symbol = "ICP";
+      fee_e8s = 10_000;
+    };
+  };
+
+  func active_system_funding_wallet() : ?SystemFundingWallet {
+    var active : ?SystemFundingWallet = null;
+    for (wallet in system_funding_wallets.vals()) {
+      if (wallet.status == "active") {
+        active := ?wallet;
+      };
+    };
+    active;
+  };
+
+  func wallet_with_balance(wallet : SystemFundingWallet, balance_e8s : Nat) : SystemFundingWallet {
+    {
+      id = wallet.id;
+      creator = wallet.creator;
+      account = wallet.account;
+      subaccount_hex = wallet.subaccount_hex;
+      status = wallet.status;
+      created_at = wallet.created_at;
+      verified_at = ?now();
+      balance_e8s;
+    };
+  };
+
+  func active_system_wallet_account() : PaymentAccount {
+    switch (active_system_funding_wallet()) {
+      case (?wallet) { wallet.account };
+      case null { payment_account() };
+    };
+  };
+
+  func superadmin_status(caller : Principal) : SuperAdminStatus {
+    {
+      caller;
+      is_superadmin = is_superadmin(caller);
+      superadmin_count = super_admins.size();
+      bootstrap_available = super_admins.size() == 0;
+      system_wallet_owner = payment_account().owner;
+      ledger_id = ICP_LEDGER_ID;
+    };
+  };
+
+  func system_wallet_instructions(account : PaymentAccount, funding_wallet : ?SystemFundingWallet) : Text {
+    switch (funding_wallet) {
+      case (?wallet) {
+        "Fund the Magick Box system wallet by transferring ICP to owner " #
+        Principal.toText(account.owner) #
+        " with subaccount " #
+        wallet.subaccount_hex #
+        ". This wallet was created by a superadmin and is separate from user credit purchase subaccounts.";
+      };
+      case null {
+        "Create a dedicated system funding wallet from the superadmin dashboard before transferring ICP. User credit purchases stay on per-intent subaccounts.";
+      };
+    };
+  };
+
+  func system_wallet_status(account : PaymentAccount, funding_wallet : ?SystemFundingWallet, balance_e8s : Nat) : SystemWallet {
+    let hydrated_wallet = switch (funding_wallet) {
+      case (?wallet) { ?wallet_with_balance(wallet, balance_e8s) };
+      case null { null };
+    };
+    {
+      account;
+      balance_e8s;
+      funding_wallet = hydrated_wallet;
+      requires_wallet_creation = switch (hydrated_wallet) { case null { true }; case (?_) { false } };
+      funding_instructions = system_wallet_instructions(account, hydrated_wallet);
+      cycles_note = "Use the funded controller identity to convert ICP to cycles and top up canisters. This prototype never auto-spends main wallet funds.";
+    };
+  };
+
+  func admin_actions() : [AdminAction] {
+    [
+      {
+        id = "fund_main_wallet";
+        title = "Create system funding wallet";
+        description = "Create a dedicated ICP subaccount from the superadmin dashboard, then fund and verify it on-chain.";
+        status = "ready";
+        route = "system-wallet";
+        requires_superadmin = true;
+      },
+      {
+        id = "manage_credits";
+        title = "Payment and credit controls";
+        description = "Review payment intents, claimed blocks, user credit liability, ad grants, and subscription readiness.";
+        status = "ready";
+        route = "payments";
+        requires_superadmin = true;
+      },
+      {
+        id = "manage_workers";
+        title = "Worker and AI routes";
+        description = "Review authorized workers, local Ollama, FreeLLMAPI, MagickAI, and paid-provider boundaries.";
+        status = "ready";
+        route = "workers";
+        requires_superadmin = true;
+      },
+      {
+        id = "manage_media";
+        title = "ICP media storage";
+        description = "Track committed media manifests and dedicated media canister storage health.";
+        status = "ready";
+        route = "media";
+        requires_superadmin = true;
+      },
+      {
+        id = "deployment_safety";
+        title = "Deployment safety";
+        description = "Confirm backup controllers, cycle monitoring, II principal binding, and production isolation before mainnet.";
+        status = "requires-mainnet-funding";
+        route = "deployment";
+        requires_superadmin = true;
+      },
+      {
+        id = "provider_secrets";
+        title = "Provider secret boundary";
+        description = "Keep API keys outside canister state; route inference through isolated workers or local models.";
+        status = "external-required";
+        route = "providers";
+        requires_superadmin = true;
+      },
+    ];
+  };
+
+  func count_payment_intents_with_status(status : Text) : Nat {
+    var count : Nat = 0;
+    for (intent in payment_intents.vals()) {
+      if (intent.status == status) {
+        count += 1;
+      };
+    };
+    count;
+  };
+
+  func total_profile_credits() : Nat {
+    var total : Nat = 0;
+    for (profile in profiles.vals()) {
+      total += profile.credits;
+    };
+    total;
   };
 
   func nat_byte(value : Nat, byte_index_from_lsb : Nat) : Nat8 {
@@ -484,6 +753,143 @@ persistent actor MagickBoxCore {
     } else {
       requested_cost;
     };
+  };
+
+  public shared query ({ caller }) func get_superadmin_status() : async SuperAdminStatus {
+    superadmin_status(caller);
+  };
+
+  public shared ({ caller }) func bootstrap_superadmin(setup_code : Text) : async SuperAdminStatusResult {
+    switch (require_authenticated(caller)) {
+      case (?err) { return #err(err) };
+      case null {};
+    };
+    if (super_admins.size() != 0) {
+      return #err("Superadmin has already been bootstrapped");
+    };
+    if (setup_code != "MAGICKBOX-LOCAL-SUPERADMIN-2026") {
+      return #err("Invalid superadmin bootstrap code");
+    };
+    ignore add_superadmin_internal(caller);
+    record_audit(caller, "superadmin_bootstrapped", Principal.toText(caller), "initial II/local principal bound as superadmin");
+    #ok(superadmin_status(caller));
+  };
+
+  public shared ({ caller }) func add_superadmin(new_admin : Principal) : async SuperAdminStatusResult {
+    switch (require_superadmin(caller)) {
+      case (?err) { return #err(err) };
+      case null {};
+    };
+    if (Principal.isAnonymous(new_admin)) {
+      return #err("Superadmin principal cannot be anonymous");
+    };
+    if (is_superadmin(new_admin)) {
+      return #err("Principal is already a superadmin");
+    };
+    ignore add_superadmin_internal(new_admin);
+    record_audit(caller, "superadmin_added", Principal.toText(new_admin), "added from management dashboard or CLI");
+    #ok(superadmin_status(caller));
+  };
+
+  public shared ({ caller }) func remove_superadmin(admin : Principal) : async SuperAdminStatusResult {
+    switch (require_superadmin(caller)) {
+      case (?err) { return #err(err) };
+      case null {};
+    };
+    if (super_admins.size() <= 1 and is_superadmin(admin)) {
+      return #err("Cannot remove the final superadmin");
+    };
+    if (not remove_superadmin_internal(admin)) {
+      return #err("Principal is not a superadmin");
+    };
+    record_audit(caller, "superadmin_removed", Principal.toText(admin), "removed from management dashboard or CLI");
+    #ok(superadmin_status(caller));
+  };
+
+  public shared ({ caller }) func create_system_funding_wallet() : async SystemFundingWalletResult {
+    switch (require_superadmin(caller)) {
+      case (?err) { return #err("Only superadmins can create the system funding wallet: " # err) };
+      case null {};
+    };
+    switch (active_system_funding_wallet()) {
+      case (?wallet) { return #ok(wallet) };
+      case null {};
+    };
+    let wallet_id = next_system_funding_wallet_id;
+    let account = account_for_system_funding_wallet(wallet_id);
+    let subaccount_hex = switch (account.subaccount) {
+      case (?subaccount) { blob_to_hex(subaccount) };
+      case null { "" };
+    };
+    let wallet : SystemFundingWallet = {
+      id = wallet_id;
+      creator = caller;
+      account;
+      subaccount_hex;
+      status = "active";
+      created_at = now();
+      verified_at = null;
+      balance_e8s = 0;
+    };
+    system_funding_wallets := append_item<SystemFundingWallet>(system_funding_wallets, wallet);
+    next_system_funding_wallet_id += 1;
+    record_audit(
+      caller,
+      "system_funding_wallet_created",
+      Nat.toText(wallet.id),
+      "Only superadmins can create the system funding wallet; subaccount=" # wallet.subaccount_hex,
+    );
+    #ok(wallet);
+  };
+
+  public shared ({ caller }) func get_system_wallet_status() : async SystemWalletResult {
+    switch (require_superadmin(caller)) {
+      case (?err) { return #err(err) };
+      case null {};
+    };
+    let funding_wallet = active_system_funding_wallet();
+    let account = active_system_wallet_account();
+    let balance = await icp_ledger.icrc1_balance_of({
+      owner = account.owner;
+      subaccount = account.subaccount;
+    });
+    #ok(system_wallet_status(account, funding_wallet, balance));
+  };
+
+  public shared ({ caller }) func get_admin_dashboard() : async AdminDashboardResult {
+    switch (require_superadmin(caller)) {
+      case (?err) { return #err(err) };
+      case null {};
+    };
+    let funding_wallet = active_system_funding_wallet();
+    let account = active_system_wallet_account();
+    let balance = await icp_ledger.icrc1_balance_of({
+      owner = account.owner;
+      subaccount = account.subaccount;
+    });
+    #ok({
+      status = superadmin_status(caller);
+      wallet = system_wallet_status(account, funding_wallet, balance);
+      profile_count = profiles.size();
+      job_count = jobs.size();
+      pending_payment_count = count_payment_intents_with_status("pending");
+      claimed_payment_count = count_payment_intents_with_status("claimed");
+      media_manifest_count = media_manifests.size();
+      worker_grant_count = worker_grants.size();
+      worker_run_count = worker_runs.size();
+      ad_credit_grant_count = ad_credit_grants.size();
+      audit_event_count = audit_events.size();
+      total_user_credits = total_profile_credits();
+      actions = admin_actions();
+    });
+  };
+
+  public shared query ({ caller }) func list_admin_audit_events() : async [AuditEvent] {
+    switch (require_superadmin(caller)) {
+      case (?_) { return [] };
+      case null {};
+    };
+    audit_events;
   };
 
   public query func get_credit_options() : async [CreditOption] {

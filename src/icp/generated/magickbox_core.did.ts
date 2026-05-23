@@ -14,6 +14,29 @@ export interface AdCreditGrant {
   'owner' : Principal,
   'created_at' : bigint,
 }
+export interface AdminAction {
+  'id' : string,
+  'status' : string,
+  'title' : string,
+  'description' : string,
+  'route' : string,
+  'requires_superadmin' : boolean,
+}
+export interface AdminDashboard {
+  'status' : SuperAdminStatus,
+  'audit_event_count' : bigint,
+  'pending_payment_count' : bigint,
+  'media_manifest_count' : bigint,
+  'job_count' : bigint,
+  'actions' : Array<AdminAction>,
+  'profile_count' : bigint,
+  'worker_grant_count' : bigint,
+  'wallet' : SystemWallet,
+  'claimed_payment_count' : bigint,
+  'ad_credit_grant_count' : bigint,
+  'total_user_credits' : bigint,
+  'worker_run_count' : bigint,
+}
 export interface AuditEvent {
   'id' : bigint,
   'action' : string,
@@ -124,6 +147,32 @@ export interface ProviderOption {
 }
 export type ResultText = { 'ok' : string } |
   { 'err' : string };
+export interface SuperAdminStatus {
+  'bootstrap_available' : boolean,
+  'ledger_id' : Principal,
+  'caller' : Principal,
+  'system_wallet_owner' : Principal,
+  'is_superadmin' : boolean,
+  'superadmin_count' : bigint,
+}
+export interface SystemFundingWallet {
+  'id' : bigint,
+  'status' : string,
+  'creator' : Principal,
+  'subaccount_hex' : string,
+  'created_at' : bigint,
+  'verified_at' : [] | [bigint],
+  'account' : PaymentAccount,
+  'balance_e8s' : bigint,
+}
+export interface SystemWallet {
+  'funding_instructions' : string,
+  'account' : PaymentAccount,
+  'funding_wallet' : [] | [SystemFundingWallet],
+  'balance_e8s' : bigint,
+  'cycles_note' : string,
+  'requires_wallet_creation' : boolean,
+}
 export interface WorkerGrant {
   'id' : bigint,
   'owner' : Principal,
@@ -145,6 +194,11 @@ export interface WorkerRun {
   'worker' : Principal,
 }
 export interface _SERVICE {
+  'add_superadmin' : ActorMethod<
+    [Principal],
+    { 'ok' : SuperAdminStatus } |
+      { 'err' : string }
+  >,
   'attach_media_manifest' : ActorMethod<
     [bigint, string, string, string, string, bigint],
     { 'ok' : MediaManifest } |
@@ -153,6 +207,11 @@ export interface _SERVICE {
   'authorize_worker' : ActorMethod<
     [Principal, string],
     { 'ok' : WorkerGrant } |
+      { 'err' : string }
+  >,
+  'bootstrap_superadmin' : ActorMethod<
+    [string],
+    { 'ok' : SuperAdminStatus } |
       { 'err' : string }
   >,
   'claim_icp_payment' : ActorMethod<
@@ -179,6 +238,16 @@ export interface _SERVICE {
     { 'ok' : PaymentIntent } |
       { 'err' : string }
   >,
+  'create_system_funding_wallet' : ActorMethod<
+    [],
+    { 'ok' : SystemFundingWallet } |
+      { 'err' : string }
+  >,
+  'get_admin_dashboard' : ActorMethod<
+    [],
+    { 'ok' : AdminDashboard } |
+      { 'err' : string }
+  >,
   'get_credit_options' : ActorMethod<[], Array<CreditOption>>,
   'get_cycle_note' : ActorMethod<[], string>,
   'get_media_asset' : ActorMethod<[bigint], [] | [MediaAsset]>,
@@ -190,11 +259,18 @@ export interface _SERVICE {
       { 'err' : string }
   >,
   'get_provider_options' : ActorMethod<[], Array<ProviderOption>>,
+  'get_superadmin_status' : ActorMethod<[], SuperAdminStatus>,
+  'get_system_wallet_status' : ActorMethod<
+    [],
+    { 'ok' : SystemWallet } |
+      { 'err' : string }
+  >,
   'grant_ad_credits' : ActorMethod<
     [string, string, bigint],
     { 'ok' : AdCreditGrant } |
       { 'err' : string }
   >,
+  'list_admin_audit_events' : ActorMethod<[], Array<AuditEvent>>,
   'list_audit_events' : ActorMethod<[], Array<AuditEvent>>,
   'list_my_ad_credit_grants' : ActorMethod<[], Array<AdCreditGrant>>,
   'list_my_collections' : ActorMethod<[], Array<CollectionRecord>>,
@@ -209,6 +285,11 @@ export interface _SERVICE {
     { 'ok' : Profile } |
       { 'err' : string }
   >,
+  'remove_superadmin' : ActorMethod<
+    [Principal],
+    { 'ok' : SuperAdminStatus } |
+      { 'err' : string }
+  >,
   'save_to_collection' : ActorMethod<
     [bigint, string, boolean],
     { 'ok' : CollectionRecord } |
@@ -221,6 +302,14 @@ export interface _SERVICE {
   >,
 }
 export const idlFactory: IDL.InterfaceFactory = ({ IDL }) => {
+  const SuperAdminStatus = IDL.Record({
+    'bootstrap_available' : IDL.Bool,
+    'ledger_id' : IDL.Principal,
+    'caller' : IDL.Principal,
+    'system_wallet_owner' : IDL.Principal,
+    'is_superadmin' : IDL.Bool,
+    'superadmin_count' : IDL.Nat,
+  });
   const MediaManifest = IDL.Record({
     'id' : IDL.Nat,
     'uri' : IDL.Text,
@@ -285,6 +374,54 @@ export const idlFactory: IDL.InterfaceFactory = ({ IDL }) => {
       'options' : IDL.Vec(CreditOption),
     }),
   });
+  const PaymentAccount = IDL.Record({
+    'token_symbol' : IDL.Text,
+    'owner' : IDL.Principal,
+    'subaccount' : IDL.Opt(IDL.Vec(IDL.Nat8)),
+    'fee_e8s' : IDL.Nat,
+    'ledger_id' : IDL.Principal,
+  });
+  const SystemFundingWallet = IDL.Record({
+    'id' : IDL.Nat,
+    'status' : IDL.Text,
+    'creator' : IDL.Principal,
+    'subaccount_hex' : IDL.Text,
+    'created_at' : IDL.Int,
+    'verified_at' : IDL.Opt(IDL.Int),
+    'account' : PaymentAccount,
+    'balance_e8s' : IDL.Nat,
+  });
+  const AdminAction = IDL.Record({
+    'id' : IDL.Text,
+    'status' : IDL.Text,
+    'title' : IDL.Text,
+    'description' : IDL.Text,
+    'route' : IDL.Text,
+    'requires_superadmin' : IDL.Bool,
+  });
+  const SystemWallet = IDL.Record({
+    'funding_instructions' : IDL.Text,
+    'account' : PaymentAccount,
+    'funding_wallet' : IDL.Opt(SystemFundingWallet),
+    'balance_e8s' : IDL.Nat,
+    'cycles_note' : IDL.Text,
+    'requires_wallet_creation' : IDL.Bool,
+  });
+  const AdminDashboard = IDL.Record({
+    'status' : SuperAdminStatus,
+    'audit_event_count' : IDL.Nat,
+    'pending_payment_count' : IDL.Nat,
+    'media_manifest_count' : IDL.Nat,
+    'job_count' : IDL.Nat,
+    'actions' : IDL.Vec(AdminAction),
+    'profile_count' : IDL.Nat,
+    'worker_grant_count' : IDL.Nat,
+    'wallet' : SystemWallet,
+    'claimed_payment_count' : IDL.Nat,
+    'ad_credit_grant_count' : IDL.Nat,
+    'total_user_credits' : IDL.Nat,
+    'worker_run_count' : IDL.Nat,
+  });
   const MediaAsset = IDL.Record({
     'id' : IDL.Nat,
     'uri' : IDL.Text,
@@ -304,13 +441,6 @@ export const idlFactory: IDL.InterfaceFactory = ({ IDL }) => {
     'created_at' : IDL.Int,
     'email' : IDL.Opt(IDL.Text),
     'display_name' : IDL.Text,
-  });
-  const PaymentAccount = IDL.Record({
-    'token_symbol' : IDL.Text,
-    'owner' : IDL.Principal,
-    'subaccount' : IDL.Opt(IDL.Vec(IDL.Nat8)),
-    'fee_e8s' : IDL.Nat,
-    'ledger_id' : IDL.Principal,
   });
   const ProviderOption = IDL.Record({
     'id' : IDL.Text,
@@ -359,6 +489,11 @@ export const idlFactory: IDL.InterfaceFactory = ({ IDL }) => {
   });
   
   return IDL.Service({
+    'add_superadmin' : IDL.Func(
+        [IDL.Principal],
+        [IDL.Variant({ 'ok' : SuperAdminStatus, 'err' : IDL.Text })],
+        [],
+      ),
     'attach_media_manifest' : IDL.Func(
         [IDL.Nat, IDL.Text, IDL.Text, IDL.Text, IDL.Text, IDL.Nat],
         [IDL.Variant({ 'ok' : MediaManifest, 'err' : IDL.Text })],
@@ -367,6 +502,11 @@ export const idlFactory: IDL.InterfaceFactory = ({ IDL }) => {
     'authorize_worker' : IDL.Func(
         [IDL.Principal, IDL.Text],
         [IDL.Variant({ 'ok' : WorkerGrant, 'err' : IDL.Text })],
+        [],
+      ),
+    'bootstrap_superadmin' : IDL.Func(
+        [IDL.Text],
+        [IDL.Variant({ 'ok' : SuperAdminStatus, 'err' : IDL.Text })],
         [],
       ),
     'claim_icp_payment' : IDL.Func(
@@ -394,6 +534,16 @@ export const idlFactory: IDL.InterfaceFactory = ({ IDL }) => {
         [IDL.Variant({ 'ok' : PaymentIntent, 'err' : IDL.Text })],
         [],
       ),
+    'create_system_funding_wallet' : IDL.Func(
+        [],
+        [IDL.Variant({ 'ok' : SystemFundingWallet, 'err' : IDL.Text })],
+        [],
+      ),
+    'get_admin_dashboard' : IDL.Func(
+        [],
+        [IDL.Variant({ 'ok' : AdminDashboard, 'err' : IDL.Text })],
+        [],
+      ),
     'get_credit_options' : IDL.Func([], [IDL.Vec(CreditOption)], ['query']),
     'get_cycle_note' : IDL.Func([], [IDL.Text], ['query']),
     'get_media_asset' : IDL.Func([IDL.Nat], [IDL.Opt(MediaAsset)], ['query']),
@@ -405,11 +555,18 @@ export const idlFactory: IDL.InterfaceFactory = ({ IDL }) => {
         ['query'],
       ),
     'get_provider_options' : IDL.Func([], [IDL.Vec(ProviderOption)], ['query']),
+    'get_superadmin_status' : IDL.Func([], [SuperAdminStatus], ['query']),
+    'get_system_wallet_status' : IDL.Func(
+        [],
+        [IDL.Variant({ 'ok' : SystemWallet, 'err' : IDL.Text })],
+        [],
+      ),
     'grant_ad_credits' : IDL.Func(
         [IDL.Text, IDL.Text, IDL.Nat],
         [IDL.Variant({ 'ok' : AdCreditGrant, 'err' : IDL.Text })],
         [],
       ),
+    'list_admin_audit_events' : IDL.Func([], [IDL.Vec(AuditEvent)], ['query']),
     'list_audit_events' : IDL.Func([], [IDL.Vec(AuditEvent)], ['query']),
     'list_my_ad_credit_grants' : IDL.Func(
         [],
@@ -438,6 +595,11 @@ export const idlFactory: IDL.InterfaceFactory = ({ IDL }) => {
     'register_profile' : IDL.Func(
         [IDL.Text, IDL.Opt(IDL.Text)],
         [IDL.Variant({ 'ok' : Profile, 'err' : IDL.Text })],
+        [],
+      ),
+    'remove_superadmin' : IDL.Func(
+        [IDL.Principal],
+        [IDL.Variant({ 'ok' : SuperAdminStatus, 'err' : IDL.Text })],
         [],
       ),
     'save_to_collection' : IDL.Func(

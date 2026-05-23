@@ -205,3 +205,29 @@ Full ICP local handoff: `docs/handovers/magickbox-full-icp-local-deploy-handoff.
 3. Add a dedicated ICP media/chunk canister for larger generated assets and rerun `npm run smoke:icp:advanced`.
 4. Promote the proven local ICP slice to a new isolated preview only after an explicit checkpoint: asset canister, Internet Identity, core backend canister, local/test payment proof, worker callback, ICP media storage, media manifests, collection save, append-only audit events.
 5. Run a separately authorized secrets/config audit on the existing repos before any production rewrite planning.
+
+## 2026-05-23 ICP Generation Completion Update
+
+- Local ICP frontend: `http://frontend.local.localhost:8010/`
+- Core canister: `tm5rl-y7777-77776-aaaca-cai`
+- Media canister: `tz2ag-zx777-77776-aaabq-cai`
+- Frontend canister: `t63gs-up777-77776-aaaba-cai`
+- Live Caffeine control center: `https://magickbox-icp-e68.caffeine.xyz/`
+
+Newly completed:
+
+- Browser composer now runs a real worker execution path and stores generated output in the dedicated ICP media canister.
+- `npm run smoke:icp:ui` proves local browser identity login, prompt submission, worker execution, `magickbox_media` byte storage, `magickbox_core` manifest attachment, and completed UI state.
+- Caffeine app was published as a separate isolated control center and verified live. It is not connected to Magick Box production and is not authoritative state.
+
+Latest verification:
+
+- `npm run verify` passed: lint, 25 Vitest tests, build, and 12 Playwright checks.
+- `npm run smoke:icp:advanced` passed.
+- `npm run smoke:icp:ui` passed.
+- Caffeine live smoke passed with title `Magick Box ICP Control Center`.
+- `npm run preflight:mainnet` failed safely because the selected mainnet identity has `0 ICP`, `0 cycles`, and no dedicated `MAGICKBOX_MAINNET_IDENTITY`.
+
+Remaining blocker for true mainnet ICP canisters:
+
+- Fund a dedicated isolated identity, set `MAGICKBOX_MAINNET_IDENTITY`, define primary and backup controllers, then run the new-canister mainnet deploy. Do not reuse production Magick Box infrastructure.
