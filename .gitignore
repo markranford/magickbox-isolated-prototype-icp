@@ -16,6 +16,7 @@ dist-ssr
 target
 test-results
 playwright-report
+tmp
 
 # Editor directories and files
 .vscode/*

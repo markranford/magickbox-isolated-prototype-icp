@@ -134,3 +134,32 @@ Safety decision:
 Current blocker:
 
 - Caffeine's generated/status view and public deployed domain disagree. Caffeine says Version 5 contains the demo guard, but the published domain still serves the unsafe admin branch.
+
+## 2026-05-23 GitHub Import Attempt
+
+Canonical source repo:
+
+`https://github.com/markranford/magickbox-isolated-prototype-icp`
+
+Status:
+
+- Created as the canonical isolated source repo.
+- Initially private.
+- Changed to public on 2026-05-23 so Caffeine could attempt unauthenticated import.
+- Verified from the local machine:
+  - GitHub visibility: `PUBLIC`;
+  - latest pushed source commit: `73b5458d24b1ac128b7f3f2c093aa1496d21a47e`;
+  - raw README returned HTTP `200`.
+
+Caffeine result:
+
+- Caffeine could not import the public repo.
+- Caffeine also could not fetch `raw.githubusercontent.com`.
+- Caffeine reported the hard platform limitation as no outbound HTTP access from its builder/agent environment.
+- A lean source bundle was created locally for upload, but automated Chrome file chooser upload timed out in this session.
+
+Current interpretation:
+
+- The GitHub/source-of-truth half of the hybrid workflow is now operational.
+- The Caffeine-import half is blocked by Caffeine platform access/upload behavior, not by local source readiness.
+- Do not use the existing Caffeine live admin app for real superadmin or funding.

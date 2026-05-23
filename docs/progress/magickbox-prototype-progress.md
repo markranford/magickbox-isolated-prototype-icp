@@ -2241,3 +2241,48 @@ Blockers or risks:
 Next step:
 
 - In Caffeine, create or refresh a separate app from `https://github.com/markranford/magickbox-isolated-prototype-icp` using `docs/handovers/caffeine-github-import-prompt.md`, then independently smoke-test the live preview before any superadmin or funding action.
+
+## 2026-05-23T11:46:03+07:00 - Checkpoint 46: Caffeine GitHub Import And Upload Attempt
+
+Current workspace/folder:
+
+`C:\Users\Mark\Documents\Codex\Codex_MagickBox\magick-box-rewrite-readiness-prototype`
+
+What was inspected:
+
+- GitHub visibility and raw file accessibility for `https://github.com/markranford/magickbox-isolated-prototype-icp`.
+- Caffeine chat `codex_magickboxOnICP_from_github`.
+- Caffeine's response to public GitHub repo import, raw GitHub URL import, and source-bundle upload.
+
+What was created or changed:
+
+- Changed the GitHub repository visibility from private to public so Caffeine could attempt unauthenticated import.
+- Verified raw README accessibility from this machine.
+- Created a full source zip in ignored `tmp/`, then created a lean source bundle excluding heavy copied media.
+- Added `tmp` to `.gitignore` so transient Caffeine upload bundles are not committed.
+
+Commands run and results:
+
+- `gh repo edit markranford/magickbox-isolated-prototype-icp --visibility public --accept-visibility-change-consequences` -> succeeded.
+- `gh repo view markranford/magickbox-isolated-prototype-icp --json name,visibility,url` -> confirmed `PUBLIC`.
+- `Invoke-WebRequest ... raw.githubusercontent.com/.../README.md` -> returned HTTP `200`.
+- Caffeine prompt with public repo URL -> Caffeine still could not fetch the repo from its build environment.
+- Caffeine prompt with raw README URL and commit SHA `73b5458d24b1ac128b7f3f2c093aa1496d21a47e` -> Caffeine reported a hard platform limitation: its builder/agent environment has no outbound HTTP access to GitHub/raw GitHub.
+- Created lean source bundle `tmp/caffeine-magickbox-source-lean-73b5458-20260523-114156.zip` -> `139,630` bytes.
+- Attempted to upload the lean bundle through Caffeine/Chrome file chooser -> blocked/timed out from the Chrome extension control path in this session.
+
+Decisions made:
+
+- Keep the public GitHub repo as the canonical Caffeine-readable source unless Mark later wants it private again.
+- Treat Caffeine GitHub import as blocked by Caffeine platform networking, not by repo visibility.
+- Do not fall back to stale Caffeine-generated code for privileged flows.
+
+Blockers or risks:
+
+- Caffeine cannot fetch GitHub from the builder environment even when the repo is public and raw files return HTTP `200` externally.
+- Caffeine upload may still work manually in the browser, but the automated Chrome file chooser timed out twice.
+- The existing Caffeine live app remains unsafe for superadmin/funding because demo users can still see `Claim Superadmin`.
+
+Next step:
+
+- Either manually upload the lean source bundle into the Caffeine chat using the visible browser UI, or continue from the verified local/GitHub source and move toward direct isolated ICP mainnet deployment once the funded identity/controller requirements are satisfied.
