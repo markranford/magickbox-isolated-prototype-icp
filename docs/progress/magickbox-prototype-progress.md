@@ -2328,6 +2328,8 @@ Commands run and results:
 - Updated `eslint.config.js` to ignore `tmp`, `test-results`, and `node_modules`.
 - `npm run verify` -> passed: lint, 7 Vitest files / 30 tests, production build, and 14 Playwright tests.
 - `curl.exe ... https://api.caffeine.ai/projects/...` without browser/session credentials -> returned `401 User not authenticated`, confirming direct Caffeine API retry requires a supported API key or authenticated browser upload.
+- `git commit -m "feat: add caffeine-ready ICP fallback bundle"` -> committed as `6443afb` and pushed to `origin/main`.
+- Post-commit `npm run caffeine:bundle` -> generated `tmp\magickbox-on-icp-caffeine-6443afb-20260523T051545.zip`, 16,624,106 bytes, 15 referenced media assets, below the 20 MB cap.
 
 Decisions made:
 

@@ -32,10 +32,10 @@ The repo now has a Caffeine upload bundle generator:
 npm run caffeine:bundle
 ```
 
-Latest verified bundle:
+Latest verified bundle after commit `6443afb`:
 
 ```text
-C:\Users\Mark\Documents\Codex\Codex_MagickBox\magick-box-rewrite-readiness-prototype\tmp\magickbox-on-icp-caffeine-bbf00c7-20260523T051144.zip
+C:\Users\Mark\Documents\Codex\Codex_MagickBox\magick-box-rewrite-readiness-prototype\tmp\magickbox-on-icp-caffeine-6443afb-20260523T051545.zip
 ```
 
 This bundle is Caffeine-shaped:
@@ -59,6 +59,8 @@ npm run test -- src/icp/magickboxClient.test.ts src/icp/localWorkerContracts.tes
 npm run build
 npm run caffeine:bundle
 npm --prefix tmp\caffeine-upload-bbf00c7-20260523T051144\magickbox-on-icp-caffeine\src\frontend run build
+npm run verify
+npm run caffeine:bundle
 ```
 
 Results:
@@ -67,6 +69,8 @@ Results:
 - Main production frontend build passed.
 - Caffeine bundle was generated at 16,624,083 bytes, below the 20 MB Caffeine cap.
 - Generated Caffeine frontend build passed.
+- Full verification passed after the lint ignore for generated `tmp/` workspaces.
+- Current post-commit Caffeine bundle is 16,624,106 bytes, below the 20 MB Caffeine cap.
 
 ## Next Best Paths
 
