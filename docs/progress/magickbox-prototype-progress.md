@@ -2347,3 +2347,155 @@ Blockers or risks:
 Next step:
 
 - Retry Caffeine using the generated Caffeine-shaped ZIP, or use a Caffeine API key with a supported MCP/API route. If neither Caffeine path can be completed automatically, continue the direct ICP mainnet deploy path with an isolated funded identity and explicit controller policy.
+
+## 2026-05-23T13:23:10+07:00 - Checkpoint 48: Public Admin Gate Hardened Before Caffeine Publish
+
+Current workspace/folder:
+
+`C:\Users\Mark\Documents\Codex\Codex_MagickBox\magick-box-rewrite-readiness-prototype`
+
+What was inspected:
+
+- Existing dirty workspace state after Caffeine import/export work.
+- `/home/admin` React route in `src/App.tsx`.
+- Existing admin unit and Playwright browser tests.
+- Durable hybrid ICP/Caffeine/GitHub workflow note.
+
+What was created or changed:
+
+- Updated `src/App.tsx` so public or signed-out visitors see a read-only owner lock state instead of privileged wallet/payment/admin controls.
+- Hid system wallet owner/subaccount/balance details until `get_superadmin_status` reports the signed-in principal is superadmin.
+- Hid the create-wallet button, ledger funding steps, management snapshot counts, and admin roadmap controls from non-superadmin sessions.
+- Added locked public management cards: `Owner access locked` and `ICP authority protected`.
+- Updated `src/App.test.tsx` to assert public `/home/admin` does not expose `Create funding wallet`, `Claim superadmin`, or `Payment and credit controls`.
+- Updated `tests/prototype.spec.ts` so desktop/mobile browser smoke checks assert the public admin route hides privileged owner controls.
+
+Commands run and results:
+
+- `git status --short` -> showed existing dirty Caffeine bundle script and draft screenshots before this checkpoint.
+- `rg -n "Create system funding wallet|Create funding wallet|Claim superadmin|Verify balance|adminActions|isSuperadmin|fundingWallet|magickbox.ai" src docs scripts` -> found the public admin exposures in `src/App.tsx` and existing handoff guard requirements.
+- `npm run lint` -> passed.
+- `npm run test -- src/App.test.tsx` -> passed, 1 file / 4 tests.
+- `npm run test` -> passed, 7 files / 31 tests.
+- `npm run build` -> passed; Vite reported only the existing large chunk warning.
+- `npm run e2e` -> passed, 14 Playwright tests across desktop and mobile.
+
+Decisions made:
+
+- Do not publish or go live through Caffeine until the public admin route hides owner/funding actions in the deployed DOM.
+- Keep owner setup possible only after an authenticated principal is verified as superadmin by the ICP canister.
+- Keep Caffeine as a preview/import accelerator while local/GitHub source and direct isolated ICP canisters remain the authority for privileged flows.
+
+Blockers or risks:
+
+- The corrected admin gate is verified locally but has not yet been re-imported into Caffeine in this checkpoint.
+- The current Caffeine draft URL still needs a fresh import from the corrected source and independent remote smoke testing.
+- Caffeine live publish should remain blocked until the remote public DOM also hides privileged controls.
+
+Next step:
+
+- Regenerate the Caffeine-compatible bundle, overlay and push the isolated Caffeine GitHub export repo, import the new commit in Caffeine, then smoke-test the Caffeine draft `/home/admin` before any live publish.
+
+## 2026-05-23T13:37:26+07:00 - Checkpoint 49: Corrected Caffeine Draft Imported And Live URL Verified
+
+Current workspace/folder:
+
+`C:\Users\Mark\Documents\Codex\Codex_MagickBox\magick-box-rewrite-readiness-prototype`
+
+What was inspected:
+
+- Corrected generated Caffeine package from the isolated prototype source.
+- Isolated Caffeine export repo at `https://github.com/markranford/codex-magickbox-icp-caffeine-20260523`.
+- Caffeine app `MagickBox ICP` in Mark's Caffeine account.
+- Caffeine draft URL `https://secondary-red-eeq-draft.caffeine.xyz/`.
+- Caffeine live isolated URL `https://magickbox-icp-e68.caffeine.xyz/`.
+
+What was created or changed:
+
+- Ran the Caffeine bundle script after the admin gate patch.
+- Generated `tmp\caffeine-upload-e6ffe8b-20260523T062348\magickbox-on-icp-caffeine`.
+- Generated `tmp\magickbox-on-icp-caffeine-e6ffe8b-20260523T062348.zip` at `16,622,544` bytes, under the 20 MB Caffeine upload limit.
+- Overlaid the corrected generated source into the isolated Caffeine GitHub export repo.
+- Committed and pushed isolated Caffeine repo commit `3e6154c` with message `Harden public admin owner gate`.
+- Imported commit `3e6154c` through Caffeine GitHub import.
+- Caffeine created draft version 3.
+- Published Caffeine version 3 to the isolated live Caffeine URL.
+- Added screenshot evidence:
+  - `docs/artifacts/prototype/caffeine-draft-v3-admin-desktop-2026-05-23.png`
+  - `docs/artifacts/prototype/caffeine-draft-v3-admin-mobile-2026-05-23.png`
+  - `docs/artifacts/prototype/caffeine-live-v3-admin-desktop-2026-05-23.png`
+  - `docs/artifacts/prototype/caffeine-live-v3-admin-mobile-2026-05-23.png`
+
+Commands run and results:
+
+- `npm run caffeine:bundle` -> passed; generated the Caffeine package and zip under the upload limit.
+- `npm --prefix tmp\caffeine-upload-e6ffe8b-20260523T062348\magickbox-on-icp-caffeine\src\frontend run build` -> passed; only the existing Vite large chunk warning.
+- PowerShell overlay into `tmp\caffeine-github-export-20260523` -> changed only `src/frontend/src/App.tsx` and `src/frontend/src/App.test.tsx`.
+- `git commit -m "Harden public admin owner gate"` in the isolated Caffeine export repo -> created commit `3e6154c`.
+- `git push origin main` in the isolated Caffeine export repo -> pushed `a0a9dc3..3e6154c`.
+- Caffeine GitHub import of `3e6154c` -> completed, draft version 3 created.
+- Draft Playwright smoke against `https://secondary-red-eeq-draft.caffeine.xyz/` -> passed for `/`, `/home/magick-chat`, and `/home/admin`, all HTTP `200`; public admin route included `Owner controls locked`, `Owner access locked`, and `ICP authority protected`; public admin route did not include `Create funding wallet`, `Claim superadmin`, `Payment and credit controls`, or `Verify balance`; draft console showed only Caffeine's own `draft-editor:error disallowed origin` message.
+- Caffeine publish -> Caffeine reported `Success! Version 3 is live in production!` for the isolated Caffeine app.
+- Live Playwright smoke against `https://magickbox-icp-e68.caffeine.xyz/` -> passed for `/`, `/home/magick-chat`, and `/home/admin`, all HTTP `200`; public admin route passed the same forbidden/required phrase checks on desktop and mobile; no console warnings or errors.
+
+Decisions made:
+
+- Caffeine version 3 is safe to use as an isolated live preview because the public live DOM now hides owner/funding actions.
+- The live Caffeine URL remains a preview/control-plane deployment, not the final authority for real funds or owner custody.
+- Real superadmin claim, wallet creation, and ICP funding should still use the isolated ICP canister path after controller/cycles policy is explicitly ready.
+
+Blockers or risks:
+
+- The Caffeine UI labels publishing as `production`, but this is only the isolated Caffeine app domain, not `www.magickbox.ai`.
+- The live app currently reports ICP runtime unavailable on Caffeine until connected to isolated ICP canister IDs/runtime configuration.
+- Direct isolated ICP mainnet canister deployment with funded identity/controller policy remains the next serious authority step.
+
+Next step:
+
+- Update the handoff/status docs with the Caffeine v3 live URL, evidence paths, and remaining ICP authority gap, then continue toward direct isolated ICP canister deployment for real Internet Identity, worker execution, media storage, and ICP/ICRC payments.
+
+## 2026-05-23T13:39:34+07:00 - Checkpoint 50: Handoff Updated For Caffeine V3
+
+Current workspace/folder:
+
+`C:\Users\Mark\Documents\Codex\Codex_MagickBox\magick-box-rewrite-readiness-prototype`
+
+What was inspected:
+
+- `docs/handovers/caffeine-recovery-plan-2026-05-23.md`.
+- `docs/handovers/magickbox-isolated-prototype-handoff.md`.
+- Caffeine screenshot artifact files under `docs/artifacts/prototype`.
+- Canonical repo and isolated Caffeine export repo git status.
+
+What was created or changed:
+
+- Updated `docs/handovers/magickbox-isolated-prototype-handoff.md` with:
+  - Caffeine live v3 URL.
+  - Caffeine v3 draft/live screenshot artifact paths.
+  - Clarification that only the isolated Caffeine preview is live; `www.magickbox.ai` production was not touched.
+  - Current local and Caffeine verification results.
+- Updated `docs/handovers/caffeine-recovery-plan-2026-05-23.md` with:
+  - Caffeine version 3 commit provenance (`3e6154c`).
+  - Live public admin smoke results.
+  - Remaining warning that Caffeine is not final authority for real funds, canister controllers, or owner custody.
+
+Commands run and results:
+
+- `git status --short` in the canonical isolated repo -> showed modified app/tests/docs/bundle script plus new Caffeine screenshots.
+- `git remote -v` in the canonical isolated repo -> confirmed isolated origin `https://github.com/markranford/magickbox-isolated-prototype-icp.git`.
+- `git status --short` in `tmp\caffeine-github-export-20260523` -> clean after push.
+- `git diff --stat` -> showed app/admin gate, Caffeine bundle script, handoff/progress docs, and screenshot evidence changes.
+
+Decisions made:
+
+- Commit and push the canonical isolated prototype repo so the local source, docs, tests, and Caffeine evidence stay durable.
+- Keep the isolated Caffeine GitHub export repo as a Caffeine import/export bridge, while the canonical repo remains `magickbox-isolated-prototype-icp`.
+
+Blockers or risks:
+
+- Direct isolated ICP mainnet canisters are still not deployed because the current deploy identity/funding/controller preflight was previously blocked.
+- Caffeine version 3 is live as an isolated preview, but real owner/funding flows still require a separate privileged-flow smoke against isolated ICP canisters.
+
+Next step:
+
+- Commit and push the canonical isolated repo changes, then finalize this checkpoint with the live URL and exact verification status.

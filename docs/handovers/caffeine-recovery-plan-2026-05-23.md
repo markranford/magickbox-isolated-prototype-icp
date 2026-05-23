@@ -88,10 +88,21 @@ Use the canonical repo and direct `icp deploy -e ic` path once the isolated iden
 
 ## Safety Rule
 
-Do not use the current Caffeine deployment for superadmin claim, main wallet creation, payment transfer, or funding until an independent live smoke test proves:
+The current isolated Caffeine deployment passed the public admin smoke test after version 3 was imported from commit `3e6154c` and published to `https://magickbox-icp-e68.caffeine.xyz/`.
+
+Verified on 2026-05-23T13:37+07:00:
+
+- `/`, `/home/magick-chat`, and `/home/admin` return HTTP `200`.
+- Public `/home/admin` shows `Owner controls locked`, `Owner access locked`, and `ICP authority protected`.
+- Public `/home/admin` does not render `Create funding wallet`, `Claim superadmin`, `Payment and credit controls`, or `Verify balance`.
+- Desktop and mobile screenshots were saved under `docs/artifacts/prototype/caffeine-live-v3-admin-*-2026-05-23.png`.
+- Live Caffeine smoke had no console warnings or errors.
+
+This makes the Caffeine URL safe as an isolated preview/control-plane surface. It is still not the final authority for real funds, canister controllers, or owner custody.
+
+Do not use Caffeine for superadmin claim, main wallet creation, payment transfer, or funding until a separate privileged-flow smoke test proves:
 
 - correct app code and commit provenance;
-- demo users cannot see privileged bootstrap actions;
 - canister IDs and controllers are known;
 - Internet Identity works;
 - credits, payments, jobs, and media writes hit the intended isolated canisters.

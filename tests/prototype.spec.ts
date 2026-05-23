@@ -91,18 +91,18 @@ test("creation surface exposes provider choices and credit state", async ({ page
   await expect(page.getByText("25 credits")).toBeVisible();
 });
 
-test("admin route exposes superadmin and system wallet management surface", async ({ page }) => {
+test("admin route hides privileged owner controls from public sessions", async ({ page }) => {
   await page.goto("/home/admin");
 
   await expect(page.getByRole("heading", { name: "Superadmin" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "System Wallet" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Internet Identity principal" })).toBeVisible();
-  await expect(
-    page.getByLabel("System Wallet").getByRole("heading", { name: "Create system funding wallet" }),
-  ).toBeVisible();
-  await expect(page.getByRole("button", { name: "Create funding wallet" })).toBeVisible();
-  await expect(page.getByRole("heading", { name: "Payment and credit controls" })).toBeVisible();
-  await expect(page.getByRole("heading", { name: "Worker and AI routes" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Owner controls locked" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "Owner access locked" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Create funding wallet" })).toHaveCount(0);
+  await expect(page.getByRole("button", { name: "Claim superadmin" })).toHaveCount(0);
+  await expect(page.getByRole("heading", { name: "Payment and credit controls" })).toHaveCount(0);
+  await expect(page.getByText("Verify balance")).toHaveCount(0);
 });
 
 test("built assets include ICP asset canister routing policy", async () => {

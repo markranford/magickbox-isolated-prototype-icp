@@ -72,17 +72,110 @@ async function main() {
   await writeFile(
     join(projectRoot, "caffeine.toml"),
     [
+      'manifest_version = "0.1.0"',
+      "",
+      "[project]",
+      'id = "codex-magickbox-on-icp"',
       'name = "codex-magickbox-on-icp"',
-      'description = "Isolated Magick Box ICP preview prepared from the canonical Codex prototype repo."',
-      'source = "https://github.com/markranford/magickbox-isolated-prototype-icp"',
+      "",
+      "[workspace]",
+      'include = ["src/**"]',
+      "",
+      "[canisters.frontend]",
+      'depends_on = ["backend"]',
       "",
     ].join("\n"),
+  );
+  await writeFile(
+    join(projectRoot, "project.json"),
+    JSON.stringify(
+      {
+        overview:
+          "Isolated Magick Box ICP preview prepared from the canonical Codex prototype repo. It preserves the observable Magick Box UX while moving auth, credits, jobs, payments, audit events, and media manifests toward ICP canisters.",
+        features: [
+          "Magick Box landing, chat, gallery, pricing, settings, and admin routes",
+          "Internet Identity compatible owner login",
+          "ICP-first media manifests and copied reference media",
+          "Core canister state for credits, jobs, audit events, payment intents, ad credits, and inline media assets",
+          "Admin bootstrap and funding dashboard guarded away from demo users",
+          "Provider settings for MagickAI, FreeLLMAPI, OpenAI-compatible endpoints, and local Ollama",
+        ],
+        category: "ai-creator-tool",
+        tags: ["icp", "magick-box", "internet-identity", "credits", "media"],
+        source: "https://github.com/markranford/magickbox-isolated-prototype-icp",
+      },
+      null,
+      2,
+    ),
+  );
+  await writeFile(
+    join(projectRoot, "package.json"),
+    JSON.stringify(
+      {
+        name: "@caffeine/codex-magickbox-on-icp",
+        type: "module",
+        engines: {
+          node: ">=16.0.0",
+          pnpm: ">=7.0.0",
+          npm: "please use pnpm",
+        },
+        scripts: {
+          build: "pnpm -r --if-present run build",
+          typecheck: "pnpm -r --if-present run typecheck",
+          check: "pnpm -r --if-present run check",
+          fix: "pnpm -r --if-present run fix",
+          bindgen:
+            "caffeine-bindgen --did-file ./src/backend/dist/backend.did --out-dir ./src/frontend/src --actor-interface-file --force",
+        },
+        devDependencies: {
+          sharp: "^0.34.4",
+        },
+        dependencies: {
+          "@caffeineai/core-infrastructure": "^0.3.0",
+        },
+      },
+      null,
+      2,
+    ),
+  );
+  await writeFile(
+    join(projectRoot, "pnpm-workspace.yaml"),
+    ["packages:", "  - src/**/*", "onlyBuiltDependencies:", "  - esbuild", "  - sharp", ""].join("\n"),
+  );
+  await writeFile(
+    join(projectRoot, "tsconfig.json"),
+    JSON.stringify({ files: [], references: [{ path: "./src/frontend" }] }, null, 2),
   );
   await writeFile(
     join(projectRoot, ".gitignore"),
     ["node_modules/", "dist/", ".mops/", ".icp/", "*.log", ""].join("\n"),
   );
-  await copyIfExists(join(root, "mops.toml"), join(projectRoot, "mops.toml"));
+  await writeFile(
+    join(projectRoot, "mops.toml"),
+    [
+      "[package]",
+      'name = "backend"',
+      'version = "0.1.0"',
+      "",
+      "[build]",
+      'outputDir = "src/backend/dist"',
+      'args = ["--release"]',
+      "",
+      "[canisters.backend]",
+      'main = "src/backend/main.mo"',
+      "",
+      "[toolchain]",
+      'moc = "1.8.1"',
+      'lintoko = "0.10.0"',
+      "",
+      "[lint]",
+      "extends = true",
+      "",
+      "[dependencies]",
+      'core = "2.3.1"',
+      "",
+    ].join("\n"),
+  );
   await copyIfExists(join(root, "mops.lock"), join(projectRoot, "mops.lock"));
   await writeFile(
     join(projectRoot, "spec.md"),
@@ -104,7 +197,25 @@ async function main() {
 
   await writeFile(
     join(backendRoot, "caffeine.toml"),
-    ['name = "backend"', 'main = "main.mo"', 'candid = "magickbox_core.did"', ""].join("\n"),
+    [
+      'manifest_version = "0.1.0"',
+      "",
+      "[project]",
+      'name = "backend"',
+      'type = "motoko"',
+      'main = "main.mo"',
+      "",
+      "[build]",
+      'commands = ["mops build", "pnpm bindgen"]',
+      'out = "dist"',
+      "",
+      "[check]",
+      'commands = ["mops check"]',
+      "",
+      "[check.fix]",
+      'commands = ["mops check --fix"]',
+      "",
+    ].join("\n"),
   );
   await copyFile(join(root, "canisters", "magickbox_core", "main.mo"), join(backendRoot, "main.mo"));
   await copyFile(
@@ -114,7 +225,21 @@ async function main() {
 
   await writeFile(
     join(frontendRoot, "caffeine.toml"),
-    ['name = "frontend"', 'build = "npm run build"', 'dist = "dist"', ""].join("\n"),
+    [
+      'manifest_version = "0.1.0"',
+      "",
+      "[project]",
+      'name = "frontend"',
+      'type = "assets"',
+      "",
+      "[build]",
+      'commands = ["pnpm build"]',
+      'out = "dist"',
+      "",
+      "[check]",
+      'commands = ["pnpm typecheck"]',
+      "",
+    ].join("\n"),
   );
   await cp(join(root, "src"), join(frontendRoot, "src"), { recursive: true });
   const referencedAssetCount = await copyReferencedPublicAssets();
@@ -123,12 +248,22 @@ async function main() {
     await copyIfExists(join(root, file), join(frontendRoot, file));
   }
 
+  const frontendPackagePath = join(frontendRoot, "package.json");
+  const frontendPackage = JSON.parse(await readFile(frontendPackagePath, "utf8"));
+  frontendPackage.scripts = {
+    ...frontendPackage.scripts,
+    typecheck: frontendPackage.scripts?.typecheck ?? "tsc -b",
+    check: frontendPackage.scripts?.check ?? "eslint .",
+    fix: frontendPackage.scripts?.fix ?? "eslint . --fix",
+  };
+  await writeFile(frontendPackagePath, `${JSON.stringify(frontendPackage, null, 2)}\n`);
+
   execFileSync(
     "powershell",
     [
       "-NoProfile",
       "-Command",
-      `Compress-Archive -LiteralPath '${projectRoot}' -DestinationPath '${zipPath}' -Force`,
+      `Compress-Archive -Path '${projectRoot}\\*' -DestinationPath '${zipPath}' -Force`,
     ],
     { cwd: root, stdio: "inherit" },
   );

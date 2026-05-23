@@ -44,4 +44,17 @@ describe("Magick Box rewrite prototype", () => {
     expect(screen.queryByLabelText("Email")).not.toBeInTheDocument();
     expect(screen.queryByLabelText("Password")).not.toBeInTheDocument();
   });
+
+  it("keeps public admin visitors away from privileged wallet actions", () => {
+    window.history.pushState({}, "", "/home/admin");
+
+    render(<App />);
+
+    expect(screen.getByRole("heading", { name: "Superadmin" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Owner controls locked" })).toBeInTheDocument();
+    expect(screen.getByRole("heading", { name: "Owner access locked" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Create funding wallet" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Claim superadmin" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Payment and credit controls" })).not.toBeInTheDocument();
+  });
 });

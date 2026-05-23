@@ -174,13 +174,18 @@ Prototype:
 - `docs/artifacts/prototype/local-icp-payment-subaccount-ui.png`
 - `docs/artifacts/prototype/local-icp-copied-media-gallery.png`
 - `docs/artifacts/prototype/local-icp-copied-media-explore.png`
+- `docs/artifacts/prototype/caffeine-draft-v3-admin-desktop-2026-05-23.png`
+- `docs/artifacts/prototype/caffeine-draft-v3-admin-mobile-2026-05-23.png`
+- `docs/artifacts/prototype/caffeine-live-v3-admin-desktop-2026-05-23.png`
+- `docs/artifacts/prototype/caffeine-live-v3-admin-mobile-2026-05-23.png`
 
 ## Deployment/Preview Status
 
 - Local Vite preview remains available at `http://127.0.0.1:5173/`.
 - Local ICP deployment is now available at `http://frontend.local.localhost:8010/`.
-- No production deployment.
-- No mainnet ICP deployment.
+- Isolated Caffeine live preview is deployed at `https://magickbox-icp-e68.caffeine.xyz/`.
+- No Magick Box production deployment. `www.magickbox.ai`, production DNS, production auth, production billing, production analytics, production databases, secrets, and live users were not touched.
+- No direct mainnet ICP canister deployment yet.
 - No ICP spend.
 - If deploying later, use only a new isolated ICP preview canister and a new isolated deploy identity/mapping. Do not use `magickbox.ai`, existing canisters, existing DNS, existing auth settings, existing analytics, existing billing, or production secrets.
 
@@ -219,13 +224,16 @@ Newly completed:
 - Browser composer now runs a real worker execution path and stores generated output in the dedicated ICP media canister.
 - `npm run smoke:icp:ui` proves local browser identity login, prompt submission, worker execution, `magickbox_media` byte storage, `magickbox_core` manifest attachment, and completed UI state.
 - Caffeine app was published as a separate isolated control center and verified live. It is not connected to Magick Box production and is not authoritative state.
+- 2026-05-23T13:37+07:00 update: Caffeine version 3 was imported from isolated repo commit `3e6154c`, then published to `https://magickbox-icp-e68.caffeine.xyz/`.
+- Public `/home/admin` on Caffeine version 3 now renders a locked owner state and hides `Create funding wallet`, `Claim superadmin`, `Payment and credit controls`, and `Verify balance` on desktop and mobile.
 
 Latest verification:
 
-- `npm run verify` passed: lint, 25 Vitest tests, build, and 12 Playwright checks.
+- Current local verification passed: `npm run lint`, `npm run test` with 7 files / 31 tests, `npm run build`, and `npm run e2e` with 14 Playwright checks.
 - `npm run smoke:icp:advanced` passed.
 - `npm run smoke:icp:ui` passed.
-- Caffeine live smoke passed with title `Magick Box ICP Control Center`.
+- Caffeine draft v3 smoke passed for `/`, `/home/magick-chat`, and `/home/admin`; draft console showed only Caffeine's own `draft-editor:error disallowed origin` message.
+- Caffeine live v3 smoke passed for `/`, `/home/magick-chat`, and `/home/admin`; no console warnings or errors.
 - `npm run preflight:mainnet` failed safely because the selected mainnet identity has `0 ICP`, `0 cycles`, and no dedicated `MAGICKBOX_MAINNET_IDENTITY`.
 
 Remaining blocker for true mainnet ICP canisters:

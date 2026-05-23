@@ -776,6 +776,30 @@ const fallbackAdminActions = [
   },
 ];
 
+const lockedAdminActions = [
+  {
+    id: "identity_required",
+    title: "Owner access locked",
+    description: "Sign in with the authorized Internet Identity principal before owner-only management is available.",
+    status: "read-only",
+  },
+  {
+    id: "authority_boundary",
+    title: "ICP authority protected",
+    description: "Wallet, payment, worker, media, and audit controls stay hidden until the canister verifies superadmin status.",
+    status: "read-only",
+  },
+];
+
+const adminRoadmapControls = [
+  ["Users and roles", "Invite admins, suspend accounts, inspect user credits, and handle support recovery."],
+  ["Payments", "Claim ICP payments, reconcile ICRC transfers, configure subscriptions, and export payment evidence."],
+  ["AI providers", "Enable workers, set cost policies, monitor queue failures, and route local or external inference."],
+  ["Media and storage", "Manage quotas, delete policies, public visibility, asset verification, and lifecycle rules."],
+  ["Safety", "Review audit events, canister controllers, cycle thresholds, upgrade readiness, and incident locks."],
+  ["Growth", "Track ad verifier partners, referral credits, creator publishing, featured gallery, and content review."],
+];
+
 function AdminPage() {
   const icp = useMagickBoxIcp();
   const [setupCode, setSetupCode] = useState("");
@@ -787,7 +811,7 @@ function AdminPage() {
   const principal = icp.principalText ?? status?.caller.toText() ?? "Sign in with Internet Identity";
   const isSuperadmin = Boolean(status?.is_superadmin);
   const bootstrapAvailable = Boolean(status?.bootstrap_available);
-  const actions = dashboard?.actions ?? fallbackAdminActions;
+  const actions = isSuperadmin ? dashboard?.actions ?? fallbackAdminActions : lockedAdminActions;
   const stats = [
     { label: "Profiles", value: dashboard ? Number(dashboard.profile_count) : 0 },
     { label: "Jobs", value: dashboard ? Number(dashboard.job_count) : 0 },
@@ -890,60 +914,81 @@ function AdminPage() {
             <dl className="admin-detail-list">
               <div>
                 <dt>Owner</dt>
-                <dd>{fundingWallet ? systemAccount?.owner.toText() : "Create wallet after superadmin claim"}</dd>
+                <dd>
+                  {isSuperadmin
+                    ? fundingWallet
+                      ? systemAccount?.owner.toText()
+                      : "Available after owner setup"
+                    : "Hidden until owner sign-in"}
+                </dd>
               </div>
               <div>
                 <dt>Subaccount</dt>
-                <dd>{fundingWallet?.subaccount_hex ?? "Dedicated wallet not created"}</dd>
+                <dd>{isSuperadmin ? fundingWallet?.subaccount_hex ?? "Not created yet" : "Hidden"}</dd>
               </div>
               <div>
                 <dt>Balance</dt>
                 <dd>
-                  {fundingWallet
-                    ? `${formatIcp(Number(fundingWallet.balance_e8s))} ICP`
-                    : "Create wallet, fund it, then refresh"}
+                  {isSuperadmin
+                    ? fundingWallet
+                      ? `${formatIcp(Number(fundingWallet.balance_e8s))} ICP`
+                      : "Create the owner wallet, then refresh"
+                    : "Hidden"}
                 </dd>
               </div>
             </dl>
             <div className="funding-process">
-              <h3>Create system funding wallet</h3>
-              <button
-                type="button"
-                onClick={createFundingWallet}
-                disabled={icp.isBusy || !isSuperadmin || Boolean(fundingWallet)}
-              >
-                {fundingWallet ? "Funding wallet created" : "Create funding wallet"}
-              </button>
-              <ol>
-                <li>Claim superadmin with Internet Identity.</li>
-                <li>Create the dedicated system funding wallet.</li>
-                <li>Transfer ICP to the owner and subaccount displayed above.</li>
-                <li>Refresh this dashboard to verify the ledger balance.</li>
-                <li>Use the funded controller identity to convert ICP to cycles and top up canisters.</li>
-                <li>Keep user credit purchases on per-intent subaccounts.</li>
-              </ol>
-              <p className="admin-note">
-                {dashboard?.wallet.funding_instructions ??
-                  "The funding target appears only after a superadmin creates it on ICP."}
-              </p>
+              {isSuperadmin ? (
+                <>
+                  <h3>Create system funding wallet</h3>
+                  <button
+                    type="button"
+                    onClick={createFundingWallet}
+                    disabled={icp.isBusy || Boolean(fundingWallet)}
+                  >
+                    {fundingWallet ? "Funding wallet created" : "Create funding wallet"}
+                  </button>
+                  <ol>
+                    <li>Create the dedicated system funding wallet.</li>
+                    <li>Transfer ICP to the owner and subaccount displayed above.</li>
+                    <li>Refresh this dashboard to verify the ledger balance.</li>
+                    <li>Use the funded controller identity to convert ICP to cycles and top up canisters.</li>
+                    <li>Keep user credit purchases on per-intent subaccounts.</li>
+                  </ol>
+                  <p className="admin-note">
+                    {dashboard?.wallet.funding_instructions ??
+                      "The funding target appears only after a superadmin creates it on ICP."}
+                  </p>
+                </>
+              ) : (
+                <>
+                  <h3>Owner controls locked</h3>
+                  <p className="admin-note">
+                    Sign in with the authorized owner principal to reveal wallet details,
+                    ledger checks, provider controls, and funding operations.
+                  </p>
+                </>
+              )}
             </div>
           </section>
         </div>
 
-        <section className="admin-section" aria-labelledby="admin-stats-title">
-          <div className="admin-section-title">
-            <Activity size={20} aria-hidden="true" />
-            <h2 id="admin-stats-title">Management Snapshot</h2>
-          </div>
-          <div className="admin-stat-grid">
-            {stats.map((stat) => (
-              <div key={stat.label}>
-                <span>{stat.label}</span>
-                <strong>{stat.value}</strong>
-              </div>
-            ))}
-          </div>
-        </section>
+        {isSuperadmin ? (
+          <section className="admin-section" aria-labelledby="admin-stats-title">
+            <div className="admin-section-title">
+              <Activity size={20} aria-hidden="true" />
+              <h2 id="admin-stats-title">Management Snapshot</h2>
+            </div>
+            <div className="admin-stat-grid">
+              {stats.map((stat) => (
+                <div key={stat.label}>
+                  <span>{stat.label}</span>
+                  <strong>{stat.value}</strong>
+                </div>
+              ))}
+            </div>
+          </section>
+        ) : null}
 
         <section className="admin-section" aria-labelledby="admin-functions-title">
           <div className="admin-section-title">
@@ -961,28 +1006,23 @@ function AdminPage() {
           </div>
         </section>
 
-        <section className="admin-section" aria-labelledby="admin-control-title">
-          <div className="admin-section-title">
-            <CreditCard size={20} aria-hidden="true" />
-            <h2 id="admin-control-title">Controls To Add Next</h2>
-          </div>
-          <div className="admin-action-grid">
-            {[
-              ["Users and roles", "Invite admins, suspend accounts, inspect user credits, and handle support recovery."],
-              ["Payments", "Claim ICP payments, reconcile ICRC transfers, configure subscriptions, and export payment evidence."],
-              ["AI providers", "Enable workers, set cost policies, monitor queue failures, and route local or external inference."],
-              ["Media and storage", "Manage quotas, delete policies, public visibility, asset verification, and lifecycle rules."],
-              ["Safety", "Review audit events, canister controllers, cycle thresholds, upgrade readiness, and incident locks."],
-              ["Growth", "Track ad verifier partners, referral credits, creator publishing, featured gallery, and content review."],
-            ].map(([title, description]) => (
-              <article key={title}>
-                <span>roadmap</span>
-                <h3>{title}</h3>
-                <p>{description}</p>
-              </article>
-            ))}
-          </div>
-        </section>
+        {isSuperadmin ? (
+          <section className="admin-section" aria-labelledby="admin-control-title">
+            <div className="admin-section-title">
+              <CreditCard size={20} aria-hidden="true" />
+              <h2 id="admin-control-title">Controls To Add Next</h2>
+            </div>
+            <div className="admin-action-grid">
+              {adminRoadmapControls.map(([title, description]) => (
+                <article key={title}>
+                  <span>roadmap</span>
+                  <h3>{title}</h3>
+                  <p>{description}</p>
+                </article>
+              ))}
+            </div>
+          </section>
+        ) : null}
 
         <section className="admin-section" aria-labelledby="admin-storage-title">
           <div className="admin-section-title">
