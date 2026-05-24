@@ -3173,3 +3173,37 @@ Blockers or risks:
 Next step:
 
 - Use Mark's signed-in Internet Identity session to click `Verify balance` on v12, then implement the backup admin/controller policy and a no-spend cycles dry-run plan.
+
+## 2026-05-24T08:29:56+07:00 - Checkpoint 66: MagickBoxV3 v12 Live Route Smoke
+
+Current workspace/folder:
+
+`C:\Users\Mark\Documents\Codex\Codex_MagickBox\magick-box-rewrite-readiness-prototype`
+
+What was inspected:
+
+- Public live MagickBoxV3 v12 routes at `https://magickbox-icp-e68.caffeine.xyz/`.
+
+What was created or changed:
+
+- No app changes. Recorded live route smoke evidence.
+
+Commands run and results:
+
+- Inline Playwright smoke against `/`, `/home/magick-chat`, `/home/admin`, and `/home/settings` -> all routes loaded with title `MagickBoxV3 ICP Prototype`.
+- Browser console/page error capture -> `0` console errors and `0` page errors.
+- Public `/home/admin` route -> found `Owner controls locked` and did not expose `System Wallet Spend Gate`, confirming the spend gate stays superadmin-only.
+
+Decisions made:
+
+- Treat v12 live public route smoke as passed for this checkpoint.
+- Keep authenticated superadmin balance verification as the next user-session check.
+
+Blockers or risks:
+
+- Public smoke cannot verify the superadmin-only spend gate text because it is intentionally hidden from signed-out sessions.
+- Authenticated verification still depends on Mark's Internet Identity session.
+
+Next step:
+
+- With Mark signed in on the live v12 URL, click `Verify balance` and confirm the superadmin-only `System Wallet Spend Gate` shows the funded-but-spend-locked state.
