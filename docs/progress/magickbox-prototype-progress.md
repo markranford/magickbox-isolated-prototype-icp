@@ -3041,3 +3041,86 @@ Blockers or risks:
 Next step:
 
 - Click `Verify balance` in the MagickBoxV3 superadmin dashboard, then proceed to a guarded system wallet/cycles management design before any ICP spend.
+
+## 2026-05-24 - Checkpoint 63: System Wallet Spend Gate Runbook Added
+
+Current workspace/folder:
+
+`C:\Users\Mark\Documents\Codex\Codex_MagickBox\magick-box-rewrite-readiness-prototype`
+
+What was inspected:
+
+- Existing MagickBoxV3 live preview and funding wallet handoff notes.
+- Existing progress checkpoints for Mark's II principal, the system wallet owner/subaccount, and the ledger-confirmed `1 ICP` inbound balance.
+
+What was created or changed:
+
+- Added `docs/runbooks/magickboxv3-system-wallet-spend-gate.md`.
+- Documented the live isolated URL, owner canister, system wallet subaccount, derived ICP account ID, Mark's Internet Identity principal, and the ledger-confirmed `1 ICP` balance as of 2026-05-24.
+- Recorded strict gates before any spend: backup admin/controller, verified canister controller status, explicit user approval, dry-run plan, ledger fee check, and cycles target check.
+
+Commands run and results:
+
+- `git status --short` -> showed pre-existing untracked prototype artifact files; left untouched.
+- `Test-Path docs\runbooks\magickboxv3-system-wallet-spend-gate.md` -> returned `False` before creation.
+- `rg -n "live URL|Live URL|caffeine|magickbox|MagickBox|spend gate|system wallet" docs -g "*.md"` -> found the live URL and wallet context in existing docs.
+- `Get-Content docs\handovers\magickbox-isolated-prototype-handoff.md -Tail 90` -> confirmed current MagickBoxV3 live URL and funding wallet record.
+- `Get-Content docs\progress\magickbox-prototype-progress.md -Tail 120` -> confirmed checkpoints 61 and 62.
+- `New-Item -ItemType Directory -Force -Path docs\runbooks` -> ensured the runbook directory exists.
+
+Decisions made:
+
+- Keep the runbook as a blocking operational gate, not an authorization to spend.
+- Do not run deploy, transfer, cycle mint, top-up, or live wallet mutation commands.
+
+Blockers or risks:
+
+- No current blocker for documentation.
+- Any future spend remains blocked until every gate in the runbook is complete and recorded.
+
+Next step:
+
+- Before any ICP spend, write and review a dry-run plan, verify controllers and fees, confirm a backup admin/controller path, and capture explicit Mark approval for the exact action.
+
+## 2026-05-24T08:05:45+07:00 - Checkpoint 64: Spend Gate UI Added And Verified Locally
+
+Current workspace/folder:
+
+`C:\Users\Mark\Documents\Codex\Codex_MagickBox\magick-box-rewrite-readiness-prototype`
+
+What was inspected:
+
+- `src/App.tsx` admin dashboard state around `fundingWallet`, `verified_at`, `balance_e8s`, and `cycles_note`.
+- `src/App.css` admin dashboard layout and responsive grid rules.
+- `docs/runbooks/magickboxv3-system-wallet-spend-gate.md` after the first runbook pass.
+- Parallel agent reports for admin UI placement, documentation, and ICP/cycles risk ranking.
+
+What was created or changed:
+
+- Added a superadmin-only `System Wallet Spend Gate` section to the admin dashboard.
+- The UI now distinguishes wallet creation, ledger-verified funding, backup authority requirement, and explicit spend lock.
+- The UI uses existing ICP dashboard fields rather than a new backend contract: `fundingWallet.balance_e8s`, `fundingWallet.verified_at`, `fundingWallet.status`, and `dashboard.wallet.cycles_note`.
+- Updated the spend-gate runbook to state that the funded wallet is canister-owned and inbound-only until a governed outbound spend path or separate controller-funded operations path is approved.
+
+Commands run and results:
+
+- `npm run test -- src/App.test.tsx src/icp/magickboxClient.test.ts src/icp/canisterContract.test.ts` -> passed, `3` test files and `20` tests.
+- `npm run lint` -> passed.
+- `git diff --check` -> no whitespace errors; Git printed existing LF-to-CRLF working-copy warnings.
+- `npm run build` -> passed; Vite emitted the existing chunk-size warning for the main JS bundle over `500 kB`.
+
+Decisions made:
+
+- Ranked priority 1 is wallet safety and spend clarity, not immediate cycle spend.
+- Keep the 1 ICP wallet inbound-only until backup authority, controller verification, explicit approval, current fee checks, and a dry-run spend plan exist.
+- Do not add spend, top-up, or conversion buttons until the architecture is chosen.
+
+Blockers or risks:
+
+- The current funded account is owned by the backend canister, not the local CLI identity.
+- The current backend can verify balance but does not implement outbound transfer, CMC mint, or top-up methods.
+- Backup app/admin authority and controller policy are still incomplete.
+
+Next step:
+
+- Promote this safe UI/docs slice to the isolated MagickBoxV3 live preview, then verify the public bundle and admin page still expose the spend gate after sign-in.

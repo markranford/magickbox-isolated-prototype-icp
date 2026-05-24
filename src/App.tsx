@@ -887,6 +887,48 @@ function AdminPage() {
       : "";
   const fundingIcrcAccount =
     fundingOwner && fundingSubaccount ? `owner=${fundingOwner}; subaccount=${fundingSubaccount}` : "";
+  const fundingBalanceE8s = fundingWallet ? Number(fundingWallet.balance_e8s) : 0;
+  const fundingBalanceLabel = fundingWallet ? `${formatIcp(fundingBalanceE8s)} ICP` : "No funding wallet";
+  const fundingHasLedgerCheck = Boolean(fundingWallet?.verified_at[0]);
+  const fundingBalanceVerified = fundingBalanceE8s > 0 && fundingHasLedgerCheck;
+  const fundingGateHeading = !fundingWallet
+    ? "Funding locked until wallet exists"
+    : fundingBalanceVerified
+      ? "Funded - spend locked"
+      : "Awaiting funding";
+  const fundingGateCopy = !fundingWallet
+    ? "Create the dedicated system funding wallet before transferring ICP. No spend or cycle top-up action is available from this prototype."
+    : fundingBalanceVerified
+      ? `Balance verified: ${fundingBalanceLabel}. Funds are visible for readiness only. This prototype does not auto-spend, convert ICP to cycles, or top up canisters.`
+      : "This wallet is created but unfunded in the current dashboard view. Transfer ICP only to the displayed target, then verify the balance here.";
+  const spendGateChecks = [
+    {
+      label: "Funding wallet",
+      value: fundingWallet ? fundingWallet.status : "Not created",
+      tone: fundingWallet ? "ready" : "blocked",
+    },
+    {
+      label: "Ledger balance",
+      value: fundingWallet
+        ? fundingBalanceVerified
+          ? `${fundingBalanceLabel} verified`
+          : fundingHasLedgerCheck
+            ? `${fundingBalanceLabel} checked`
+            : "Waiting for ledger check"
+        : "Create funding target first",
+      tone: fundingBalanceVerified ? "ready" : "blocked",
+    },
+    {
+      label: "Backup authority",
+      value: "Required before spend",
+      tone: "blocked",
+    },
+    {
+      label: "Spend status",
+      value: "Locked until explicit approval",
+      tone: "locked",
+    },
+  ];
   const actions = isSuperadmin ? dashboard?.actions ?? fallbackAdminActions : lockedAdminActions;
   const stats = [
     { label: "Profiles", value: dashboard ? Number(dashboard.profile_count) : 0 },
@@ -1152,6 +1194,40 @@ function AdminPage() {
             </div>
           </section>
         </div>
+
+        {isSuperadmin ? (
+          <section className="admin-section spend-gate-section" aria-labelledby="spend-gate-title">
+            <div className="admin-section-title">
+              <LockKeyhole size={20} aria-hidden="true" />
+              <h2 id="spend-gate-title">System Wallet Spend Gate</h2>
+            </div>
+            <p className="admin-note">
+              {fundingGateCopy}
+            </p>
+            <div className="spend-gate-grid">
+              <article className="spend-gate-summary" data-tone={fundingBalanceVerified ? "locked" : "blocked"}>
+                <span>Gate status</span>
+                <strong>{fundingGateHeading}</strong>
+              </article>
+              {spendGateChecks.map((check) => (
+                <article key={check.label} data-tone={check.tone}>
+                  <span>{check.label}</span>
+                  <strong>{check.value}</strong>
+                </article>
+              ))}
+            </div>
+            <div className="spend-next-steps" aria-label="Next safe operations">
+              <h3>Next safe operations</h3>
+              <ol>
+                <li>Refresh this dashboard until the ledger balance is visible here.</li>
+                <li>Add a Mark-controlled backup superadmin and controller plan.</li>
+                <li>Prepare a cycles top-up dry-run with exact canister targets and fees.</li>
+                <li>Request explicit approval before any ICP spend, cycles mint, or canister top-up.</li>
+              </ol>
+              <p className="admin-note">{dashboard?.wallet.cycles_note}</p>
+            </div>
+          </section>
+        ) : null}
 
         {isSuperadmin ? (
           <section className="admin-section" aria-labelledby="admin-stats-title">
