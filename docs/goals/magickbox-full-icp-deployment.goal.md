@@ -140,22 +140,22 @@ Known live MagickBoxV3 preview canisters:
 Current behavior:
 
 - The live MagickBoxV3 frontend loads backend canister config from `/env.json`.
-- Caffeine.ai builder version 11 is live for the target builder project.
-- The public live bundle is `assets/index-C5vZLlX6.js` with stylesheet `assets/index-CuNQml61.css`.
+- Caffeine.ai builder version 12 is live for the target builder project.
+- The public live bundle is `assets/index-DgcMdtT8.js` with stylesheet `assets/index-B8easiQq.css`.
 - The live bundle contains the MagickBoxV3 build marker `magickboxv3-ii-authorize-20260523`.
 - The live Internet Identity button opens `https://id.ai/authorize`, not the Internet Identity dashboard root.
 - Mark claimed the first superadmin with Internet Identity principal `zo4kw-ezr7z-aslvs-tbhja-ejagl-rtzjk-7zuc7-j5asy-wkbx5-qh3gu-iqe`.
 - The system funding wallet has been created by Mark's superadmin session. It is owned by backend/core canister `itg54-4qaaa-aaaam-qiziq-cai`, uses subaccount `4d4246554e440000000000000000000000000000000000000000000000000001`, and the ICP ledger confirmed `100_000_000` e8s (`1 ICP`) on 2026-05-23T22:27:08+07:00.
-- The live admin dashboard now derives and displays ICP account ID `8fdbd57fcdc67228e0a3dc3b95476b2a7a1fabfd8d4612f309a622265bf87d87` plus copy controls, `Open NNS`, and `Verify balance`.
+- The live admin dashboard now derives and displays ICP account ID `8fdbd57fcdc67228e0a3dc3b95476b2a7a1fabfd8d4612f309a622265bf87d87` plus copy controls, `Open NNS`, `Verify balance`, and the superadmin-only `System Wallet Spend Gate`.
 - The one-time claim path is now closed for public visitors.
 - Codex must not claim the one-time superadmin role with a local or automation identity.
 - Media generated through the app path should be stored on ICP using the `icp-media://...` core canister media path; AWS/S3 is not part of the desired architecture.
 
-Fresh MagickBoxV3 v11 checks recorded:
+Fresh MagickBoxV3 v12 checks recorded:
 
 - `/env.json` returned HTTP 200 with the backend canister ID above.
 - No-cache public bundle verification found `https://id.ai/authorize`, found `magickboxv3-ii-authorize-20260523`, and did not find the stale `https://id.ai` root helper.
-- No-cache public bundle verification found `ICP account ID`, `Funding wallet ready`, and the polished funding-target CSS deployed in v11.
+- No-cache public bundle verification found `ICP account ID`, `Funding wallet ready`, `System Wallet Spend Gate`, `Funded - spend locked`, `Locked until explicit approval`, and the spend-gate CSS deployed in v12.
 - Authenticated Chrome verification on `/home/admin` found `Role` -> `Superadmin`, `Funding wallet ready`, `ICP account ID`, the expected derived account identifier, `Open NNS`, and `Verify balance`.
 - Browser smoke covered `/`, `/home/magick-chat`, `/home/admin`, `/home/settings`, `/home/subscriptions`, and `/evaluation` on desktop and mobile.
 - Browser smoke found no page errors, no app console errors, no runtime-unavailable copy, and a locked signed-out admin route.

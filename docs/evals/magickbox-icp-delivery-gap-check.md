@@ -2,7 +2,7 @@
 
 Date: 2026-05-22T20:27:11+07:00
 
-Latest update: 2026-05-23T22:27:08+07:00
+Latest update: 2026-05-24T08:27:21+07:00
 
 ## Delivered On Local ICP
 
@@ -15,8 +15,8 @@ Latest update: 2026-05-23T22:27:08+07:00
 - ICP media manifests are restricted to `icp-canister-media-store` and `icp-media://` URIs.
 - Dedicated `magickbox_media` canister now stores browser-generated worker output bytes through `create_asset`, `put_chunk`, and `commit_asset`.
 - The browser app flow now signs in with local browser identity, executes the local worker service, uploads generated output to `magickbox_media`, attaches a manifest to `magickbox_core`, and displays a completed job.
-- A separate MagickBoxV3 app is live through the Caffeine.ai ICP builder at `https://magickbox-icp-e68.caffeine.xyz/`; version 11 serves certified frontend assets from asset canister `i2fwa-kyaaa-aaaam-qizja-cai` and connects to backend/core canister `itg54-4qaaa-aaaam-qiziq-cai` through `/env.json`.
-- Live MagickBoxV3 v11 bundle smoke confirmed the product name, build marker `magickboxv3-ii-authorize-20260523`, the correct Internet Identity authorize endpoint `https://id.ai/authorize`, and the new funding wallet UI.
+- A separate MagickBoxV3 app is live through the Caffeine.ai ICP builder at `https://magickbox-icp-e68.caffeine.xyz/`; version 12 serves certified frontend assets from asset canister `i2fwa-kyaaa-aaaam-qizja-cai` and connects to backend/core canister `itg54-4qaaa-aaaam-qiziq-cai` through `/env.json`.
+- Live MagickBoxV3 v12 bundle smoke confirmed the product name, build marker `magickboxv3-ii-authorize-20260523`, the correct Internet Identity authorize endpoint `https://id.ai/authorize`, the funding wallet UI, and the superadmin-only spend gate.
 - Mark claimed superadmin with Internet Identity, created the system funding wallet, and the live admin now displays the derived ICP account ID plus owner/subaccount funding targets. The ICP ledger confirmed the wallet received `1 ICP` on 2026-05-23T22:27:08+07:00.
 - Earlier live backend smoke against the same backend canister registered a profile, created/completed a generation job, stored media bytes on ICP, and listed the resulting `icp-media://...` asset.
 
@@ -35,7 +35,7 @@ Latest update: 2026-05-23T22:27:08+07:00
 | Area | Current status | Needed for ICP delivery |
 | --- | --- | --- |
 | Mainnet ICP canisters | MagickBoxV3 builder preview has a live certified asset canister and backend canister; Mark has claimed superadmin, created the system funding wallet, and funded it with 1 ICP. Direct non-builder mainnet preflight remains blocked by 0 ICP/0 cycles on `magickbox-mainnet-isolated`. | Verify the dashboard balance, design guarded cycles/top-up flow, and separately fund the dedicated isolated identity if a direct non-builder deployment is still required. |
-| Isolated web preview | MagickBoxV3 v11 is live at `https://magickbox-icp-e68.caffeine.xyz/`, loads real backend config from `/env.json`, opens Internet Identity through `https://id.ai/authorize`, and shows the funding wallet target to Mark's superadmin session. | Click `Verify balance`, add backup admin/controller policy before material funds or wider sharing. |
+| Isolated web preview | MagickBoxV3 v12 is live at `https://magickbox-icp-e68.caffeine.xyz/`, loads real backend config from `/env.json`, opens Internet Identity through `https://id.ai/authorize`, shows the funding wallet target to Mark's superadmin session, and exposes `System Wallet Spend Gate` in the live bundle. | Click `Verify balance`, add backup admin/controller policy before material funds or wider sharing. |
 | Full live account exploration | Public routes inspected; logged-in production account was not used. | User-assisted login in a browser and read-only route capture, without changing production data. |
 | Large media storage | Local `magickbox_media` chunk canister stores browser-generated output; the live builder backend stores small media bytes in `magickbox_core` and returns `icp-media://...` URIs. Copied public media is static asset-canister content. | Move large generated image/video/music assets into dedicated ICP media/chunk canisters with quotas, lifecycle, certification, cycle monitoring, and validation. |
 | AI inference | External/local worker adapters are used; model execution is not on ICP. | Decide whether AI remains worker-based or add an ICP-native inference proof if feasible. |

@@ -319,9 +319,9 @@ Live isolated MagickBoxV3 URL:
 
 Current live builder version:
 
-- Version 11 imported from bridge commit `7dd6509`.
-- Public JavaScript bundle: `assets/index-C5vZLlX6.js`.
-- Public stylesheet: `assets/index-CuNQml61.css`.
+- Version 12 imported from bridge commit `17be9e6`.
+- Public JavaScript bundle: `assets/index-DgcMdtT8.js`.
+- Public stylesheet: `assets/index-B8easiQq.css`.
 
 Current owner/funding state:
 
@@ -337,14 +337,15 @@ What changed:
 - The superadmin wallet panel now displays a copyable ICP account ID, owner principal, subaccount, and ICRC account tuple.
 - The panel includes `Open NNS` and `Verify balance` actions.
 - The funding target layout was polished so the account identifier has the full available row width.
+- The superadmin admin route now includes `System Wallet Spend Gate`, distinguishing ledger verification from the locked spend/cycles state.
 
 Verification:
 
 - Local canonical `npm run test -- src/App.test.tsx src/icp/magickboxClient.test.ts` passed.
 - Local canonical `npm run build` passed with the existing Vite chunk-size warning.
 - Local canonical `npm run lint` passed.
-- Bridge repo tests/build passed before both v10 and v11 imports.
-- Public no-cache verification for v11 found `ICP account ID`, `Funding wallet ready`, `MagickBoxV3`, `https://id.ai/authorize`, and the polished funding-target CSS in the live assets.
+- Bridge repo tests/build passed before v10, v11, and v12 imports.
+- Public no-cache verification for v12 found `ICP account ID`, `Funding wallet ready`, `System Wallet Spend Gate`, `Funded - spend locked`, `Locked until explicit approval`, `MagickBoxV3`, `https://id.ai/authorize`, and the spend-gate CSS in the live assets.
 - Authenticated Chrome verification on v10 found the superadmin funding wallet state and account identifier. The final v11 live asset check proves the layout polish is deployed.
 - Public backend status now reports `bootstrap_available = false` and `superadmin_count = 1`.
 - ICP ledger `icrc1_balance_of` for the system wallet owner/subaccount returned `100_000_000`, confirming the wallet received `1 ICP`.

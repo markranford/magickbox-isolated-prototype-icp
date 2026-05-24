@@ -3124,3 +3124,52 @@ Blockers or risks:
 Next step:
 
 - Promote this safe UI/docs slice to the isolated MagickBoxV3 live preview, then verify the public bundle and admin page still expose the spend gate after sign-in.
+
+## 2026-05-24T08:27:21+07:00 - Checkpoint 65: MagickBoxV3 Version 12 Live With Spend Gate
+
+Current workspace/folder:
+
+`C:\Users\Mark\Documents\Codex\Codex_MagickBox\magick-box-rewrite-readiness-prototype`
+
+What was inspected:
+
+- Isolated MagickBoxV3 Caffeine.ai builder project `019e5022-fe7e-74c9-9428-b475f02043dc`.
+- Bridge repo `tmp\caffeine-github-export-20260523`.
+- Public isolated live URL `https://magickbox-icp-e68.caffeine.xyz/`.
+
+What was created or changed:
+
+- Canonical repo commit `6b4be16` pushed with the spend-gate UI, spend-gate runbook, and progress updates.
+- Prepared Caffeine import bundle from commit `6b4be16`.
+- Bridge repo commit `17be9e6` pushed for the Caffeine.ai GitHub import.
+- Imported bridge commit `17be9e6` into the isolated MagickBoxV3 builder app; Caffeine created draft version 12.
+- Published version 12 live through the isolated Caffeine.ai/MagickBoxV3 app.
+- Updated goal, handoff, and delivery-gap docs from v11 to v12 evidence.
+
+Commands run and results:
+
+- `npm run caffeine:bundle` -> produced `tmp\magickboxv3-icp-builder-import-6b4be16-20260524T010707.zip`, `16,640,794` bytes, below the `20 MiB` upload limit.
+- Bridge `npm ci` -> installed ignored local dependencies; `0` vulnerabilities.
+- Bridge `npm run test -- src/App.test.tsx src/icp/magickboxClient.test.ts src/icp/canisterContract.test.ts` -> passed, `3` files and `20` tests.
+- Bridge `npm run lint` -> passed.
+- Bridge `npm run build` -> passed with the existing Vite chunk-size warning.
+- Caffeine GitHub import from bridge commit `17be9e6` -> complete, draft version 12 created.
+- Caffeine publish action from the `Publish` settings panel -> builder reported `All systems go! Version 12 is live in production!`
+- Public no-cache asset verification -> HTTP `200`, JavaScript `assets/index-DgcMdtT8.js`, CSS `assets/index-B8easiQq.css`.
+- Public bundle checks -> found `System Wallet Spend Gate`, `Funded - spend locked`, `No spend or cycle top-up action`, `Locked until explicit approval`, and CSS `spend-gate-grid`.
+
+Decisions made:
+
+- Treat v12 as the current isolated live MagickBoxV3 version.
+- The spend gate is live as a safety/operations readiness guardrail only; it does not unlock ICP spend, cycles minting, top-ups, provider funding, or transfers.
+- Keep all future spend blocked behind the runbook gates.
+
+Blockers or risks:
+
+- The Caffeine builder initially stayed on a deployment spinner; the actual live-pointer action was completed from the app `Publish` settings panel.
+- The system wallet remains canister-owned and inbound-only until a governed outbound spend path or separately funded controller path is approved.
+- Backup admin/controller policy remains the top blocker before any material operations.
+
+Next step:
+
+- Use Mark's signed-in Internet Identity session to click `Verify balance` on v12, then implement the backup admin/controller policy and a no-spend cycles dry-run plan.
