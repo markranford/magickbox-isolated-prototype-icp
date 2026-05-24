@@ -3330,3 +3330,53 @@ Blockers or risks:
 Next step:
 
 - Commit/push the classifier-order fix, import it through the MagickBoxV3 builder bridge, publish version 14, and re-run bundle plus rendered live-route checks.
+
+## 2026-05-24T09:25:35+07:00 - Checkpoint 70: MagickBoxV3 v14 Live Mainnet Runtime Fix Verified
+
+Current workspace/folder:
+
+`C:\Users\Mark\Documents\Codex\Codex_MagickBox\magick-box-rewrite-readiness-prototype`
+
+What was inspected:
+
+- Canonical repo commit `272b225`.
+- Builder bridge commit `866c5e8`.
+- Live MagickBoxV3 public URL `https://magickbox-icp-e68.caffeine.xyz/`.
+- Live routes `/`, `/auth/sign-in`, and `/home/admin`.
+- Live `/env.json` and the current public JavaScript bundle.
+
+What was created or changed:
+
+- Prepared Caffeine import bundle from canonical commit `272b225`.
+- Synced the isolated MagickBoxV3 builder bridge repo and pushed bridge commit `866c5e8`.
+- Imported bridge commit `866c5e8` into the MagickBoxV3 builder; draft version 14 was created.
+- Published version 14 live through the isolated MagickBoxV3 builder app.
+
+Commands run and results:
+
+- `npm run caffeine:bundle` -> produced `tmp\magickboxv3-icp-builder-import-272b225-20260524T021455.zip`, `16,642,933` bytes, below the Caffeine upload limit.
+- Bridge `npm ci` -> installed frontend dependencies; `0` vulnerabilities.
+- Bridge `npm run test -- src/App.caffeine.test.tsx src/icp/magickboxClient.test.ts` -> passed, `2` files and `14` tests.
+- Bridge `npm run lint` -> passed.
+- Bridge `npm run build` -> passed; produced `dist/assets/index-CrVyJnM4.js`, with the existing Vite chunk-size warning.
+- Caffeine builder import from bridge commit `866c5e8` -> complete, draft version 14 created.
+- Caffeine publish -> builder reported `Production deployment complete! Version 14 is live!`.
+- Public no-cache bundle check -> HTTP `200`, JS `assets/index-CVMlK5C8.js`, new `MagickBoxV3 mainnet canister` copy present, old `Local ICP canister detected; sign in to write account state` and `Connecting to local ICP canisters` absent.
+- Public `/env.json` -> backend canister `itg54-4qaaa-aaaam-qiziq-cai`, backend host `https://icp-api.io`, II derivation origin `https://magickbox-icp-e68.caffeine.xyz`.
+- Browser rendered smoke `/` -> status strip shows `MagickBoxV3 mainnet canister detected; sign in with Internet Identity to write account state`, no `Use local browser identity` button, no console warnings/errors.
+- Browser rendered smoke `/auth/sign-in` -> Internet Identity button visible, no local browser identity button, no old local-copy text, no console warnings/errors.
+- Browser rendered smoke `/home/admin` -> Superadmin/admin shell loads, Internet Identity button visible, no local browser identity button, no old local-copy text, no console warnings/errors.
+
+Decisions made:
+
+- Treat version 14 as the current live MagickBoxV3 isolated mainnet preview.
+- Keep Caffeine-hosted MagickBoxV3 on Internet Identity only; local browser identity remains for true local ICP development canisters.
+
+Blockers or risks:
+
+- No blocker remains for the reported local-canister banner issue.
+- Internet Identity full round-trip should still be re-tested by Mark from the live v14 URL because signing requires his browser/passkey session.
+
+Next step:
+
+- Mark can test directly at `https://magickbox-icp-e68.caffeine.xyz/` and `https://magickbox-icp-e68.caffeine.xyz/home/admin`; the visible runtime should now be MagickBoxV3 mainnet, not local.
