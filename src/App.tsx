@@ -182,7 +182,7 @@ function IcpStatusStrip({ compact = false }: { compact?: boolean }) {
   const icp = useMagickBoxIcp();
   const credits = icp.profile ? Number(icp.profile.credits) : demoCreditBalance;
   const recentJob = icp.jobs[0];
-  const runtimeLabel = icp.runtimeMode === "icp" ? "ICP canister" : "ICP unavailable";
+  const runtimeLabel = icp.runtimeMode === "icp" ? icp.runtimeLabel : "ICP unavailable";
 
   return (
     <div className={compact ? "icp-status-strip compact" : "icp-status-strip"}>
@@ -207,9 +207,11 @@ function IcpStatusStrip({ compact = false }: { compact?: boolean }) {
             <button type="button" onClick={icp.signIn} disabled={icp.isBusy}>
               Sign in with Internet Identity
             </button>
-            <button type="button" onClick={icp.signInWithLocalIdentity} disabled={icp.isBusy}>
-              Use local browser identity
-            </button>
+            {icp.canUseLocalBrowserIdentity ? (
+              <button type="button" onClick={icp.signInWithLocalIdentity} disabled={icp.isBusy}>
+                Use local browser identity
+              </button>
+            ) : null}
           </>
         ) : null}
       </div>
@@ -282,7 +284,7 @@ function Composer({
       return;
     }
 
-    setSubmitted("Open the local ICP asset canister to create a real ICP job");
+    setSubmitted("Open a MagickBoxV3 ICP asset canister or configured ICP preview to create a real ICP job");
   };
 
   const chooseRecovery = async (option: UiCreditOption) => {
@@ -991,9 +993,11 @@ function AdminPage() {
                 <button type="button" onClick={icp.signIn} disabled={icp.isBusy}>
                   Sign in with Internet Identity
                 </button>
-                <button type="button" onClick={icp.signInWithLocalIdentity} disabled={icp.isBusy}>
-                  Use local browser identity
-                </button>
+                {icp.canUseLocalBrowserIdentity ? (
+                  <button type="button" onClick={icp.signInWithLocalIdentity} disabled={icp.isBusy}>
+                    Use local browser identity
+                  </button>
+                ) : null}
               </>
             )}
           </div>
@@ -1344,9 +1348,11 @@ function SignInPage() {
           <button type="button" onClick={() => continueAfter(icp.signIn)} disabled={icp.isBusy}>
             Sign in with Internet Identity
           </button>
-          <button type="button" onClick={() => continueAfter(icp.signInWithLocalIdentity)} disabled={icp.isBusy}>
-            Use local browser identity
-          </button>
+          {icp.canUseLocalBrowserIdentity ? (
+            <button type="button" onClick={() => continueAfter(icp.signInWithLocalIdentity)} disabled={icp.isBusy}>
+              Use local browser identity
+            </button>
+          ) : null}
         </div>
       </section>
     </main>

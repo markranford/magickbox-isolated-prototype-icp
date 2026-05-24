@@ -28,6 +28,7 @@ export type MediaActor = ActorSubclass<MediaService>;
 export type IcpRuntime = {
   canisterId: string | null;
   mediaCanisterId: string | null;
+  deploymentKind: "local" | "caffeine" | "mainnet";
   host: string;
   identityProvider: string;
   rootKey?: Uint8Array;
@@ -72,6 +73,28 @@ export function isCaffeineHostedOrigin(origin = currentOrigin()) {
   }
 }
 
+export function isLocalIcpOrigin(origin = currentOrigin()) {
+  try {
+    const { hostname } = new URL(origin);
+
+    return hostname === "localhost" || hostname === "127.0.0.1" || hostname.endsWith(".localhost");
+  } catch {
+    return false;
+  }
+}
+
+function classifyIcpDeployment(host: string, rootKey?: Uint8Array): IcpRuntime["deploymentKind"] {
+  if (rootKey || isLocalIcpOrigin(host)) {
+    return "local";
+  }
+
+  if (isCaffeineHostedOrigin(host)) {
+    return "caffeine";
+  }
+
+  return "mainnet";
+}
+
 function localIdentityProvider() {
   if (typeof window === "undefined") {
     return "http://id.ai.localhost:8010/authorize";
@@ -82,15 +105,7 @@ function localIdentityProvider() {
 }
 
 export function getIdentityProviderUrl() {
-  if (typeof window === "undefined") {
-    return "https://id.ai/authorize";
-  }
-
-  const host = window.location.hostname;
-  const isLocal =
-    host === "localhost" || host === "127.0.0.1" || host.endsWith(".localhost");
-
-  return isLocal ? localIdentityProvider() : "https://id.ai/authorize";
+  return isLocalIcpOrigin() ? localIdentityProvider() : "https://id.ai/authorize";
 }
 
 export function resolveCanisterIds(
@@ -125,6 +140,7 @@ export function resolveIcpRuntime(): IcpRuntime {
   return {
     canisterId,
     mediaCanisterId,
+    deploymentKind: classifyIcpDeployment(host, env?.IC_ROOT_KEY),
     host,
     identityProvider: getIdentityProviderUrl(),
     rootKey: env?.IC_ROOT_KEY,
@@ -134,6 +150,10 @@ export function resolveIcpRuntime(): IcpRuntime {
 
 export function canUseIcpRuntime(runtime: IcpRuntime) {
   return Boolean(runtime.canisterId) || isCaffeineHostedOrigin(runtime.host);
+}
+
+export function canUseLocalBrowserIdentity(runtime: IcpRuntime) {
+  return canUseIcpRuntime(runtime) && runtime.deploymentKind === "local";
 }
 
 export function buildHttpAgentOptions(runtime: IcpRuntime, identity?: Identity) {

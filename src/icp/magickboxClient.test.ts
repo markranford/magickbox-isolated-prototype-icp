@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
   buildHttpAgentOptions,
+  canUseLocalBrowserIdentity,
   canUseIcpRuntime,
   clearLocalBrowserIdentityActive,
   createMediaActor,
@@ -37,23 +38,50 @@ describe("Magick Box ICP client adapter", () => {
   });
 
   it("treats isolated Caffeine domains as eligible for Caffeine backend config", () => {
-    expect(isCaffeineHostedOrigin("https://magickbox-icp-e68.caffeine.xyz")).toBe(true);
+    const runtime = {
+      canisterId: null,
+      mediaCanisterId: null,
+      deploymentKind: "caffeine" as const,
+      host: "https://magickbox-icp-e68.caffeine.xyz",
+      identityProvider: "https://id.ai/authorize",
+      reason: "Caffeine hosted runtime",
+    };
+
+    expect(isCaffeineHostedOrigin(runtime.host)).toBe(true);
+    expect(canUseIcpRuntime(runtime)).toBe(true);
+    expect(canUseLocalBrowserIdentity(runtime)).toBe(false);
+    expect(isCaffeineHostedOrigin("https://www.magickbox.ai")).toBe(false);
+  });
+
+  it("only allows local browser identity on local ICP runtimes", () => {
     expect(
-      canUseIcpRuntime({
-        canisterId: null,
+      canUseLocalBrowserIdentity({
+        canisterId: "aaaaa-aa",
         mediaCanisterId: null,
-        host: "https://magickbox-icp-e68.caffeine.xyz",
-        identityProvider: "https://id.ai/authorize",
-        reason: "Caffeine hosted runtime",
+        deploymentKind: "local",
+        host: "http://127.0.0.1:8010",
+        identityProvider: "http://id.ai.localhost:8010/authorize",
+        reason: "local asset canister runtime",
       }),
     ).toBe(true);
-    expect(isCaffeineHostedOrigin("https://www.magickbox.ai")).toBe(false);
+
+    expect(
+      canUseLocalBrowserIdentity({
+        canisterId: "aaaaa-aa",
+        mediaCanisterId: null,
+        deploymentKind: "mainnet",
+        host: "https://icp0.io",
+        identityProvider: "https://id.ai/authorize",
+        reason: "mainnet canister runtime",
+      }),
+    ).toBe(false);
   });
 
   it("does not require a local root key for mainnet agent options", () => {
     const options = buildHttpAgentOptions({
       canisterId: "aaaaa-aa",
       mediaCanisterId: null,
+      deploymentKind: "mainnet",
       host: "https://icp0.io",
       identityProvider: "https://id.ai/authorize",
       reason: "mainnet canister runtime",

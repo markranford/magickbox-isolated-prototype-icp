@@ -3207,3 +3207,83 @@ Blockers or risks:
 Next step:
 
 - With Mark signed in on the live v12 URL, click `Verify balance` and confirm the superadmin-only `System Wallet Spend Gate` shows the funded-but-spend-locked state.
+
+## 2026-05-24T08:52:47+07:00 - Checkpoint 67: MagickBoxV3 Mainnet Runtime Copy Fix Prepared
+
+Current workspace/folder:
+
+`C:\Users\Mark\Documents\Codex\Codex_MagickBox\magick-box-rewrite-readiness-prototype`
+
+What was inspected:
+
+- User screenshot of `https://magickbox-icp-e68.caffeine.xyz/` showing `Local ICP canister detected`.
+- Live `/env.json` evidence reported by read-only subagent: backend canister `itg54-4qaaa-aaaam-qiziq-cai`, backend host `https://icp-api.io`, frontend asset canister `i2fwa-kyaaa-aaaam-qizja-cai`.
+- Source paths `src/icp/magickboxClient.ts`, `src/icp/MagickBoxIcpContext.tsx`, `src/App.tsx`, `src/App.caffeine.test.tsx`, `src/icp/magickboxClient.test.ts`, and `src/App.test.tsx`.
+
+What was created or changed:
+
+- Added explicit ICP runtime deployment classification: `local`, `caffeine`, or `mainnet`.
+- Gated persistent local browser identity to local ICP development runtimes only.
+- Changed Caffeine/live runtime copy to `MagickBoxV3 mainnet canister`.
+- Hid `Use local browser identity` on Caffeine/mainnet public, auth, and admin routes.
+- Updated tests so Caffeine/mainnet routes must not show local-canister wording or local identity fallback.
+
+Commands run and results:
+
+- `npm run test -- src/App.caffeine.test.tsx src/App.test.tsx src/icp/magickboxClient.test.ts` -> passed, `3` files and `17` tests.
+- `npm run lint` -> passed.
+- `npm run build` -> passed; produced `dist/assets/index-CwMGyDSQ.js` and existing CSS `dist/assets/index-B8easiQq.css`, with the existing Vite chunk-size warning.
+
+Decisions made:
+
+- Treat the reported banner as a stale/misleading frontend-bundle issue, not proof of a local backend connection.
+- Keep local browser identity available only for local ICP development canisters where pop-up II fallback is useful.
+- Use Internet Identity only on the live MagickBoxV3 mainnet preview.
+
+Blockers or risks:
+
+- The live URL still serves v12 bundle `assets/index-DgcMdtT8.js` until a new MagickBoxV3 builder import/publish completes.
+- Mainnet Internet Identity callback should be smoke-tested after publishing the updated bundle.
+
+Next step:
+
+- Commit the canonical fix, bundle it for the isolated MagickBoxV3 builder import, publish the new live version, and verify the public live URL no longer renders local-canister wording or local browser identity controls.
+
+## 2026-05-24T08:56:03+07:00 - Checkpoint 68: Local Verification Passed For Mainnet Runtime Fix
+
+Current workspace/folder:
+
+`C:\Users\Mark\Documents\Codex\Codex_MagickBox\magick-box-rewrite-readiness-prototype`
+
+What was inspected:
+
+- Playwright desktop/mobile smoke coverage for landing, app shell, evaluation, sign-in, creation, admin, and asset policy routes.
+- Existing screenshot artifacts `docs/artifacts/prototype/prototype-home-desktop.png` and `docs/artifacts/prototype/prototype-home-mobile.png`.
+
+What was created or changed:
+
+- Updated Playwright expectations to current MagickBoxV3 product naming and to hide local browser identity on generic preview/sign-in flows unless a real local ICP runtime is available.
+- Refreshed desktop/mobile landing screenshots from the passing e2e run.
+
+Commands run and results:
+
+- `npm run test` -> passed, `8` files and `36` tests.
+- First `npm run e2e` -> failed on stale test expectations for the current page title and evaluation heading; unrelated to the runtime fix.
+- Updated those stale e2e expectations.
+- Second `npm run e2e` -> passed, `14` desktop/mobile Playwright tests.
+- Final `npm run lint` -> passed.
+- Final `npm run build` -> passed; produced `dist/assets/index-CwMGyDSQ.js`, with the existing Vite chunk-size warning.
+
+Decisions made:
+
+- Keep e2e assertions aligned to current MagickBoxV3 naming: title `MagickBoxV3 ICP Prototype` and evaluation heading `MagickBoxV3 Evaluation`.
+- Commit refreshed screenshots because the route smoke generated updated evidence artifacts.
+
+Blockers or risks:
+
+- No local verification blockers remain.
+- Live deployment still needs a MagickBoxV3 builder import/publish to replace the currently served v12 bundle.
+
+Next step:
+
+- Commit and push the canonical local fix, then import/publish it through the isolated MagickBoxV3 builder flow and run live public smoke checks.

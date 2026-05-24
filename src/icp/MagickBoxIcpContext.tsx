@@ -25,6 +25,7 @@ import type {
 } from "./generated/magickbox_core.did";
 import {
   canUseIcpRuntime,
+  canUseLocalBrowserIdentity,
   clearLocalBrowserIdentityActive,
   createAuthClient,
   createCoreActor,
@@ -105,6 +106,8 @@ type MagickBoxIcpState = {
   creditOptions: UiCreditOption[];
   runtime: IcpRuntime;
   runtimeMode: "icp" | "unavailable";
+  runtimeLabel: string;
+  canUseLocalBrowserIdentity: boolean;
   status: "connecting" | "anonymous" | "authenticated" | "unavailable" | "error";
   statusMessage: string;
   principalText: string | null;
@@ -186,6 +189,36 @@ function mapStaticCreditOption(option: (typeof creditRecoveryOptions)[number]): 
     label: option.label,
     description: option.description,
   };
+}
+
+function getRuntimeLabel(runtime: IcpRuntime) {
+  if (runtime.deploymentKind === "local") {
+    return "Local ICP canister";
+  }
+
+  if (runtime.deploymentKind === "caffeine") {
+    return "MagickBoxV3 mainnet canister";
+  }
+
+  return "Mainnet ICP canister";
+}
+
+function getRuntimeDetectedMessage(runtime: IcpRuntime) {
+  const label = getRuntimeLabel(runtime);
+
+  return canUseLocalBrowserIdentity(runtime)
+    ? `${label} detected; sign in to write account state`
+    : `${label} detected; sign in with Internet Identity to write account state`;
+}
+
+function getRuntimeUnavailableMessage() {
+  return "ICP runtime unavailable here. Open a MagickBoxV3 ICP asset canister or configured ICP preview to create real jobs.";
+}
+
+function getPaymentAuthMessage(runtime: IcpRuntime, action: string) {
+  return canUseLocalBrowserIdentity(runtime)
+    ? `Sign in with Internet Identity or local browser identity to ${action}`
+    : `Sign in with Internet Identity to ${action}`;
 }
 
 async function ensureProfile(actor: CoreActor) {
@@ -398,6 +431,11 @@ async function completeGenerationThroughWorker({
 
 export function MagickBoxIcpProvider({ children }: { children: ReactNode }) {
   const initialRuntime = useMemo(() => resolveIcpRuntime(), []);
+  const runtimeLabel = useMemo(() => getRuntimeLabel(initialRuntime), [initialRuntime]);
+  const allowsLocalBrowserIdentity = useMemo(
+    () => canUseLocalBrowserIdentity(initialRuntime),
+    [initialRuntime],
+  );
   const [actor, setActor] = useState<CoreActor | null>(null);
   const [authClient, setAuthClient] = useState<AuthClient | null>(null);
   const [activeIdentity, setActiveIdentity] = useState<Identity | null>(null);
@@ -420,8 +458,8 @@ export function MagickBoxIcpProvider({ children }: { children: ReactNode }) {
   );
   const [statusMessage, setStatusMessage] = useState(
     canUseIcpRuntime(initialRuntime)
-      ? "Connecting to local ICP canisters"
-      : "ICP runtime unavailable here. Open the local ICP asset canister to create real jobs.",
+      ? `Connecting to ${getRuntimeLabel(initialRuntime)}`
+      : getRuntimeUnavailableMessage(),
   );
   const [principalText, setPrincipalText] = useState<string | null>(null);
   const [authMethod, setAuthMethod] = useState<"internet_identity" | "local_browser" | null>(null);
@@ -462,7 +500,7 @@ export function MagickBoxIcpProvider({ children }: { children: ReactNode }) {
       if (!canUseIcpRuntime(runtime)) {
         setRuntimeMode("unavailable");
         setStatus("unavailable");
-        setStatusMessage("ICP runtime unavailable here. Open the local ICP asset canister to create real jobs.");
+        setStatusMessage(getRuntimeUnavailableMessage());
         return;
       }
 
@@ -506,11 +544,11 @@ export function MagickBoxIcpProvider({ children }: { children: ReactNode }) {
           setPrincipalText(identity.getPrincipal().toText());
           setAuthMethod("internet_identity");
           setStatus("authenticated");
-          setStatusMessage("Internet Identity connected to local ICP");
+          setStatusMessage(`Internet Identity connected to ${getRuntimeLabel(runtime)}`);
           return;
         }
 
-        if (hasActiveLocalBrowserIdentity()) {
+        if (canUseLocalBrowserIdentity(runtime) && hasActiveLocalBrowserIdentity()) {
           const identity = getOrCreateLocalBrowserIdentity();
           const localActor = await createCoreActor(identity);
           const nextProfile = await ensureProfile(localActor);
@@ -543,7 +581,7 @@ export function MagickBoxIcpProvider({ children }: { children: ReactNode }) {
         setAdminDashboard(anonymousAdmin.dashboard);
         setStatus("anonymous");
         setActiveIdentity(null);
-        setStatusMessage("Local ICP canister detected; sign in to write account state");
+        setStatusMessage(getRuntimeDetectedMessage(runtime));
       } catch (error) {
         if (cancelled) {
           return;
@@ -569,7 +607,7 @@ export function MagickBoxIcpProvider({ children }: { children: ReactNode }) {
     if (!canUseIcpRuntime(runtime)) {
       setRuntimeMode("unavailable");
       setStatus("unavailable");
-      setStatusMessage("Open the local ICP asset canister to use Internet Identity");
+      setStatusMessage("Open a MagickBoxV3 ICP asset canister or configured ICP preview to use Internet Identity");
       return;
     }
 
@@ -602,13 +640,15 @@ export function MagickBoxIcpProvider({ children }: { children: ReactNode }) {
       setAuthMethod("internet_identity");
       clearLocalBrowserIdentityActive();
       setStatus("authenticated");
-      setStatusMessage("Internet Identity connected to local ICP");
+      setStatusMessage(`Internet Identity connected to ${getRuntimeLabel(runtime)}`);
     } catch (error) {
       const message = error instanceof Error ? error.message : "Internet Identity sign-in failed";
       setStatus(message.includes("Signer window could not be opened") ? "anonymous" : "error");
       setStatusMessage(
         message.includes("Signer window could not be opened")
-          ? "Signer popup was blocked here. Use local browser identity or open this URL in an external browser for Internet Identity."
+          ? canUseLocalBrowserIdentity(runtime)
+            ? "Signer popup was blocked here. Use local browser identity or open this URL in an external browser for Internet Identity."
+            : "Signer popup was blocked here. Allow pop-ups and sign in with Internet Identity again."
           : message,
       );
     } finally {
@@ -619,10 +659,14 @@ export function MagickBoxIcpProvider({ children }: { children: ReactNode }) {
   const signInWithLocalIdentity = useCallback(async () => {
     const runtime = resolveIcpRuntime();
 
-    if (!canUseIcpRuntime(runtime)) {
-      setRuntimeMode("unavailable");
-      setStatus("unavailable");
-      setStatusMessage("Open the local ICP asset canister to create a signed local browser identity");
+    if (!canUseLocalBrowserIdentity(runtime)) {
+      setRuntimeMode(canUseIcpRuntime(runtime) ? "icp" : "unavailable");
+      setStatus(canUseIcpRuntime(runtime) ? "anonymous" : "unavailable");
+      setStatusMessage(
+        canUseIcpRuntime(runtime)
+          ? "Local browser identity is only available on local ICP development canisters. Use Internet Identity on MagickBoxV3 mainnet."
+          : getRuntimeUnavailableMessage(),
+      );
       return;
     }
 
@@ -667,7 +711,8 @@ export function MagickBoxIcpProvider({ children }: { children: ReactNode }) {
     try {
       await authClient?.signOut();
       clearLocalBrowserIdentityActive();
-      const anonymousActor = canUseIcpRuntime(resolveIcpRuntime()) ? await createCoreActor() : null;
+      const runtime = resolveIcpRuntime();
+      const anonymousActor = canUseIcpRuntime(runtime) ? await createCoreActor() : null;
       const anonymousState = anonymousActor
         ? await Promise.all([
             anonymousActor.get_provider_options(),
@@ -691,8 +736,8 @@ export function MagickBoxIcpProvider({ children }: { children: ReactNode }) {
       setStatus(anonymousActor ? "anonymous" : "unavailable");
       setStatusMessage(
         anonymousActor
-          ? "Local ICP canister detected; sign in to write account state"
-          : "ICP runtime unavailable here. Open the local ICP asset canister to create real jobs.",
+          ? getRuntimeDetectedMessage(runtime)
+          : getRuntimeUnavailableMessage(),
       );
     } catch (error) {
       setStatus("error");
@@ -717,7 +762,7 @@ export function MagickBoxIcpProvider({ children }: { children: ReactNode }) {
       if (runtimeMode !== "icp" || !actor) {
         return {
           kind: "auth_required",
-          message: "Open the local ICP asset canister to create a real ICP job",
+          message: "Open a MagickBoxV3 ICP asset canister or configured ICP preview to create a real ICP job",
         };
       }
 
@@ -799,14 +844,14 @@ export function MagickBoxIcpProvider({ children }: { children: ReactNode }) {
       if (runtimeMode !== "icp" || !actor) {
         return {
           kind: "auth_required",
-          message: "Open the local ICP asset canister to create a real payment intent",
+          message: "Open a MagickBoxV3 ICP asset canister or configured ICP preview to create a real payment intent",
         };
       }
 
       if (status !== "authenticated") {
         return {
           kind: "auth_required",
-          message: "Sign in with Internet Identity or local browser identity to create a payment intent",
+          message: getPaymentAuthMessage(initialRuntime, "create a payment intent"),
         };
       }
 
@@ -831,7 +876,7 @@ export function MagickBoxIcpProvider({ children }: { children: ReactNode }) {
         setIsBusy(false);
       }
     },
-    [actor, runtimeMode, status],
+    [actor, initialRuntime, runtimeMode, status],
   );
 
   const grantAdCredits = useCallback(
@@ -847,14 +892,14 @@ export function MagickBoxIcpProvider({ children }: { children: ReactNode }) {
       if (runtimeMode !== "icp" || !actor) {
         return {
           kind: "auth_required",
-          message: "Open the local ICP asset canister to claim ad verifier credits",
+          message: "Open a MagickBoxV3 ICP asset canister or configured ICP preview to claim ad verifier credits",
         };
       }
 
       if (status !== "authenticated") {
         return {
           kind: "auth_required",
-          message: "Sign in with Internet Identity or local browser identity to claim ad credits",
+          message: getPaymentAuthMessage(initialRuntime, "claim ad credits"),
         };
       }
 
@@ -884,7 +929,7 @@ export function MagickBoxIcpProvider({ children }: { children: ReactNode }) {
         setIsBusy(false);
       }
     },
-    [actor, runtimeMode, status],
+    [actor, initialRuntime, runtimeMode, status],
   );
 
   const bootstrapSuperadmin = useCallback(
@@ -892,7 +937,7 @@ export function MagickBoxIcpProvider({ children }: { children: ReactNode }) {
       if (runtimeMode !== "icp" || !actor) {
         return {
           kind: "auth_required",
-          message: "Open the local ICP asset canister to bind the superadmin principal",
+          message: "Open a MagickBoxV3 ICP asset canister or configured ICP preview to bind the superadmin principal",
         };
       }
 
@@ -981,6 +1026,8 @@ export function MagickBoxIcpProvider({ children }: { children: ReactNode }) {
       creditOptions,
       runtime: initialRuntime,
       runtimeMode,
+      runtimeLabel,
+      canUseLocalBrowserIdentity: allowsLocalBrowserIdentity,
       status,
       statusMessage,
       principalText,
@@ -1010,6 +1057,8 @@ export function MagickBoxIcpProvider({ children }: { children: ReactNode }) {
       creditOptions,
       initialRuntime,
       runtimeMode,
+      runtimeLabel,
+      allowsLocalBrowserIdentity,
       status,
       statusMessage,
       principalText,

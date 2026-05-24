@@ -28,19 +28,19 @@ describe("Magick Box rewrite prototype", () => {
     await user.click(screen.getByRole("button", { name: "Submit prompt" }));
 
     expect(screen.getByRole("status")).toHaveTextContent(
-      "Open the local ICP asset canister to create a real ICP job",
+      "Open a MagickBoxV3 ICP asset canister or configured ICP preview to create a real ICP job",
     );
     expect(screen.queryByText(/queued locally/i)).not.toBeInTheDocument();
   });
 
-  it("offers ICP sign-in choices without credential fields", () => {
+  it("offers Internet Identity sign-in without credential fields", () => {
     window.history.pushState({}, "", "/auth/sign-in");
 
     render(<App />);
 
     expect(screen.getByRole("heading", { name: "Sign in" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Sign in with Internet Identity" })).toBeInTheDocument();
-    expect(screen.getByRole("button", { name: "Use local browser identity" })).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Use local browser identity" })).not.toBeInTheDocument();
     expect(screen.queryByLabelText("Email")).not.toBeInTheDocument();
     expect(screen.queryByLabelText("Password")).not.toBeInTheDocument();
   });

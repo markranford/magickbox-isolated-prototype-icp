@@ -11,7 +11,7 @@ test("landing route preserves observable UX and has no runtime errors", async ({
   });
 
   await page.goto("/");
-  await expect(page).toHaveTitle(/Magick Box Rewrite Readiness Prototype/);
+  await expect(page).toHaveTitle(/MagickBoxV3 ICP Prototype/);
   await expect(page.getByRole("heading", { level: 1 })).toHaveText(
     "Create Anything with AI - Faster Than Ever",
   );
@@ -58,14 +58,14 @@ test("Launch Beta enters the app shell and creation requires a real ICP runtime"
   await page.getByLabel("Ask Magick Friend").fill("Make a product theme");
   await page.getByRole("button", { name: "Submit prompt" }).click();
   await expect(page.getByRole("status")).toContainText(
-    "Open the local ICP asset canister to create a real ICP job",
+    "Open a MagickBoxV3 ICP asset canister or configured ICP preview to create a real ICP job",
   );
 });
 
 test("evaluation route exposes route parity and ICP readiness", async ({ page }) => {
   await page.goto("/evaluation");
 
-  await expect(page.getByRole("heading", { name: "Rewrite Readiness Evaluation" })).toBeVisible();
+  await expect(page.getByRole("heading", { name: "MagickBoxV3 Evaluation" })).toBeVisible();
   await expect(page.getByRole("heading", { name: "ICP Readiness" })).toBeVisible();
   await expect(page.getByRole("cell", { name: "/", exact: true })).toBeVisible();
   await expect(page.getByRole("heading", { name: "Certified frontend" })).toBeVisible();
@@ -78,7 +78,7 @@ test("sign-in route offers ICP identities without credential fields", async ({ p
 
   await expect(page.getByRole("heading", { name: "Sign in" })).toBeVisible();
   await expect(page.getByRole("button", { name: "Sign in with Internet Identity" })).toBeVisible();
-  await expect(page.getByRole("button", { name: "Use local browser identity" })).toBeVisible();
+  await expect(page.getByRole("button", { name: "Use local browser identity" })).toHaveCount(0);
   await expect(page.getByLabel("Email")).toHaveCount(0);
   await expect(page.getByLabel("Password")).toHaveCount(0);
 });
