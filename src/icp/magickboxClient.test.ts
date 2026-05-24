@@ -3,6 +3,7 @@ import {
   buildHttpAgentOptions,
   canUseLocalBrowserIdentity,
   canUseIcpRuntime,
+  classifyIcpDeployment,
   clearLocalBrowserIdentityActive,
   createMediaActor,
   getIdentityProviderUrl,
@@ -75,6 +76,12 @@ describe("Magick Box ICP client adapter", () => {
         reason: "mainnet canister runtime",
       }),
     ).toBe(false);
+  });
+
+  it("classifies Caffeine-hosted assets as Caffeine even when the asset env exposes a root key", () => {
+    expect(
+      classifyIcpDeployment("https://magickbox-icp-e68.caffeine.xyz", new Uint8Array([1, 2, 3])),
+    ).toBe("caffeine");
   });
 
   it("does not require a local root key for mainnet agent options", () => {

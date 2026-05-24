@@ -3287,3 +3287,46 @@ Blockers or risks:
 Next step:
 
 - Commit and push the canonical local fix, then import/publish it through the isolated MagickBoxV3 builder flow and run live public smoke checks.
+
+## 2026-05-24T09:14:04+07:00 - Checkpoint 69: Live v13 Exposed Root-Key Runtime Classification Bug
+
+Current workspace/folder:
+
+`C:\Users\Mark\Documents\Codex\Codex_MagickBox\magick-box-rewrite-readiness-prototype`
+
+What was inspected:
+
+- Live MagickBoxV3 v13 public URL after publishing through the isolated builder flow.
+- Public HTML/JS bundle and rendered status strip on `https://magickbox-icp-e68.caffeine.xyz/`.
+- Runtime classifier in `src/icp/magickboxClient.ts`.
+
+What was created or changed:
+
+- Published builder draft version 13 from bridge commit `a872556`; Caffeine reported `Version 13 is now live and serving users`.
+- Public bundle changed to `assets/index-D96bi145.js` and contained the new mainnet copy helper, proving the v13 bundle was live.
+- Rendered page still showed `Local ICP canister` because the runtime classifier treated any `IC_ROOT_KEY` from the asset environment as local before checking the Caffeine hostname.
+- Fixed `classifyIcpDeployment()` so `*.caffeine.xyz` is classified as `caffeine` before root-key/local heuristics.
+- Added a regression test for Caffeine-hosted assets with a root key.
+
+Commands run and results:
+
+- Public no-cache bundle check for v13 -> HTTP `200`, JS `assets/index-D96bi145.js`, old hardcoded `Local ICP canister detected` string absent, new `MagickBoxV3 mainnet canister` string present.
+- Browser rendered check for v13 -> still showed `Local ICP canister detected`, identifying classifier ordering as the remaining bug.
+- `npm run test -- src/App.caffeine.test.tsx src/icp/magickboxClient.test.ts` -> passed, `2` files and `14` tests.
+- `npm run lint` -> passed.
+- `npm run build` -> passed; produced `dist/assets/index-CrVyJnM4.js`, with the existing Vite chunk-size warning.
+- `npm run test` -> passed, `8` files and `37` tests.
+
+Decisions made:
+
+- Treat v13 as an intermediate bad live build that proved the Caffeine asset environment can expose root-key data.
+- Require a new v14 publish with hostname-first Caffeine classification before considering the live bug fixed.
+
+Blockers or risks:
+
+- No local blocker remains.
+- Live URL still needs v14 import/publish and rendered verification.
+
+Next step:
+
+- Commit/push the classifier-order fix, import it through the MagickBoxV3 builder bridge, publish version 14, and re-run bundle plus rendered live-route checks.

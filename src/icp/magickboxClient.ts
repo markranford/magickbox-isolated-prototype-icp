@@ -83,13 +83,13 @@ export function isLocalIcpOrigin(origin = currentOrigin()) {
   }
 }
 
-function classifyIcpDeployment(host: string, rootKey?: Uint8Array): IcpRuntime["deploymentKind"] {
-  if (rootKey || isLocalIcpOrigin(host)) {
-    return "local";
-  }
-
+export function classifyIcpDeployment(host: string, rootKey?: Uint8Array): IcpRuntime["deploymentKind"] {
   if (isCaffeineHostedOrigin(host)) {
     return "caffeine";
+  }
+
+  if (rootKey || isLocalIcpOrigin(host)) {
+    return "local";
   }
 
   return "mainnet";
